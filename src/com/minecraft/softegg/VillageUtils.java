@@ -88,6 +88,16 @@ public class VillageUtils extends VillageBase {
         return (SoftEggLand) plugin;
     }
     
+    public static Villages getVillagesPlugin() {
+        Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Villages");
+
+        if (plugin == null || !(plugin instanceof Villages)) {
+            return null;
+        }
+
+        return (Villages) plugin;
+    }
+    
     public static String ColorString(String msg) {
         String[] andCodes = {"&0", "&1", "&2", "&3", "&4", "&5", "&6", "&7", "&8", "&9", "&a", "&b", "&c", "&d", "&e", "&f", "&l", "&o", "&n", "&m", "&k", "&r"};
         String[] altCodes = {"§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f", "§l", "§o", "§n", "§m", "§k", "§r"};

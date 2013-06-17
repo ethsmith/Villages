@@ -29,17 +29,17 @@ commands:
       usage: /<command> [name]
       permission: Villages.createvillage
    villageinvite:
-      description: Invates a player to your village.
+      description: Invites a player to your village.
       aliases: [invite]
       usage: /<command> [player]
       permission: Villages.invite
    villageaccept:
-      description: Invates a player to your village.
+      description: Invites a player to your village.
       aliases: [vaccept, accept, va]
       usage: /<command>
       permission: Villages.accept
    villagedeny:
-      description: Invates a player to your village.
+      description: Invites a player to your village.
       aliases: [vdeny, deny, vd]
       usage: /<command>
       permission: Villages.deny
