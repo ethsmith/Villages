@@ -96,6 +96,7 @@ public class VillageDataManager extends VillageBase {
             VillageBase.ChatDefault = VillageUtils.ColorString(config.getString("colors.default"));
             VillageBase.ChatImportant = VillageUtils.ColorString(config.getString("colors.important"));
             
+            /*
             String p = "protection.";
             if(!config.contains(p + "griefwild")) {
                 config.set(p + "griefwild", true);
@@ -109,8 +110,9 @@ public class VillageDataManager extends VillageBase {
             if(!config.contains(p + "grieffoe")) {
                 config.set(p + "grieffoe", true);
             }
+            */
             
-            p = "cost.";
+            String p = "cost.";
             if(!config.contains(p + "createvillage")) {
                 config.set(p + "createvillage", 1000.00);
             }
