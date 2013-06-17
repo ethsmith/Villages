@@ -1,0 +1,73 @@
+name: Villages
+description: Create player villages, make regions and start wars.
+main: com.minecraft.softegg.Villages
+authors: [Dominic]
+website: http://domsplace.com/
+version: 1.00
+depend: [SoftEggLand, Vault]
+load: POSTWORLD
+permission: You don't have permission for this.
+commands:
+   villageadmin:
+      description: Get Villages stats.
+      aliases: [vadmin]
+      usage: /<command> [reload | delete]
+      permission: Villages.villageadmin
+   villages:
+      description: Get a list of Villages.
+      aliases: [vs]
+      usage: /<command>
+      permission: Villages.villages
+   village:
+      description: Get information about a specific Village.
+      aliases: [v]
+      usage: /<command> (name | close | deposit | leave)
+      permission: Villages.village
+   createvillage:
+      description: Creates a new Village at that chunk you're in.
+      aliases: [cv]
+      usage: /<command> [name]
+      permission: Villages.createvillage
+   villageinvite:
+      description: Invates a player to your village.
+      aliases: [invite]
+      usage: /<command> [player]
+      permission: Villages.invite
+   villageaccept:
+      description: Invates a player to your village.
+      aliases: [vaccept, accept, va]
+      usage: /<command>
+      permission: Villages.accept
+   villagedeny:
+      description: Invates a player to your village.
+      aliases: [vdeny, deny, vd]
+      usage: /<command>
+      permission: Villages.deny
+permissions:
+   Villages.*:
+     description: Gives access to all Villages permissions.
+     children:
+       Villages.reload: true
+       Villages.villageadmin: true
+       Villages.villages: true
+       Villages.village: true
+       Villages.creqatevillage: true
+       Villages.invite: true
+       Villages.accept: true
+       Villages.deny: true
+   Villages.villageadmin:
+     description: Allows access to Villages admin command.
+   Villages.reload:
+     description: Allows access to reload Villages configuration file.
+   Villages.villages:
+     description: Allows access to Villages list command.
+   Villages.village:
+     description: Allows access to Villages list command.
+   Villages.createvillage:
+     description: Allows access to the Create Village command.
+   Villages.invite:
+     description: Allows access to the Invite to Village command.
+   Villages.accept:
+     description: Allows access to accept a Village invite.
+   Villages.deny:
+     description: Allows access to deny a Village invite.
