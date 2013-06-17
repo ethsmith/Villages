@@ -321,7 +321,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                     double cost = VillageDataManager.config.getDouble("cost.expand");
                     double totalcost = cost * amount;
                     //Ensure town has enough
-                    if(totalcost > v.getMoney()) {
+                    if(totalcost > v.getMoney() && VillageDataManager.useEconomy()) {
                         SendMessage(cs, ChatError + "You don't have enough money in the Village bank! you need " + VillageUtils.economy.format(totalcost) + " to do this.");
                         return true;
                     }
@@ -336,7 +336,9 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                         SendMessage(cs, ChatError + "Cannot Expand town this much, it overlaps another Village!");
                         return true;
                     }
-                    v.addMoney(-totalcost);
+                    if(VillageDataManager.useEconomy()) {
+                        v.addMoney(-totalcost);
+                    }
                     v.SendMessage(ChatDefault + "The town was expanded another " + ChatImportant + amount + ChatDefault + " chunk(s).");
                     VillageUtils.SaveAllVillages();
                     return true;
