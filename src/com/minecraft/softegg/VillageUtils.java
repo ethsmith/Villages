@@ -17,7 +17,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -29,7 +28,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 public class VillageUtils extends VillageBase {
     
     private static File dataFolder;
-    public static Economy economy;
+    public static net.milkbowl.vault.economy.Economy economy;
     
     public static String sqlHost = "";
     public static String sqlDB = "";
@@ -79,13 +78,17 @@ public class VillageUtils extends VillageBase {
     }
     
     public static SoftEggLand getSoftEggLandPlugin() {
-        Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("SoftEggLand");
+        try {
+            Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("SoftEggLand");
 
-        if (plugin == null || !(plugin instanceof SoftEggLand)) {
+            if (plugin == null || !(plugin instanceof com.minecraft.softegg.SoftEggLand)) {
+                return null;
+            }
+
+            return (com.minecraft.softegg.SoftEggLand) plugin;
+        } catch(NoClassDefFoundError e) {
             return null;
         }
-
-        return (SoftEggLand) plugin;
     }
     
     public static Villages getVillagesPlugin() {
@@ -110,11 +113,16 @@ public class VillageUtils extends VillageBase {
     }
     
     public static Boolean setupEconomy(Villages plugin) {
-        RegisteredServiceProvider<Economy> economyProvider = plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-        if (economyProvider != null) {
-            economy = economyProvider.getProvider();
+        try {
+            RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> economyProvider = plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+            if (economyProvider != null) {
+                economy = economyProvider.getProvider();
+            }
+            return (economy != null);
+        } catch(NoClassDefFoundError e) {
+            economy = null;
+            return false;
         }
-        return (economy != null);
     }
     
     public static boolean sqlConnect() {
