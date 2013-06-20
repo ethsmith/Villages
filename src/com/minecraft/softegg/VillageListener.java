@@ -1,9 +1,14 @@
 package com.minecraft.softegg;
 
+import static com.minecraft.softegg.VillageBase.ChatError;
+import static com.minecraft.softegg.VillageBase.SendMessage;
+import static com.minecraft.softegg.VillageBase.gK;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -81,7 +86,7 @@ public class VillageListener extends VillageBase implements Listener {
                 v.sentWelcome.remove(p);
             }
             if(VillageDataManager.config.getBoolean("messages.leavevillage") && !VillageUtils.sentWilderness.contains(p)) {
-                SendMessage(p, ChatDefault + "You are now in the " + ChatImportant + "Wilderness" + ChatDefault + ".");
+                SendMessage(p, gK("enterwilderness"));
                 VillageUtils.sentWilderness.add(p);
             }
             return;
@@ -98,5 +103,65 @@ public class VillageListener extends VillageBase implements Listener {
         SendMessage(p, ChatDefault + village.getDescription());
         village.sentWelcome.add(p);
         VillageUtils.sentWilderness.remove(p);
+    }
+    
+    @EventHandler
+    public void onInteract(PlayerInteractEvent e) {
+        if(e.getPlayer().hasPermission("Villages.villageadmin")) {
+            return;
+        }
+        
+        if(e.getClickedBlock() == null) {
+            return;
+        }
+        
+        Village lv = VillageUtils.getVillageFromChunk(e.getClickedBlock().getChunk());
+        if(lv == null) {
+            //Wilderness//
+            if(VillageDataManager.config.getBoolean("protection.griefwild")) {
+                return;
+            }
+            e.setCancelled(true);
+            SendMessage(e.getPlayer(), gK("nointeract"));
+            return;
+        }
+        if(VillageDataManager.config.getBoolean("protection.griefvillage")) {
+            return;
+        }
+        if(lv.isResident(e.getPlayer())) {
+            return;
+        }
+        e.setCancelled(true);
+        SendMessage(e.getPlayer(), gK("nointeract"));
+    }
+    
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent e) {
+        if(e.getPlayer().hasPermission("Villages.villageadmin")) {
+            return;
+        }
+        
+        if(e.getBlock() == null) {
+            return;
+        }
+        
+        Village lv = VillageUtils.getVillageFromChunk(e.getBlock().getChunk());
+        if(lv == null) {
+            //Wilderness//
+            if(VillageDataManager.config.getBoolean("protection.griefwild")) {
+                return;
+            }
+            e.setCancelled(true);
+            SendMessage(e.getPlayer(), gK("nointeract"));
+            return;
+        }
+        if(VillageDataManager.config.getBoolean("protection.griefvillage")) {
+            return;
+        }
+        if(lv.isResident(e.getPlayer())) {
+            return;
+        }
+        e.setCancelled(true);
+        SendMessage(e.getPlayer(), gK("nointeract"));
     }
 }

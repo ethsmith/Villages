@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -75,5 +76,19 @@ public class Villages extends JavaPlugin {
     
     public void disable() {
         pluginManager.disablePlugin(this);
+    }
+    
+    public static com.minecraft.softegg.Villages getVillagesPlugin() {
+        try {
+            Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Villages");
+
+            if (plugin == null || !(plugin instanceof com.minecraft.softegg.Villages)) {
+                return null;
+            }
+
+            return (com.minecraft.softegg.Villages) plugin;
+        } catch(NoClassDefFoundError e) {
+            return null;
+        }
     }
 }

@@ -96,23 +96,16 @@ public class VillageDataManager extends VillageBase {
             VillageBase.ChatDefault = VillageUtils.ColorString(config.getString("colors.default"));
             VillageBase.ChatImportant = VillageUtils.ColorString(config.getString("colors.important"));
             
-            /*
+            
             String p = "protection.";
             if(!config.contains(p + "griefwild")) {
                 config.set(p + "griefwild", true);
             }
-            if(!config.contains(p + "grieffriend")) {
-                config.set(p + "grieffriend", false);
+            if(!config.contains(p + "griefvillage")) {
+                config.set(p + "griefvillage", false);
             }
-            if(!config.contains(p + "griefneutral")) {
-                config.set(p + "griefneutral", true);
-            }
-            if(!config.contains(p + "grieffoe")) {
-                config.set(p + "grieffoe", true);
-            }
-            */
             
-            String p = "cost.";
+            p = "cost.";
             if(!config.contains(p + "createvillage")) {
                 config.set(p + "createvillage", 1000.00);
             }
@@ -169,6 +162,10 @@ public class VillageDataManager extends VillageBase {
             }
             
             saveConfig();
+            
+            //Load Language files//
+            VillageLanguageManager.LoadLanguage();
+            
         } catch (Exception ex) {
             VillageUtils.msgConsole(ChatError + "Failed to load Config YML! Error: " + ex.getMessage());
             return false;

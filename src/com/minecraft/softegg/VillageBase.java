@@ -3,6 +3,7 @@ package com.minecraft.softegg;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -50,5 +51,25 @@ public class VillageBase {
             }
         }
         Bukkit.getConsoleSender().sendMessage(msgs);
+    }
+    
+    public static String gK(String key) {
+        return VillageLanguageManager.getKey(key);
+    }
+    
+    public static String gK(String key, Village village) {
+        return VillageLanguageManager.getKey(key, village);
+    }
+    
+    public static String gK(String key, double money) {
+        return VillageLanguageManager.getKey(key, money);
+    }
+    
+    public static String gK(String key, OfflinePlayer player) {
+        return VillageLanguageManager.getKey(key, player);
+    }
+    
+    public static String gK(String key, OfflinePlayer player, double amount) {
+        return VillageLanguageManager.getKey(key, player, amount);
     }
 }

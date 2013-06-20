@@ -4,6 +4,7 @@ import static com.minecraft.softegg.VillageBase.ChatDefault;
 import static com.minecraft.softegg.VillageBase.ChatError;
 import static com.minecraft.softegg.VillageBase.ChatImportant;
 import static com.minecraft.softegg.VillageBase.SendMessage;
+import static com.minecraft.softegg.VillageBase.gK;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -57,18 +58,18 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             
             if(arg.equals("delete")) {
                 if(args.length < 2) {
-                    SendMessage(cs, ChatError + "Please enter a village name to delete.");
+                    SendMessage(cs, gK("neednamedelete"));
                     return true;
                 }
                 
                 String name = args[1];
                 Village village = VillageUtils.getVillage(name);
                 if(village == null) {
-                    SendMessage(cs, ChatError + "Village doesn't exist.");
+                    SendMessage(cs, gK("villagedoesntexist"));
                     return true;
                 }
                 
-                SendMessage(cs, ChatImportant + "Deleted " + village.getName() + "!");
+                SendMessage(cs, gK("villagedelete", village));
                 VillageDataManager.dataManager.deleteTown(village);
                 return true;
             }
@@ -100,7 +101,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
         if(cmd.getName().equalsIgnoreCase("village")) {
             if(!(cs instanceof Player)) {
                 if(args.length == 0) {
-                    SendMessage(cs, ChatError + "Please provide a Village name.");
+                    SendMessage(cs, gK("needvillagename"));
                     SendMessage(cs, VillageUtils.getCommandDescription(cmd.getName()));
                     return true;
                 }
@@ -114,7 +115,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                 
                 if(command.equalsIgnoreCase("deposit") && VillageDataManager.useEconomy() && (cs instanceof Player)) {
                     if(args.length < 2) {
-                        SendMessage(cs, ChatError + "Please enter an amount to deposit into the Village bank.");
+                        SendMessage(cs, gK("enteramount"));
                         return true;
                     }
                     
@@ -122,7 +123,12 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                     try {
                         amount = Double.parseDouble(args[1]);
                     } catch(Exception ex) {
-                        SendMessage(cs, ChatError + "Amount must be a number.");
+                        SendMessage(cs, gK("mustbenumber"));
+                        return true;
+                    }
+                    
+                    if(amount <= 0) {
+                        SendMessage(cs, gK("mustbeone"));
                         return true;
                     }
                     
@@ -130,7 +136,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                     double pAmount = VillageUtils.economy.getBalance(cs.getName());
                     
                     if(pAmount < amount) {
-                        SendMessage(cs, ChatError + "You don't have " + VillageUtils.economy.format(amount) + " to deposit.");
+                        SendMessage(cs, gK("notenoughmoney", amount));
                         return true;
                     }
                     
@@ -138,13 +144,13 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     
                     if(v == null) {
-                        SendMessage(cs, ChatError + "You aren't in a Village.");
+                        SendMessage(cs, gK("notinvillage"));
                         return true;
                     }
                     
                     v.addMoney(amount);
                     VillageUtils.economy.withdrawPlayer(cs.getName(), amount);
-                    v.SendMessage(ChatImportant + ((Player) cs).getDisplayName() + ChatDefault + " deposited " + ChatImportant + VillageUtils.economy.format(amount) + ChatDefault + " into the Village bank.");
+                    v.SendMessage(gK("depositedmoney", (Player) cs, amount));
                     VillageUtils.SaveAllVillages();
                     return true;
                 }
@@ -152,16 +158,16 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                 if(command.equalsIgnoreCase("leave") && (cs instanceof Player)) {
                     village = VillageUtils.getPlayerVillage((Player) cs);
                     if(village == null) {
-                        SendMessage(cs, ChatError + "You aren't in a Village.");
+                        SendMessage(cs, gK("notinvillage"));
                         return true;
                     }
                     
                     if(village.isMayor((Player) cs)) {
-                        SendMessage(cs, ChatError + "You are the mayor! you cannot leave the Village.");
+                        SendMessage(cs, gK("leavevillagemayor"));
                         return true;
                     }
                     
-                    village.SendMessage(ChatImportant + ((Player) cs).getDisplayName() + ChatDefault + " left the Village!");
+                    village.SendMessage(gK("leftvillage", (Player) cs));
                     village.removeResident((Player) cs);
                     VillageUtils.SaveAllVillages();
                     return true;
@@ -170,12 +176,12 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                 if(command.equalsIgnoreCase("close") && (cs instanceof Player)) {
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
-                        SendMessage(cs, ChatError + "You aren't in a Village.");
+                        SendMessage(cs, gK("notinvillage"));
                         return true;
                     }
                     
                     if(!v.isMayor((Player) cs)) {
-                        SendMessage(cs, ChatError + "You aren't the mayor! you cannot close the Village.");
+                        SendMessage(cs, gK("closevillagenotmayor"));
                         return true;
                     }
                     
@@ -188,31 +194,31 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                 if(command.equalsIgnoreCase("spawn") && (cs instanceof Player)) {
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
-                        SendMessage(cs, ChatError + "You aren't in a Village.");
+                        SendMessage(cs, gK("notinvillage"));
                         return true;
                     }
                     
                     ((Player) cs).teleport(v.getSpawnBlock());
-                    SendMessage(cs, ChatDefault + "Going to the Village square.");
+                    SendMessage(cs, gK("goingtovillage"));
                     VillageUtils.SaveAllVillages();
                     return true;
                 }
                 
                 if(command.equalsIgnoreCase("description")) {
                     if(args.length < 2) {
-                        SendMessage(cs, ChatError + "Please enter a description message.");
+                        SendMessage(cs, gK("enterdescription"));
                         return true;
                     }
                     
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
-                        SendMessage(cs, ChatError + "You aren't in a Village.");
+                        SendMessage(cs, gK("notinvillage"));
                         return true;
                     }
                     
                     Player s = (Player) cs;
                     if(!v.isMayor(s)) {
-                        SendMessage(cs, ChatError + "Only the mayor can set the description.");
+                        SendMessage(cs, gK("notmayordescription"));
                         return true;
                     }
                     
@@ -225,7 +231,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                         }
                     }
                     
-                    v.SendMessage(ChatDefault + "The new Village description is: " + ChatImportant + ChatColor.ITALIC + msg);
+                    v.SendMessage(gK("newdescription").replaceAll("%description%", ChatColor.ITALIC + msg));
                     v.setDescription(msg);
                     VillageUtils.SaveAllVillages();
                     return true;
@@ -233,13 +239,13 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                 
                 if(command.equalsIgnoreCase("msg")) {
                     if(args.length < 2) {
-                        SendMessage(cs, ChatError + "Please enter a message to send.");
+                        SendMessage(cs, gK("entermessage"));
                         return true;
                     }
                     
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
-                        SendMessage(cs, ChatError + "You aren't in a Village.");
+                        SendMessage(cs, gK("notinvillage"));
                         return true;
                     }
                     
@@ -259,19 +265,19 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                 
                 if(command.equalsIgnoreCase("kick") && (cs instanceof Player)) {
                     if(args.length < 2) {
-                        SendMessage(cs, ChatError + "Enter the name of the player to kick.");
+                        SendMessage(cs, gK("enterkickname"));
                         return true;
                     }
                     
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
-                        SendMessage(cs, ChatError + "You aren't in a Village.");
+                        SendMessage(cs, gK("notinvillage"));
                         return true;
                     }
                     
                     Player s = (Player) cs;
                     if(!v.isMayor(s)) {
-                        SendMessage(cs, ChatError + "Only the mayor can kick players.");
+                        SendMessage(cs, gK("mayorkickonly"));
                         return true;
                     }
                     
@@ -281,11 +287,16 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                     }
                     
                     if(v.isMayor(p)) {
-                        SendMessage(cs, ChatError + "You cannot kick the mayor of the Village!");
+                        SendMessage(cs, gK("cantkickmayor"));
                         return true;
                     }
                     
-                    v.SendMessage(ChatImportant + ((Player) p).getDisplayName() + ChatDefault + " was kicked from the Village!");
+                    if(!v.isResident(p)) {
+                        SendMessage(cs, gK("notresident").replaceAll("%p%", args[0]));
+                        return true;
+                    }
+                    
+                    v.SendMessage(gK("residentkicked", p));
                     v.removeResident(p);
                     VillageUtils.SaveAllVillages();
                     return true;
@@ -294,19 +305,19 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                 if(command.equalsIgnoreCase("expand")) {
                     //Expanding the town
                     if(args.length < 2) {
-                        SendMessage(cs, ChatError + "Enter the amount of chunks to expand.");
+                        SendMessage(cs, gK("enterchunks"));
                         return true;
                     }
                     
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
-                        SendMessage(cs, ChatError + "You aren't in a Village.");
+                        SendMessage(cs, gK("notinvillage"));
                         return true;
                     }
                     
                     Player s = (Player) cs;
                     if(!v.isMayor(s)) {
-                        SendMessage(cs, ChatError + "Only the mayor can expand the village.");
+                        SendMessage(cs, gK("onlymayorexpand"));
                         return true;
                     }
                     
@@ -314,7 +325,12 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                     try {
                          amount = Integer.parseInt(args[1]);
                     } catch (Exception ex) {
-                        SendMessage(cs, ChatError + "Amount of chunks must be a number.");
+                        SendMessage(cs, gK("mustbenumber"));
+                        return true;
+                    }
+                    
+                    if(amount < 1) {
+                        SendMessage(cs, gK("mustbeone"));
                         return true;
                     }
                     
@@ -322,7 +338,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                     double totalcost = cost * amount;
                     //Ensure town has enough
                     if(totalcost > v.getMoney() && VillageDataManager.useEconomy()) {
-                        SendMessage(cs, ChatError + "You don't have enough money in the Village bank! you need " + VillageUtils.economy.format(totalcost) + " to do this.");
+                        SendMessage(cs, gK("villagebankneedmore", totalcost));
                         return true;
                     }
                     
@@ -333,13 +349,13 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                     
                     if(VillageUtils.townsOverlap(v)) {
                         v.setTownSize(oldsize);
-                        SendMessage(cs, ChatError + "Cannot Expand town this much, it overlaps another Village!");
+                        SendMessage(cs, gK("expandvillageoverlap"));
                         return true;
                     }
                     if(VillageDataManager.useEconomy()) {
                         v.addMoney(-totalcost);
                     }
-                    v.SendMessage(ChatDefault + "The town was expanded another " + ChatImportant + amount + ChatDefault + " chunk(s).");
+                    v.SendMessage(gK("villageexpanded").replaceAll("%n%", "" + amount));
                     VillageUtils.SaveAllVillages();
                     return true;
                 }
@@ -348,13 +364,13 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             }
             
             if(village == null && (cs instanceof Player) &&  VillageUtils.getPlayerVillage((Player) cs) == null) {
-                SendMessage(cs, ChatError + "You aren't part of a Village.");
+                SendMessage(cs, gK("notinvillage"));
                 SendMessage(cs, VillageUtils.getCommandDescription(cmd.getName()));
                 return true;
             }
             
             if(village == null) {
-                SendMessage(cs, ChatError + "Couldn't find Village.");
+                SendMessage(cs, gK("cantfindvillage"));
                 SendMessage(cs, VillageUtils.getCommandDescription(cmd.getName()));
                 return true;
             }
@@ -386,13 +402,13 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
         
         if(cmd.getName().equalsIgnoreCase("createvillage")) {
             if(!(cs instanceof Player)) {
-                SendMessage(cs, ChatError + "Only players can run this command.");
+                SendMessage(cs, gK("playeronly"));
                 SendMessage(cs, VillageUtils.getCommandDescription(cmd.getName()));
                 return true;
             }
             
             if(args.length < 1) {
-                SendMessage(cs, ChatError + "Please enter a Village name!");
+                SendMessage(cs, gK("entervillagename"));
                 SendMessage(cs, VillageUtils.getCommandDescription(cmd.getName()));
                 return true;
             }
@@ -405,7 +421,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                 double cash = VillageUtils.economy.getBalance(sender.getName());
                 double townCost = VillageDataManager.CreateVillageCost();
                 if(cash < townCost) {
-                    SendMessage(cs, ChatError + "You dont have the " + VillageUtils.economy.format(townCost) + " necessary to make a Village.");
+                    SendMessage(cs, gK("notenoughmoney", townCost));
                     return true;
                 }
             }
@@ -413,7 +429,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             //Make sure name is valid
             String name = args[0];
             if(!name.matches("^[a-zA-Z0-9]*$")) {
-                SendMessage(cs, ChatError + "Invalid Village name, name can only have letters and/or numbers.");
+                SendMessage(cs, gK("invalidvillagename"));
                 return true;
             }
             
@@ -429,7 +445,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             
             for(String s : reservedNames) {
                 if(name.equalsIgnoreCase(s)) {
-                    SendMessage(cs, ChatError + "Invalid Village name, name is reserved.");
+                    SendMessage(cs, gK("villagenameused"));
                     return true;
                 }
             }
@@ -437,20 +453,20 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             //Check town doesnt exist/
             Village oldtown = VillageUtils.getVillageExact(name);
             if(oldtown != null) {
-                SendMessage(cs, ChatError + "The name " + name + " is already a Village name, please choose something else.");
+                SendMessage(cs, gK("villagenameused"));
                 return true;
             }
             
             //Check user isn't in a town already
             oldtown = VillageUtils.getPlayerVillage(sender);
             if(oldtown != null) {
-                SendMessage(cs, ChatError + "You are already in the Village " + oldtown.getName() + ", please leave it first before starting a new one.");
+                SendMessage(cs, gK("alreadyinvillage"));
                 return true;
             }
             
             //Check Surrounding areas for towns
             if(VillageUtils.isChunkInATownsArea(sender.getLocation().getChunk())) {
-                SendMessage(cs, ChatError + "Can't create a Village here, another Village is too close by.");
+                SendMessage(cs, gK("createvillageoverlap"));
                 return true;
             }
             
@@ -470,7 +486,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             newtown.setTownSpawn(sender.getLocation().getChunk());
             newtown.setTownSize(1);
             
-            Broadcast(ChatImportant + sender.getDisplayName() + ChatDefault + " created the Village " + ChatImportant + name + ChatDefault + "!");
+            Broadcast(gK(gK("createdvillage", newtown), sender));
             VillageUtils.villages.add(newtown);
             VillageUtils.SaveAllVillages();
             
@@ -480,12 +496,12 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
         
         if(cmd.getName().equalsIgnoreCase("villageinvite")) {
             if(!(cs instanceof Player)) {
-                SendMessage(cs, ChatError + "Only players can run this command.");
+                SendMessage(cs, gK("playeronly"));
                 return true;
             }
             
             if(args.length < 1) {
-                SendMessage(cs, ChatError + "Please enter a player name to invite.");
+                SendMessage(cs, gK("enterplayer"));
                 SendMessage(cs, VillageUtils.getCommandDescription(cmd.getName()));
                 return true;
             }
@@ -495,7 +511,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             //Get The Senders Village
             Village village = VillageUtils.getPlayerVillage(sender);
             if(village == null) {
-                SendMessage(cs, ChatError + "You aren't part of a Village you can't invite any players.");
+                SendMessage(cs, gK("notinvillage"));
                 return true;
             }
             
@@ -512,59 +528,59 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             }
             
             VillageUtils.townInvites.put(p, village);
-            SendMessage(p, ChatImportant + sender.getDisplayName() + ChatDefault + " has invited you to join " + ChatImportant + village.getName() + ChatDefault + ".");
+            SendMessage(p, gK(gK("villageinvite", village), sender));
             SendMessage(p, ChatDefault + "Type " + ChatImportant + "/villageaccept" + ChatDefault + " or " + ChatImportant + "/villagedeny");
-            SendMessage(sender, ChatDefault + "Invited " + ChatImportant + p.getDisplayName() + ChatDefault + " to the Village.");
+            SendMessage(sender, gK("residentinvited", p));
             return true;
         }
         
         if(cmd.getName().equalsIgnoreCase("villageaccept")) {
             if(!(cs instanceof Player)) {
-                SendMessage(cs, ChatError + "Only players can run this command.");
+                SendMessage(cs, gK("playeronly"));
                 return true;
             }
             
             Player sender = (Player) cs;
             
             if(!VillageUtils.townInvites.containsKey(sender)) {
-                SendMessage(cs, ChatError + "You haven't recieved an invite.");
+                SendMessage(cs, gK("noinvite"));
                 return true;
             }
             
             Village v = VillageUtils.townInvites.get(sender);
             if(v == null) {
-                SendMessage(cs, ChatError + "You haven't recieved an invite.");
+                SendMessage(cs, gK("noinvite"));
                 return true;
             }
             
             Village vs = VillageUtils.getPlayerVillage(sender);
             if(vs != null) {
-                SendMessage(cs, ChatError + "You are already part of a Village. Leave it before accepting another invite.");
+                SendMessage(cs, gK("alreadyinvillage"));
                 return true;
             }
             
             v.addResident(sender);
-            v.SendMessage(ChatImportant + sender.getDisplayName() + ChatDefault + " joined the Village!");
+            v.SendMessage(gK("joinedvillage", sender));
             sender.teleport(v.getSpawnBlock());
             return true;
         }
         
         if(cmd.getName().equalsIgnoreCase("villagedeny")) {
             if(!(cs instanceof Player)) {
-                SendMessage(cs, ChatError + "Only players can run this command.");
+                SendMessage(cs, gK("playeronly"));
                 return true;
             }
             
             Player sender = (Player) cs;
             
             if(!VillageUtils.townInvites.containsKey(sender)) {
-                SendMessage(cs, ChatError + "You haven't recieved an invite.");
+                SendMessage(cs, gK("noinvite"));
                 return true;
             }
             
             Village v = VillageUtils.townInvites.get(sender);
             if(v == null) {
-                SendMessage(cs, ChatError + "You haven't recieved an invite.");
+                SendMessage(cs, gK("noinvite"));
                 return true;
             }
             
