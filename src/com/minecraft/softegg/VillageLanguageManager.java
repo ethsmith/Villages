@@ -43,7 +43,7 @@ public class VillageLanguageManager extends VillageBase {
         cDV("goingtovillage", "%d%Going to Village square.");
         cDV("enterdescription", "%e%Please enter a description.");
         cDV("notmayordescription", "%e%Only the mayor can change the Village description");
-        cDV("newdescription", "%i%The new Village description is: %d%%description");
+        cDV("newdescription", "%i%The new Village description is: %d%%description%");
         cDV("entermessage", "%e%Please enter a message.");
         cDV("enterkickname", "%e%Enter the name of the player to kick.");
         cDV("mayorkickonly", "%e%Only the mayor can kick players.");

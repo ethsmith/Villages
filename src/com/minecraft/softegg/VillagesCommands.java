@@ -486,7 +486,7 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             newtown.setTownSpawn(sender.getLocation().getChunk());
             newtown.setTownSize(1);
             
-            Broadcast(gK(gK("createdvillage", newtown), sender));
+            Broadcast(gK("createdvillage", newtown).replaceAll("%p%", sender.getName()));
             VillageUtils.villages.add(newtown);
             VillageUtils.SaveAllVillages();
             
