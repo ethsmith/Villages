@@ -72,4 +72,8 @@ public class VillageBase {
     public static String gK(String key, OfflinePlayer player, double amount) {
         return VillageLanguageManager.getKey(key, player, amount);
     }
+    
+    public static boolean useEconomy() {
+        return VillageDataManager.useEconomy();
+    }
 }

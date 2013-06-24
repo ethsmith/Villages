@@ -185,7 +185,9 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
                         return true;
                     }
                     
-                    VillageUtils.economy.depositPlayer(cs.getName(), v.getMoney());
+                    if(useEconomy()) {
+                        VillageUtils.economy.depositPlayer(cs.getName(), v.getMoney());
+                    }
                     VillageDataManager.dataManager.deleteTown(v);
                     VillageUtils.SaveAllVillages();
                     return true;
@@ -587,6 +589,20 @@ public class VillagesCommands extends VillageBase implements CommandExecutor {
             sender.sendMessage(ChatDefault + "Denied the invite.");
             VillageUtils.townInvites.remove(sender);
             return true;
+        }
+        
+        if(cmd.getName().equalsIgnoreCase("villagetop")) {
+            int page = 1;
+            if(args.length > 0) {
+                try {
+                    page = Integer.parseInt(args[0]);
+                } catch(NumberFormatException ex) {
+                    SendMessage(cs, ChatError + "Page must be a number.");
+                    return true;
+                }
+            }
+            
+            
         }
         
         return false;
