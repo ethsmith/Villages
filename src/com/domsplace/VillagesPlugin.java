@@ -28,6 +28,7 @@ public class VillagesPlugin extends JavaPlugin {
     //Listeners
     public static VillageConfigListener ConfigListener;
     public static VillageVillagesListener VillagesListener;
+    public static VillageUpkeepListener UpkeepListener;
     
     @Override
     public void onEnable() {
@@ -48,6 +49,11 @@ public class VillagesPlugin extends JavaPlugin {
             return;
         }
         
+        if(!VillageUpkeepManager.SetupUpkeep()) {
+            Disable();
+            return;
+        }
+        
         //Load Commands
         VillageAdminCommand = new VillagesVillageAdminCommand(this);
         VillagesCommand = new VillagesVillagesCommand(this);
@@ -59,6 +65,7 @@ public class VillagesPlugin extends JavaPlugin {
         //Load Listeners
         ConfigListener = new VillageConfigListener(this);
         VillagesListener = new VillageVillagesListener(this);
+        UpkeepListener = new VillageUpkeepListener(this);
         
         //Register Commands
         getCommand("villageadmin").setExecutor(VillageAdminCommand);
@@ -107,15 +114,16 @@ public class VillagesPlugin extends JavaPlugin {
         pluginManager.disablePlugin(this);
     }
     
-    public static VillagesPlugin getVillagesPlugin() {
+    //Self Referencing
+    public static com.domsplace.VillagesPlugin getVillagesPlugin() {
         try {
             Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("Villages");
 
-            if (plugin == null || !(plugin instanceof VillagesPlugin)) {
+            if (plugin == null || !(plugin instanceof com.domsplace.VillagesPlugin)) {
                 return null;
             }
 
-            return (VillagesPlugin) plugin;
+            return (com.domsplace.VillagesPlugin) plugin;
         } catch(NoClassDefFoundError e) {
             return null;
         }

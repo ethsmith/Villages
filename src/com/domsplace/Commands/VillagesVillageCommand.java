@@ -4,6 +4,7 @@ import com.domsplace.DataManagers.*;
 import com.domsplace.Utils.*;
 import com.domsplace.*;
 import com.domsplace.Objects.*;
+import static com.domsplace.VillageBase.gK;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -285,6 +286,24 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                     }
                     v.SendMessage(gK("villageexpanded").replaceAll("%n%", "" + amount));
                     VillageVillagesUtils.SaveAllVillages();
+                    return true;
+                }
+                
+                if(command.equalsIgnoreCase("bank") && (cs instanceof Player)) {
+                    Player p = (Player) cs;
+                    Village v = VillageVillagesUtils.getPlayerVillage((Player) cs);
+                    if(v == null) {
+                        VillageUtils.msgPlayer(cs, gK("notinvillage"));
+                        return true;
+                    }
+                    
+                    /*
+                    if(!v.isMayor(p)) {
+                        VillageUtils.msgPlayer(cs, gK("onlymayorbank"));
+                        return true;
+                    }*/
+                    
+                    v.getItemBank().OpenAsInventory(p);
                     return true;
                 }
                 

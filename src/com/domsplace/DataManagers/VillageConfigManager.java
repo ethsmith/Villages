@@ -113,6 +113,7 @@ public class VillageConfigManager {
             VillageBase.ChatDefault = VillageUtils.ColorString(config.getString("colors.default"));
             VillageBase.ChatImportant = VillageUtils.ColorString(config.getString("colors.important"));
             VillageUtils.useEconomy = config.getBoolean("economy");
+            VillageUtils.useSQL = config.getBoolean("sql.use");
             
             //Load add-ins
             if(config.getBoolean("economy")) {

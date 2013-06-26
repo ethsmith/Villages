@@ -3,6 +3,7 @@ package com.domsplace.Utils;
 import com.domsplace.DataManagers.VillagePluginManager;
 import com.domsplace.VillageBase;
 import com.domsplace.VillagesPlugin;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -10,6 +11,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class VillageUtils extends VillageBase {
     public static VillagesPlugin plugin;
@@ -153,5 +155,25 @@ public class VillageUtils extends VillageBase {
             }
         }
         return p;
+    }
+
+    public static List<ItemStack> GetItemFromString(List<String> stringList) {
+        List<ItemStack> items = new ArrayList<ItemStack>();
+        
+        for(String item : stringList) {
+            //id:data:amount to get parsed
+            String[] data = item.split(":");
+            
+            int id = Integer.parseInt(data[0]);
+            byte dt = Byte.parseByte(data[1]);
+            int amount = Integer.parseInt(data[2]);
+            
+            ItemStack is = new ItemStack(id);
+            is.getData().setData(dt);
+            is.setAmount(amount);
+            items.add(is);
+        }
+        
+        return items;
     }
 }

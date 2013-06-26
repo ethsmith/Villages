@@ -42,6 +42,18 @@ public class VillagesVillageTopCommand extends VillageBase implements CommandExe
                     }
                     sec = top;
                     top = v;
+                    continue;
+                }
+                
+                if(v.getMoney() > sec.getWorth() && sec != null) {
+                    thr = sec;
+                    sec = v;
+                    continue;
+                }
+                
+                if(v.getMoney() > thr.getWorth() && thr != null) {
+                    thr = v;
+                    continue;
                 }
             }
             

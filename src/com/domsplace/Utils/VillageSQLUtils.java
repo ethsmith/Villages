@@ -1,5 +1,6 @@
 package com.domsplace.Utils;
 
+import com.domsplace.Objects.Village;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.inventory.ItemStack;
 
 public class VillageSQLUtils {
     public static String sqlHost = "";
@@ -41,7 +43,7 @@ public class VillageSQLUtils {
         try {
             PreparedStatement sqlStmt = dbCon.prepareStatement(query);
             boolean result = sqlStmt.execute(query);
-            return result;
+            return true;
         } catch (SQLException ex) {
             VillageUtils.Error("Failed to execute query.", ex.getLocalizedMessage());
         }
@@ -204,5 +206,42 @@ public class VillageSQLUtils {
         } catch (Exception ex) {
             return -1;
         }
+    }
+    
+    public static List<ItemStack> getVillageItems(Village village) {
+        if(village.idSQL == -1) {
+            village.idSQL = getVillageIDByName(village.getName());
+        }
+        
+        return getVillageItems(village.idSQL);
+    }
+    
+    public static List<ItemStack> getVillageItems(int villageID) {
+        List<ItemStack> items = new ArrayList<ItemStack>();
+        
+        String stmt = "SELECT ItemID, ItemData, ItemAmount FROM `VillageBankItems` WHERE VillageID='" + villageID + "';";
+        List<Map<String, String>> data = VillageSQLUtils.sqlFetch(stmt);
+        
+        if(data == null) {
+            return items;
+        }
+        
+        for(Map<String, String> d : data) {
+            if(d == null) {
+                continue;
+            }
+            
+            int id = Integer.parseInt(d.get("ItemID"));
+            byte dt = Byte.parseByte(d.get("ItemData"));
+            int amount = Integer.parseInt(d.get("ItemAmount"));
+            
+            ItemStack is = new ItemStack(id);
+            is.getData().setData(dt);
+            is.setAmount(amount);
+            
+            items.add(is);
+        }
+        
+        return items;
     }
 }

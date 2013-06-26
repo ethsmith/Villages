@@ -66,6 +66,9 @@ public class VillageLanguageManager {
             cDV("noinvite", "%e%You haven't recieved an invite.");
             cDV("joinedvillage", "%i%%p% %d%joined the village.");
             cDV("villageclosed", "%d%The Village %i%%v% %d%fell into Anarchy!");
+            cDV("onlymayorbank", "%e%Only the mayor can edit the village bank.");
+            cDV("cantcontinueitems", "%e%The village doesn't have the necessary items to continue!");
+            cDV("cantcontinuemoney", "%e%The village doesn't have enough money to continue!");
 
             //Save YML
             if(language != oldConfig) {

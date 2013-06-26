@@ -40,6 +40,7 @@ public class VillagesVillageAdminCommand extends VillageBase implements CommandE
                 VillageUtils.msgPlayer(sender, ChatDefault + "Reloading Config...");
                 VillageConfigManager.LoadConfig();
                 VillageVillagesUtils.LoadAllVillages();
+                VillageUpkeepManager.SetupUpkeep();
                 VillageUtils.msgPlayer(sender, ChatImportant + "Reloaded!");
                 return true;
             }

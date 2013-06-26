@@ -1,6 +1,7 @@
 package com.domsplace.DataManagers;
 
 import com.domsplace.Utils.VillageSQLUtils;
+import com.domsplace.Utils.VillageUtils;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -15,6 +16,7 @@ public class VillageSQLManager {
                 + "CONSTRAINT VillagesPlayerPrimaryKey PRIMARY KEY (`VillagePlayerID`)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
+            VillageUtils.Error("Failed to create VillagesPlayers Table", "See console for more info.");
             return false;
         }
         
@@ -32,6 +34,7 @@ public class VillageSQLManager {
                 + "CONSTRAINT VillagesPrimaryKey PRIMARY KEY (`VillageID`)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
+            VillageUtils.Error("Failed to create Villages Table", "See console for more info.");
             return false;
         }
         
@@ -41,6 +44,20 @@ public class VillageSQLManager {
                 + "CONSTRAINT VillageResidentsPrimaryKey PRIMARY KEY (`VillagePlayerID`)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
+            VillageUtils.Error("Failed to create VillagesResidents Table", "See console for more info.");
+            return false;
+        }
+        
+        stmt = "CREATE TABLE IF NOT EXISTS `VillageBankItems` ("
+                + "`VillageItemID` int(11) NOT NULL AUTO_INCREMENT,"
+                + "`ItemID` int(6) NOT NULL,"
+                + "`ItemData` int(6) NOT NULL,"
+                + "`ItemAmount` int(4) NOT NULL,"
+                + "`VillageID` int(11) NOT NULL,"
+                + "CONSTRAINT VillageBankItemsPrimaryKey PRIMARY KEY (`VillageItemID`)"
+                + ");";
+        if(!VillageSQLUtils.sqlQuery(stmt)) {
+            VillageUtils.Error("Failed to create VillageBankItems Table", "See console for more info.");
             return false;
         }
         

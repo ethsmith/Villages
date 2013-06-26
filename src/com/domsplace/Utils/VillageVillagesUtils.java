@@ -1,7 +1,11 @@
 package com.domsplace.Utils;
 
 import com.domsplace.DataManagers.VillageConfigManager;
+import com.domsplace.DataManagers.VillageUpkeepManager;
 import com.domsplace.Objects.Village;
+import com.domsplace.Objects.VillageItemBank;
+import static com.domsplace.Utils.VillageSQLUtils.getVillageIDByName;
+import static com.domsplace.Utils.VillageSQLUtils.getVillageItems;
 import com.domsplace.VillageBase;
 import java.io.File;
 import java.util.ArrayList;
@@ -15,6 +19,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 public class VillageVillagesUtils extends VillageBase {
     public static int borderRadius = 1;
@@ -104,6 +110,7 @@ public class VillageVillagesUtils extends VillageBase {
             int id = Integer.parseInt(vil.get("VillageMayorID"));
             village.setMayor(VillageSQLUtils.getSQLPlayerByID(id));
             village.setMoney(Double.parseDouble(vil.get("VillageBank")));
+            VillageVillagesUtils.LoadVillageBankSQL(village);
         } catch(Exception ex) {
             VillageUtils.Error("Failed to load village!", name + " didnt load due to: " + ex.getLocalizedMessage());
             return null;
@@ -158,6 +165,7 @@ public class VillageVillagesUtils extends VillageBase {
             
             Chunk chunk = Bukkit.getWorld(vil.getString("townsquare.world")).getChunkAt(vil.getInt("townsquare.x"), vil.getInt("townsquare.z"));
             village.setTownSpawn(chunk);
+            VillageVillagesUtils.LoadVillageBankYML(village);
         } catch (Exception ex) {
             VillageUtils.Error("Failed to load village!", name + " didnt load due to: " + ex.getLocalizedMessage());
             return null;
@@ -172,6 +180,8 @@ public class VillageVillagesUtils extends VillageBase {
         } else {
             SaveVillageYML(village);
         }
+        
+        SaveVillageBank(village);
         
         return village;
     }
@@ -192,6 +202,7 @@ public class VillageVillagesUtils extends VillageBase {
             if(!villageFile.exists()) {
                 villageFile.createNewFile();
             }
+            
             YamlConfiguration configuration = village.getTownAsYML();
             configuration.save(villageFile);
         } catch (Exception ex) {
@@ -300,7 +311,7 @@ public class VillageVillagesUtils extends VillageBase {
     
     public static Village getPlayerVillage(Player player) {
         for(Village v : Villages) {
-            if(v.isResident(player)) {
+            if(v.isResident(player) || v.isMayor(player)) {
                 return v;
             }
         }
@@ -335,6 +346,9 @@ public class VillageVillagesUtils extends VillageBase {
             
             stmt = "DELETE FROM `VillagesResidents` WHERE VillageID='" + id + "';";
             VillageSQLUtils.sqlQuery(stmt);
+            
+            stmt = "DELETE FROM `VillageBankItems` WHERE VillageID='" + id + "';";
+            VillageSQLUtils.sqlQuery(stmt);
         } else {
             File vill = new File(VillageUtils.plugin.getDataFolder() + "/data/villages/" + village.getName() + ".yml");
             vill.delete();
@@ -356,5 +370,77 @@ public class VillageVillagesUtils extends VillageBase {
     
     public static double CreateVillageCost() {
         return VillageConfigManager.config.getDouble("cost.createvillage");
+    }
+    
+    public static void SaveVillageBank(Village village) {
+        //Todo finish//
+        VillageItemBank vBank = village.getItemBank();
+        
+        if(!VillageUtils.useSQL) {
+            return;
+        }
+        //Dont need to save bank using YML, since the normal village save does that.
+        
+        //Clear Items
+        if(village.idSQL == -1) {
+            village.idSQL = VillageSQLUtils.getVillageIDByName(village.getName());
+        }
+        
+        String stmt = "DELETE FROM `VillageBankItems` WHERE VillageID='" + village.idSQL + "';";
+        VillageSQLUtils.sqlQuery(stmt);
+        
+        //Get insert statement
+        
+        if(vBank.getItems().size() < 1) {
+            return;
+        }
+        
+        stmt = "INSERT INTO `VillageBankItems` ("
+                + "`ItemID`,"
+                + "`ItemData`,"
+                + "`ItemAmount`,"
+                + "`VillageID`"
+                + ") VALUES (";
+        
+        //Now add records
+        for(ItemStack is : vBank.getItems()) {
+            stmt += "'" + is.getTypeId() + "', '" + is.getData().getData() + "', '" + is.getAmount() + "', '" + village.idSQL + "'), (";
+        }
+        
+        stmt = stmt.substring(0, stmt.length() - 3);
+        stmt += ";";
+        
+        VillageSQLUtils.sqlQuery(stmt);
+    }
+    
+    public static void LoadVillageBank(Village village) {
+        if(VillageUtils.useSQL) {
+            LoadVillageBankSQL(village);
+            return;
+        }
+        
+        LoadVillageBankYML(village);
+    }
+    
+    public static void LoadVillageBankSQL(Village village) {
+        village.getItemBank().setItems(VillageSQLUtils.getVillageItems(village));
+    }
+    
+    public static void LoadVillageBankYML(Village village) {
+        File villageFile = new File(VillageUtils.plugin.getDataFolder() + "/data/villages/" + village.getName() + ".yml");
+        YamlConfiguration vil = YamlConfiguration.loadConfiguration(villageFile);
+        
+        List<ItemStack> items = VillageUtils.GetItemFromString(vil.getStringList("bank"));
+        village.getItemBank().setItems(items);
+    }
+
+    public static List<Inventory> getVillageInventories() {
+        List<Inventory> invs = new ArrayList<Inventory>();
+        
+        for(Village v : VillageVillagesUtils.getVillages()) {
+            invs.add(v.getItemBank().getInventory());
+        }
+        
+        return invs;
     }
 }

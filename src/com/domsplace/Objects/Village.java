@@ -26,6 +26,8 @@ public class Village {
     private double money;
     public ArrayList<Player> sentWelcome;
     
+    public VillageItemBank itemBank;
+    
     public int idSQL;
     
     public Village(String name) {
@@ -41,6 +43,8 @@ public class Village {
         this.setTownSize(0);
         this.setDescription("");
         
+        this.itemBank = new VillageItemBank(this.getName());
+        
         idSQL = -1;
     }
     
@@ -50,6 +54,7 @@ public class Village {
     
     public Village setName(String name) {
         this.name = name;
+        this.itemBank.setName(this.getName());
         return this;
     }
     
@@ -110,7 +115,7 @@ public class Village {
     }
     
     public boolean isMayor (OfflinePlayer mayor) {
-        if(this.getMayor() != mayor) {
+        if(!this.getMayor().getName().equalsIgnoreCase(mayor.getName())) {
             return false;
         }
         return true;
@@ -242,6 +247,7 @@ public class Village {
         yml.set("townsquare.x", this.getTownSpawn().getX());
         yml.set("townsquare.z", this.getTownSpawn().getZ());
         yml.set("townsquare.world", this.getTownSpawn().getWorld().getName());
+        yml.set("bank", this.getItemBank().getItemsAsString());
         yml.set("size", this.getTownSize());
         yml.set("money", this.money);
         
@@ -307,7 +313,7 @@ public class Village {
                 continue;
             }
             
-            p.getPlayer().sendMessage(string);
+            VillageUtils.msgPlayer((Player) p, string);
         }
         return this;
     }
@@ -336,5 +342,9 @@ public class Village {
     public Village save() {
         VillageVillagesUtils.SaveVillage(this);
         return this;
+    }
+    
+    public VillageItemBank getItemBank() {
+        return this.itemBank;
     }
 }
