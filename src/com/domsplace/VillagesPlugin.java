@@ -29,6 +29,7 @@ public class VillagesPlugin extends JavaPlugin {
     public static VillageConfigListener ConfigListener;
     public static VillageVillagesListener VillagesListener;
     public static VillageUpkeepListener UpkeepListener;
+    public static VillageTeamListener TeamListener;
     
     @Override
     public void onEnable() {
@@ -67,6 +68,10 @@ public class VillagesPlugin extends JavaPlugin {
         VillagesListener = new VillageVillagesListener(this);
         UpkeepListener = new VillageUpkeepListener(this);
         
+        if(VillageUtils.useTagAPI) {
+            TeamListener = new VillageTeamListener(this);
+        }
+        
         //Register Commands
         getCommand("villageadmin").setExecutor(VillageAdminCommand);
         getCommand("villages").setExecutor(VillagesCommand);
@@ -80,15 +85,23 @@ public class VillagesPlugin extends JavaPlugin {
         //Register Events
         pluginManager.registerEvents(ConfigListener, this);
         pluginManager.registerEvents(VillagesListener, this);
+        pluginManager.registerEvents(UpkeepListener, this);
+        
+        if(VillageUtils.useTagAPI) {
+            pluginManager.registerEvents(TeamListener, this);
+        }
         
         //Load in Villages
         VillageVillagesUtils.LoadAllVillages();
+        
+        //Setup Scoreboards
+        VillageScoreboardUtils.SetupScoreboard();
         
         //Managed to load the plugin successfully!
         LoadedPlugin = true;
         VillageUtils.broadcast(
             "Villages.villageadmin", 
-            "Loaded " + VillagePluginManager.getName() + 
+            "§dLoaded " + VillagePluginManager.getName() + 
             " version " + VillagePluginManager.getVersion() + 
             " successfully."
         );
@@ -105,6 +118,7 @@ public class VillagesPlugin extends JavaPlugin {
         //Stop Threads
         ConfigListener.AutoSaveConfig.cancel();
         VillagesListener.AutoSaveVillages.cancel();
+        UpkeepListener.AutoCheckUpkeep.cancel();
         
         //Save Data
         VillageVillagesUtils.SaveAllVillages();

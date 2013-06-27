@@ -4,8 +4,6 @@ import com.domsplace.DataManagers.VillageConfigManager;
 import com.domsplace.DataManagers.VillageUpkeepManager;
 import com.domsplace.Objects.Village;
 import com.domsplace.Objects.VillageItemBank;
-import static com.domsplace.Utils.VillageSQLUtils.getVillageIDByName;
-import static com.domsplace.Utils.VillageSQLUtils.getVillageItems;
 import com.domsplace.VillageBase;
 import java.io.File;
 import java.util.ArrayList;
@@ -35,12 +33,14 @@ public class VillageVillagesUtils extends VillageBase {
             Village v = LoadVillage(vn);
             Villages.add(v);
         }
+        VillageScoreboardUtils.SetupScoreboard();
     }
     
     public static void SaveAllVillages() {
         for(Village v : Villages) {
             SaveVillage(v);
         }
+        VillageScoreboardUtils.SetupScoreboard();
     }
     
     public static ArrayList<Village> getVillages() {
@@ -162,6 +162,7 @@ public class VillageVillagesUtils extends VillageBase {
             village.setResidents(residents);
             village.setCreatedDate(vil.getLong("createDate"));
             village.setMoney(vil.getDouble("money"));
+            village.setTownSize(vil.getInt("size"));
             
             Chunk chunk = Bukkit.getWorld(vil.getString("townsquare.world")).getChunkAt(vil.getInt("townsquare.x"), vil.getInt("townsquare.z"));
             village.setTownSpawn(chunk);
@@ -183,6 +184,18 @@ public class VillageVillagesUtils extends VillageBase {
         
         SaveVillageBank(village);
         
+        for(OfflinePlayer p : village.getResidents()) {
+            if(!p.isOnline()) {
+                continue;
+            }
+            
+            if(!VillageUtils.useTagAPI) {
+                continue;
+            }
+            VillageUtils.refreshTags(p.getPlayer());
+        }
+        
+        VillageScoreboardUtils.SetupScoreboard();
         return village;
     }
     
@@ -355,7 +368,9 @@ public class VillageVillagesUtils extends VillageBase {
         }
         Villages.remove(village);
         VillageUtils.broadcast(gK("villageclosed", village));
+        VillageUpkeepManager.DeleteUpkeep(village);
         village = null;
+        VillageScoreboardUtils.SetupScoreboard();
     }
     
     public static boolean doVillagesOverlap(Village v) {
@@ -442,5 +457,17 @@ public class VillageVillagesUtils extends VillageBase {
         }
         
         return invs;
+    }
+
+    static List<OfflinePlayer> getAllVillagesPlayers() {
+        List<OfflinePlayer> players = new ArrayList<OfflinePlayer>();
+        
+        for(Village v : Villages) {
+            for(OfflinePlayer p : v.getResidents()) {
+                players.add(p);
+            }
+        }
+        
+        return players;
     }
 }

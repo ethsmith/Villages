@@ -263,6 +263,11 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                         return true;
                     }
                     
+                    if(amount > 5) {
+                        VillageUtils.msgPlayer(cs, gK("maxofthreeexpand"));
+                        return true;
+                    }
+                    
                     double cost = VillageConfigManager.config.getDouble("cost.expand");
                     double totalcost = cost * amount;
                     //Ensure town has enough

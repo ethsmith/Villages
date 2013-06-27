@@ -1,5 +1,6 @@
 package com.domsplace.Objects;
 
+import com.domsplace.DataManagers.VillageConfigManager;
 import com.domsplace.Utils.VillageUtils;
 import com.domsplace.VillageBase;
 import static com.domsplace.VillageBase.ChatDefault;
@@ -25,7 +26,13 @@ public class VillageItemBank extends VillageBase {
     
     public VillageItemBank(String name) {
         this.name = name;
-        bank = Bukkit.createInventory(null, 27, ChatDefault + "Bank for " + ChatImportant + this.getName());
+        
+        int size = 27;
+        if(VillageConfigManager.config.getBoolean("largebanks")) {
+            size = 54;
+        }
+        
+        bank = Bukkit.createInventory(null, size, ChatDefault + "Bank for " + ChatImportant + this.getName());
     }
     
     public VillageItemBank setName(String name) {

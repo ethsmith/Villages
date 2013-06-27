@@ -12,12 +12,15 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class VillageUtils extends VillageBase {
     public static VillagesPlugin plugin;
     
     public static Boolean useSQL = false;
     public static Boolean useEconomy = false;
+    public static Boolean useTagAPI = false;
     
     public static void broadcast(String message) {
         for(Player p : Bukkit.getOnlinePlayers()) {
@@ -175,5 +178,32 @@ public class VillageUtils extends VillageBase {
         }
         
         return items;
+    }
+    
+    public static boolean getTagAPI() {
+        try {
+            Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("TagAPI");
+
+            if (plugin == null || !(plugin instanceof org.kitteh.tag.TagAPI)) {
+                return false;
+            }
+
+            return true;
+        } catch(NoClassDefFoundError e) {
+            return false;
+        }
+    }
+
+    public static void refreshTags(Player p) {
+        try {
+            org.kitteh.tag.TagAPI.refreshPlayer(p);
+        } catch(NoClassDefFoundError e) {
+        }
+    }
+
+    public static void refreshTags() {
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            refreshTags(p);
+        }
     }
 }

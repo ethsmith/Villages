@@ -1,6 +1,7 @@
 package com.domsplace.DataManagers;
 
 import com.domsplace.Utils.VillageUtils;
+import static com.domsplace.VillageBase.gK;
 import java.io.File;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -69,7 +70,11 @@ public class VillageLanguageManager {
             cDV("onlymayorbank", "%e%Only the mayor can edit the village bank.");
             cDV("cantcontinueitems", "%e%The village doesn't have the necessary items to continue!");
             cDV("cantcontinuemoney", "%e%The village doesn't have enough money to continue!");
-
+            cDV("cantattackwilderness", "%e%Cannot attack players who aren't in a village.");
+            cDV("cantattacksamevillage", "%e%Cannot attack players who are in the same village as you.");
+            cDV("cantattackdifferentvillage", "%e%Cannot attack players who are in a different village to you.");
+            cDV("maxofthreeexpand", "%e%You can only expand 3 chunks at a time.");
+            
             //Save YML
             if(language != oldConfig) {
                 language.save(languageFile);

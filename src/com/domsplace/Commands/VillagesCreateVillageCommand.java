@@ -5,6 +5,7 @@ import com.domsplace.Utils.VillageEconomyUtils;
 import com.domsplace.Utils.VillageUtils;
 import com.domsplace.Utils.VillageVillagesUtils;
 import com.domsplace.VillageBase;
+import static com.domsplace.VillageBase.gK;
 import com.domsplace.VillagesPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -50,6 +51,11 @@ public class VillagesCreateVillageCommand extends VillageBase implements Command
             //Make sure name is valid
             String name = args[0];
             if(!name.matches("^[a-zA-Z0-9]*$")) {
+                VillageUtils.msgPlayer(cs, gK("invalidvillagename"));
+                return true;
+            }
+            
+            if(name.length() > 12) {
                 VillageUtils.msgPlayer(cs, gK("invalidvillagename"));
                 return true;
             }

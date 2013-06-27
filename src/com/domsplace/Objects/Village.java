@@ -1,7 +1,7 @@
 package com.domsplace.Objects;
 
-import com.domsplace.Utils.VillageEconomyUtils;
 import com.domsplace.Utils.VillageSQLUtils;
+import com.domsplace.Utils.VillageScoreboardUtils;
 import com.domsplace.Utils.VillageUtils;
 import com.domsplace.Utils.VillageVillagesUtils;
 import java.util.ArrayList;
@@ -46,6 +46,8 @@ public class Village {
         this.itemBank = new VillageItemBank(this.getName());
         
         idSQL = -1;
+        
+        VillageScoreboardUtils.SetupScoreboard();
     }
     
     public String getName() {
@@ -98,20 +100,33 @@ public class Village {
     }
     
     public Village addResident(OfflinePlayer resident) {
+        
         this.getResidents().add(resident);
+        
+        if(VillageUtils.useTagAPI && resident.isOnline()) {
+            VillageUtils.refreshTags(resident.getPlayer());
+        }
+        
+        VillageScoreboardUtils.SetupScoreboard();
         return this;
     }
     
     public Village removeResident(OfflinePlayer resident) {
         this.getResidents().remove(resident);
+        VillageScoreboardUtils.SetupScoreboard();
         return this;
     }
     
     public Boolean isResident(OfflinePlayer resident) {
-        if(!this.getResidents().contains(resident)) {
+        if(this.getResidents() == null) {
             return false;
         }
-        return true;
+        for(OfflinePlayer p : this.getResidents()) {
+            if(p.getName().equalsIgnoreCase(resident.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public boolean isMayor (OfflinePlayer mayor) {

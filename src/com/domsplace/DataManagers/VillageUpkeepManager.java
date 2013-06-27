@@ -8,6 +8,8 @@ import static com.domsplace.VillageBase.gK;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -125,8 +127,32 @@ public class VillageUpkeepManager extends VillageBase {
             yml.save(upkeepF);
             VillageVillagesUtils.SaveVillage(village);
         } catch(Exception ex) {
-            VillageUtils.Error("Failed to load Upkeep data yml.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to save/load Upkeep data yml.", ex.getLocalizedMessage());
             return;
         }
     }
+    
+    public static void DeleteUpkeep(Village village) {
+        try {
+            File upkeepF = new File(VillageUtils.plugin.getDataFolder() + "/upkeepdata.yml");
+            if(!upkeepF.exists()) {
+                upkeepF.createNewFile();
+            }
+            YamlConfiguration uyml = YamlConfiguration.loadConfiguration(upkeepF);
+            YamlConfiguration yml = new YamlConfiguration();
+            
+            Set<String> keys = uyml.getKeys(false);
+            
+            keys.remove(village.getName());
+            
+            for(String k : keys) {
+                yml.set(k, uyml.get(k));
+            }
+            
+            yml.save(upkeepF);
+        } catch(Exception ex) {
+            VillageUtils.Error("Failed to save Upkeep yml.", ex.getLocalizedMessage());
+        }
+    }
+    
 }

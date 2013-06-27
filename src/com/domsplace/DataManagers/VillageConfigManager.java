@@ -1,5 +1,6 @@
 package com.domsplace.DataManagers;
 
+import com.domsplace.Listeners.VillageVillagesListener;
 import com.domsplace.Utils.VillageEconomyUtils;
 import com.domsplace.Utils.VillageSQLUtils;
 import com.domsplace.Utils.VillageUtils;
@@ -76,6 +77,15 @@ public class VillageConfigManager {
                     config.set("colors.important", "&9");
                 }
             }
+            if(!config.contains("colors.samevillage")) {
+                config.set("colors.samevillage", "&a");
+            }
+            if(!config.contains("colors.enemy")) {
+                config.set("colors.enemy", "&4");
+            }
+            if(!config.contains("colors.chatprefix")) {
+                config.set("colors.chatprefix", "&6[&9%v%&6] ");
+            }
             
             String p = "protection.";
             if(!config.contains(p + "griefwild")) {
@@ -83,6 +93,15 @@ public class VillageConfigManager {
             }
             if(!config.contains(p + "griefvillage")) {
                 config.set(p + "griefvillage", false);
+            }
+            if(!config.contains(p + "pvpinwilderness")) {
+                config.set(p + "pvpinwilderness", true);
+            }
+            if(!config.contains(p + "pvpsamevillage")) {
+                config.set(p + "pvpsamevillage", false);
+            }
+            if(!config.contains(p + "pvpdifferentvillage")) {
+                config.set(p + "pvpdifferentvillage", true);
             }
             
             p = "cost.";
@@ -101,20 +120,42 @@ public class VillageConfigManager {
                 config.set(p + "leavevillage", true);
             }
             
+            if(!config.contains("colors.colornames")) {
+                config.set("colors.colornames", true);
+            }
+            if(!config.contains("colors.ingamelist")) {
+                config.set("colors.ingamelist", true);
+            }
+            
+            if(!config.contains("largebanks")) {
+                config.set("largebanks", false);
+            }
+            
             //Load Values
             VillageSQLUtils.sqlHost = config.getString("sql.host");
             VillageSQLUtils.sqlDB = config.getString("sql.database");
             VillageSQLUtils.sqlUser = config.getString("sql.username");
             VillageSQLUtils.sqlPass = config.getString("sql.password");
             VillageSQLUtils.sqlPort = config.getString("sql.port");
+            
             VillageVillagesUtils.borderRadius = config.getInt("townborder");
+            
             VillageBase.ChatError = VillageUtils.ColorString(config.getString("colors.error"));
             VillageBase.ChatPrefix = VillageUtils.ColorString(config.getString("colors.prefix")) + " ";
             VillageBase.ChatDefault = VillageUtils.ColorString(config.getString("colors.default"));
             VillageBase.ChatImportant = VillageUtils.ColorString(config.getString("colors.important"));
+            VillageBase.VillageColor = VillageUtils.ColorString(config.getString("colors.samevillage"));
+            VillageBase.EnemyColor = VillageUtils.ColorString(config.getString("colors.enemy"));
+            VillageBase.PlayerChatPrefix = VillageUtils.ColorString(config.getString("colors.chatprefix"));
+            
             VillageUtils.useEconomy = config.getBoolean("economy");
             VillageUtils.useSQL = config.getBoolean("sql.use");
+            VillageUtils.useTagAPI = config.getBoolean("colors.colornames");
             
+            VillageVillagesListener.PVPWilderness = config.getBoolean("protection.pvpinwilderness");
+            VillageVillagesListener.PVPEnemyVillage = config.getBoolean("protection.pvpdifferentvillage");
+            VillageVillagesListener.PVPSameVillage = config.getBoolean("protection.pvpsamevillage");
+                    
             //Load add-ins
             if(config.getBoolean("economy")) {
                 if(!VillageEconomyUtils.setupEconomy()) {
@@ -151,11 +192,27 @@ public class VillageConfigManager {
                 }
             }
             
+            if(!VillageUtils.getTagAPI()) {
+                VillageUtils.useTagAPI = false;
+                config.set("colornames", false);
+                VillageUtils.Error("Failed to hook into TagAPI", "Plugin not found.");
+            } else {
+                VillageUtils.msgConsole("Hooked into TagAPI.");
+            }
+            
             saveConfig();
+            
+            VillageUtils.useEconomy = config.getBoolean("economy");
+            VillageUtils.useSQL = config.getBoolean("sql.use");
+            VillageUtils.useTagAPI = config.getBoolean("colornames");
             
             //Load Language files//
             VillageLanguageManager.LoadLanguage();
             
+            //Refresh Colors
+            VillageUtils.refreshTags();
+            
+            //
         } catch (Exception ex) {
             VillageUtils.Error("Failed to load config.", ex.getLocalizedMessage());
             return false;
