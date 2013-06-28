@@ -27,6 +27,7 @@ public class VillageLanguageUtils extends VillageBase {
     public static String getKey(String key, Village village) {
         String l = getKey(key);
         
+        l = l.replaceAll("\\$", "\\\\\\$");
         l = l.replaceAll("%v%", village.getName());
         
         return l;
@@ -34,7 +35,10 @@ public class VillageLanguageUtils extends VillageBase {
     public static String getKey(String key, double money) {
         String l = getKey(key);
         
-        l = l.replaceAll("%n%", VillageEconomyUtils.economy.format(money));
+        String literal = VillageEconomyUtils.economy.format(money);
+        literal = literal.replaceAll("\\$", "\\\\\\$");
+        
+        l = l.replaceAll("%n%", literal);
         
         return l;
     }

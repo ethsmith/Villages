@@ -74,6 +74,9 @@ public class VillageLanguageManager {
             cDV("cantattacksamevillage", "%e%Cannot attack players who are in the same village as you.");
             cDV("cantattackdifferentvillage", "%e%Cannot attack players who are in a different village to you.");
             cDV("maxofthreeexpand", "%e%You can only expand 3 chunks at a time.");
+            cDV("expandingvillage", "%i%Expanding Village... please wait...");
+            cDV("expandregionoverlap", "%e%Can't expand village, the expansion overlaps a region.");
+            cDV("createvillageregionoverlap", "%e%Can't create village here, it overlaps a region.");
             
             //Save YML
             if(language != oldConfig) {

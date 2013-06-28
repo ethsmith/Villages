@@ -46,6 +46,17 @@ public class VillagesVillageAdminCommand extends VillageBase implements CommandE
             }
             
             if(arg.equals("save")) {
+                if(args.length == 2 && args[1].equalsIgnoreCase("yml") && VillageUtils.useSQL) {
+                    VillageUtils.msgPlayer(sender, "Force saving SQL data as YML.");
+                    
+                    for(Village v : VillageVillagesUtils.getVillages()) {
+                        VillageVillagesUtils.SaveVillageYML(v);
+                    }
+                    
+                    VillageUtils.msgPlayer(sender, ChatImportant + "Saved data as YML!");
+                    return true;
+                }
+                
                 VillageUtils.msgPlayer(sender, ChatDefault + "Flushing data...");
                 VillageVillagesUtils.SaveAllVillages();
                 VillageUtils.msgPlayer(sender, ChatImportant + "Saved Data!");

@@ -1,6 +1,7 @@
 package com.domsplace.DataManagers;
 
 import com.domsplace.Listeners.VillageVillagesListener;
+import com.domsplace.Utils.VillageDynmapUtils;
 import com.domsplace.Utils.VillageEconomyUtils;
 import com.domsplace.Utils.VillageSQLUtils;
 import com.domsplace.Utils.VillageUtils;
@@ -61,6 +62,13 @@ public class VillageConfigManager {
             
             if(!config.contains("economy")) {
                 config.set("economy", true);
+            }
+            
+            if(!config.contains("use.worldguard")) {
+                config.set("use.worldguard", true);
+            }
+            if(!config.contains("use.dynmap")) {
+                config.set("use.dynmap", true);
             }
             
             if(!config.contains("colors")) {
@@ -151,33 +159,39 @@ public class VillageConfigManager {
             VillageUtils.useEconomy = config.getBoolean("economy");
             VillageUtils.useSQL = config.getBoolean("sql.use");
             VillageUtils.useTagAPI = config.getBoolean("colors.colornames");
+            VillageUtils.useWorldGuard = config.getBoolean("use.worldguard");
+            VillageUtils.useDynmap = config.getBoolean("use.dynmap");
             
             VillageVillagesListener.PVPWilderness = config.getBoolean("protection.pvpinwilderness");
             VillageVillagesListener.PVPEnemyVillage = config.getBoolean("protection.pvpdifferentvillage");
             VillageVillagesListener.PVPSameVillage = config.getBoolean("protection.pvpsamevillage");
                     
             //Load add-ins
+            
+            /*** Try to use Economy ***/
             if(config.getBoolean("economy")) {
                 if(!VillageEconomyUtils.setupEconomy()) {
                     VillageUtils.Error("Failed to load Vault", "Couldn't find plugin.");
-                    config.set("economy", false);
+                    VillageUtils.useEconomy = false;
                 } else {
                     VillageUtils.msgConsole("Hooked into Economy.");
                 }
             }
             
+            /*** Try to use SQL ***/
             if(config.getBoolean("sql.use")) {
                 if(!VillageSQLUtils.sqlConnect()) {
                     VillageUtils.Error("Failed to connect to SQL", "See console for error.");
-                    config.set("sql.use", false);
+                    VillageUtils.useSQL = false;
                 } else {
                     VillageUtils.msgConsole("Connected to SQL successfully.");
                     if(!VillageSQLManager.SetupDatabase()) {
                         VillageUtils.Error("Failed to setup SQL Database", "See console for error.");
-                        config.set("sql.use", false);
+                        VillageUtils.useSQL = false;
                     }
                 }
             } else if(oldSQL) {
+                VillageUtils.useSQL = false;
                 VillageSQLUtils.sqlClose();
             }
             
@@ -192,19 +206,48 @@ public class VillageConfigManager {
                 }
             }
             
-            if(!VillageUtils.getTagAPI()) {
+            /*** Try to use TagAPI ***/
+            if(VillageUtils.useTagAPI && !VillageUtils.getTagAPI()) {
                 VillageUtils.useTagAPI = false;
-                config.set("colornames", false);
                 VillageUtils.Error("Failed to hook into TagAPI", "Plugin not found.");
-            } else {
+            } else if(VillageUtils.useTagAPI) {
                 VillageUtils.msgConsole("Hooked into TagAPI.");
             }
             
-            saveConfig();
+            /*** Try to use WorldGuard ***/
+            if(VillageUtils.useWorldGuard) {
+                if(VillageUtils.getWorldGuard() == null) {
+                    VillageUtils.useWorldGuard = false;
+                    VillageUtils.Error("Failed to hook into WorldGuard", "Plugin not found.");
+                } else {
+                    VillageUtils.msgConsole("Hooked into WorldGuard.");
+                }
+            }
             
-            VillageUtils.useEconomy = config.getBoolean("economy");
-            VillageUtils.useSQL = config.getBoolean("sql.use");
-            VillageUtils.useTagAPI = config.getBoolean("colornames");
+            /*** Try to use Dynamic Map ***/
+            try {
+                if(VillageDynmapUtils.markers != null) {
+                    VillageDynmapUtils.UnloadDynmapRegions();
+                }
+            } catch(NoClassDefFoundError e) {
+                
+            }
+            
+            if(VillageUtils.useDynmap) {
+                try {
+                    if(!VillageDynmapUtils.canGetDynmapPlugin() || !VillageDynmapUtils.setupDynmap()) {
+                        VillageUtils.useDynmap = false;
+                        VillageUtils.Error("Failed to hook into Dynmap", "Plugin not found.");
+                    } else {
+                        VillageUtils.msgConsole("Hooked into Dynmap.");
+                    }
+                } catch(NoClassDefFoundError e) {
+                    VillageUtils.useDynmap = false;
+                    VillageUtils.Error("Failed to hook into Dynmap", "Plugin not found.");
+                }
+            }
+            
+            saveConfig();
             
             //Load Language files//
             VillageLanguageManager.LoadLanguage();

@@ -268,7 +268,10 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                         return true;
                     }
                     
-                    double cost = VillageConfigManager.config.getDouble("cost.expand");
+                    //Determine the amount of chunks I am expanding
+                    int chunksToExpand = v.getTownLocalBorderChunks(amount).size();
+                    
+                    double cost = VillageConfigManager.config.getDouble("cost.expand") * chunksToExpand;
                     double totalcost = cost * amount;
                     //Ensure town has enough
                     if(totalcost > v.getMoney() && VillageUtils.useEconomy) {
@@ -279,6 +282,12 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                     //Expand town//
                     int oldsize = v.getTownSize();
                     
+                    VillageUtils.msgConsole(ChatImportant + v.getName() + ChatDefault + " is expanding " + chunksToExpand + " chunks.");
+                    
+                    //Msg player, since this lags the server a tad
+                    VillageUtils.msgPlayer(cs, gK("expandingvillage"));
+                    
+                    //Set new size
                     v.setTownSize(v.getTownSize() + amount);
                     
                     if(VillageVillagesUtils.doVillagesOverlap(v)) {
@@ -286,6 +295,13 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                         VillageUtils.msgPlayer(cs, gK("expandvillageoverlap"));
                         return true;
                     }
+                    
+                    if(VillageVillagesUtils.doesVillageOverlapRegion(v)) {
+                        v.setTownSize(oldsize);
+                        VillageUtils.msgPlayer(cs, gK("expandregionoverlap"));
+                        return true;
+                    }
+                    
                     if(VillageUtils.useEconomy) {
                         v.addMoney(-totalcost);
                     }
@@ -301,12 +317,6 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                         VillageUtils.msgPlayer(cs, gK("notinvillage"));
                         return true;
                     }
-                    
-                    /*
-                    if(!v.isMayor(p)) {
-                        VillageUtils.msgPlayer(cs, gK("onlymayorbank"));
-                        return true;
-                    }*/
                     
                     v.getItemBank().OpenAsInventory(p);
                     return true;

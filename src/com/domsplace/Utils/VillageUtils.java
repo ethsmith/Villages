@@ -9,18 +9,21 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class VillageUtils extends VillageBase {
     public static VillagesPlugin plugin;
     
-    public static Boolean useSQL = false;
-    public static Boolean useEconomy = false;
-    public static Boolean useTagAPI = false;
+    public static boolean useSQL = false;
+    public static boolean useEconomy = false;
+    public static boolean useTagAPI = false;
+    public static boolean useWorldGuard = false;
+    public static boolean useDynmap = false;
     
     public static void broadcast(String message) {
         for(Player p : Bukkit.getOnlinePlayers()) {
@@ -187,6 +190,10 @@ public class VillageUtils extends VillageBase {
             if (plugin == null || !(plugin instanceof org.kitteh.tag.TagAPI)) {
                 return false;
             }
+            
+            if(!plugin.isEnabled()) {
+                return false;
+            }
 
             return true;
         } catch(NoClassDefFoundError e) {
@@ -205,5 +212,70 @@ public class VillageUtils extends VillageBase {
         for(Player p : Bukkit.getOnlinePlayers()) {
             refreshTags(p);
         }
+    }
+    
+    public static com.sk89q.worldguard.bukkit.WorldGuardPlugin getWorldGuard() {
+        try {
+            Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
+
+            if (plugin == null || !(plugin instanceof com.sk89q.worldguard.bukkit.WorldGuardPlugin)) {
+                return null;
+            }
+            
+            if(!plugin.isEnabled()) {
+                return null;
+            }
+
+            return (com.sk89q.worldguard.bukkit.WorldGuardPlugin) plugin;
+        } catch(NoClassDefFoundError e) {
+            return null;
+        }
+    }
+            
+    public static List<Block> getBlocksFromChunk(Chunk c) {
+        List<Block> blocks = new ArrayList<Block>();
+        
+        for(int x = 0; x < 16; x++) {
+            for(int y = 0; y < 256; y++) {
+                for(int z = 0; z < 16; z++) {
+                    Block b = c.getBlock(x, y, z);
+                    if(b == null) {
+                        continue;
+                    }
+                    
+                    blocks.add(b);
+                }
+            }
+        }
+        return blocks;
+    }
+    
+    public static List<Block> getBlocksFromRegion(com.sk89q.worldguard.protection.regions.ProtectedRegion region, World w) {
+        if(!region.getTypeName().equalsIgnoreCase("cuboid")) {
+            return new ArrayList<Block>();
+        }
+        
+        com.sk89q.worldedit.BlockVector minPoint = region.getMinimumPoint();
+        com.sk89q.worldedit.BlockVector maxPoint = region.getMaximumPoint();
+        
+        Block mN = w.getBlockAt(minPoint.getBlockX(), minPoint.getBlockY(), minPoint.getBlockZ());
+        Block mX = w.getBlockAt(maxPoint.getBlockX(), maxPoint.getBlockY(), maxPoint.getBlockZ());
+        
+        List<Block> blocks = getBlocksFromRegion(mN, mX);
+        return blocks;
+    }
+    
+    public static List<Block> getBlocksFromRegion(Block min, Block max) {
+        List<Block> blocks = new ArrayList<Block>();
+        
+        for(int x = min.getX(); x < max.getX(); x++) {
+            for(int y = min.getY(); y < max.getY(); y++) {
+                for(int z = min.getZ(); z < max.getZ(); z++) {
+                    blocks.add(min.getWorld().getBlockAt(x, y, z));
+                }
+            }
+        }
+        
+        return blocks;
     }
 }

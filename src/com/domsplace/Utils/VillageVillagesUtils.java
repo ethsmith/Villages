@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -61,7 +62,15 @@ public class VillageVillagesUtils extends VillageBase {
             return towns;
         }
         
-        File villages = new File(VillageUtils.plugin.getDataFolder() + "/data/villages/");
+        File villages = new File(VillageUtils.plugin.getDataFolder() + "/data");
+        if(!villages.exists()) {
+            villages.mkdir();
+        }
+        villages = new File(VillageUtils.plugin.getDataFolder() + "/data/villages/");
+        if(!villages.exists()) {
+            villages.mkdir();
+        }
+        
         ArrayList<String> names = new ArrayList<String>(Arrays.asList(villages.list()));
         for(String s : names) {
             towns.add(s.replaceAll(".yml", ""));
@@ -469,5 +478,57 @@ public class VillageVillagesUtils extends VillageBase {
         }
         
         return players;
+    }
+
+    public static boolean doesVillageOverlapRegion(Village v) {
+        if(!VillageUtils.useWorldGuard) {
+            return false;
+        }
+        
+        com.sk89q.worldguard.bukkit.WorldGuardPlugin plugin = VillageUtils.getWorldGuard();
+        
+        if(plugin == null) {
+            return false;
+        }
+        
+        Player mayor = v.getMayor().getPlayer();
+        
+        for(com.sk89q.worldguard.protection.regions.ProtectedRegion r : plugin.getRegionManager(v.getTownSpawn().getWorld()).getRegions().values()) {
+            List<Block> regionBlocks = VillageUtils.getBlocksFromRegion(r, v.getTownSpawn().getWorld());
+            for(Block b : regionBlocks) {
+                for(Chunk c : v.getTownArea()) {
+                    if(!b.getChunk().equals(c)) {
+                        continue;
+                    }
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    public static boolean isChunkInRegion(Chunk chunk) {
+        if(!VillageUtils.useWorldGuard) {
+            return false;
+        }
+        
+        com.sk89q.worldguard.bukkit.WorldGuardPlugin plugin = VillageUtils.getWorldGuard();
+        
+        if(plugin == null) {
+            return false;
+        }
+        
+        for(com.sk89q.worldguard.protection.regions.ProtectedRegion r : plugin.getRegionManager(chunk.getWorld()).getRegions().values()) {
+            List<Block> regionBlocks = VillageUtils.getBlocksFromRegion(r, chunk.getWorld());
+            for(Block b : regionBlocks) {
+                if(!b.getChunk().equals(chunk)) {
+                    continue;
+                }
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

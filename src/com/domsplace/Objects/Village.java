@@ -151,8 +151,10 @@ public class Village {
         
         ArrayList<Chunk> chunks = new ArrayList<Chunk>();
         
-        for(int cx = (x - this.size); cx <= (x + this.size); cx++) {
-            for(int cz = (z - this.size); cz <= (z + this.size); cz++) {
+        int s = this.size - 1;
+        
+        for(int cx = (x - s); cx <= (x + s); cx++) {
+            for(int cz = (z - s); cz <= (z + s); cz++) {
                 Chunk chunk = townSquare.getWorld().getChunkAt(cx, cz);
                 if(chunk == null) {
                     continue;
@@ -171,8 +173,12 @@ public class Village {
         ArrayList<Chunk> chunks = new ArrayList<Chunk>();
         ArrayList<Chunk> town = this.getTownChunks();
         
-        for(int cx = (x - this.size - VillageVillagesUtils.borderRadius); cx <= (x + this.size + VillageVillagesUtils.borderRadius); cx++) {
-            for(int cz = (z - this.size - VillageVillagesUtils.borderRadius); cz <= (z + this.size + VillageVillagesUtils.borderRadius); cz++) {
+        int s = this.size - 1;
+        
+        int r = VillageVillagesUtils.borderRadius;
+        
+        for(int cx = (x - s - r); cx <= (x + s + r); cx++) {
+            for(int cz = (z - s - r); cz <= (z + s + r); cz++) {
                 Chunk chunk = townSquare.getWorld().getChunkAt(cx, cz);
                 if(chunk == null) {
                     continue;
@@ -186,14 +192,44 @@ public class Village {
         
         return chunks;
     }
+    
+    public ArrayList<Chunk> getTownLocalBorderChunks(int amount) {
+        int x = this.getTownSpawn().getX();
+        int z = this.getTownSpawn().getZ();
+        
+        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
+        ArrayList<Chunk> town = this.getTownChunks();
+        
+        int s = this.size - 1;
+        int r = amount;
+        
+        for(int cx = (x - s - r); cx <= (x + s + r); cx++) {
+            for(int cz = (z - s - r); cz <= (z + s + r); cz++) {
+                Chunk chunk = townSquare.getWorld().getChunkAt(cx, cz);
+                if(chunk == null) {
+                    continue;
+                }
+                if(town.contains(chunk)) {
+                    continue;
+                }
+                chunks.add(chunk);
+            }
+        }
+        
+        return chunks;
+    }
+    
     public ArrayList<Chunk> getTownArea() {
         int x = this.getTownSpawn().getX();
         int z = this.getTownSpawn().getZ();
         
         ArrayList<Chunk> chunks = new ArrayList<Chunk>();
         
-        for(int cx = (x - this.size - VillageVillagesUtils.borderRadius); cx <= (x + this.size + VillageVillagesUtils.borderRadius); cx++) {
-            for(int cz = (z - this.size - VillageVillagesUtils.borderRadius); cz <= (z + this.size + VillageVillagesUtils.borderRadius); cz++) {
+        int s = this.size - 1;
+        int r = VillageVillagesUtils.borderRadius;
+        
+        for(int cx = (x - s - r); cx <= (x + s + r); cx++) {
+            for(int cz = (z - s - r); cz <= (z + s + r); cz++) {
                 Chunk chunk = townSquare.getWorld().getChunkAt(cx, cz);
                 if(chunk == null) {
                     continue;
@@ -328,7 +364,7 @@ public class Village {
                 continue;
             }
             
-            VillageUtils.msgPlayer((Player) p, string);
+            VillageUtils.msgPlayer(p.getPlayer(), string);
         }
         return this;
     }
@@ -361,5 +397,33 @@ public class Village {
     
     public VillageItemBank getItemBank() {
         return this.itemBank;
+    }
+    
+    public Chunk getLowestChunk() {
+        Chunk lowestChunk = this.getTownSpawn();
+        
+        for(Chunk c : this.getTownArea()) {
+            if(c.getX() >= lowestChunk.getX()) {
+                continue;
+            }
+            
+            lowestChunk = c;
+        }
+        
+        return lowestChunk;
+    }
+    
+    public Chunk getHighestChunk() {
+        Chunk chunk = this.getTownSpawn();
+        
+        for(Chunk c : this.getTownArea()) {
+            if(c.getX() < chunk.getX()) {
+                continue;
+            }
+            
+            chunk = c;
+        }
+        
+        return chunk;
     }
 }

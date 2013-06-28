@@ -1,7 +1,5 @@
 package com.domsplace;
 
-import com.domsplace.*;
-import com.domsplace.Objects.*;
 import com.domsplace.Commands.*;
 import com.domsplace.Listeners.*;
 import com.domsplace.DataManagers.*;
@@ -30,6 +28,7 @@ public class VillagesPlugin extends JavaPlugin {
     public static VillageVillagesListener VillagesListener;
     public static VillageUpkeepListener UpkeepListener;
     public static VillageTeamListener TeamListener;
+    public static VillageDynmapListener DynmapListener;
     
     @Override
     public void onEnable() {
@@ -67,6 +66,7 @@ public class VillagesPlugin extends JavaPlugin {
         ConfigListener = new VillageConfigListener(this);
         VillagesListener = new VillageVillagesListener(this);
         UpkeepListener = new VillageUpkeepListener(this);
+        DynmapListener = new VillageDynmapListener(this);
         
         if(VillageUtils.useTagAPI) {
             TeamListener = new VillageTeamListener(this);
@@ -86,6 +86,7 @@ public class VillagesPlugin extends JavaPlugin {
         pluginManager.registerEvents(ConfigListener, this);
         pluginManager.registerEvents(VillagesListener, this);
         pluginManager.registerEvents(UpkeepListener, this);
+        pluginManager.registerEvents(DynmapListener, this);
         
         if(VillageUtils.useTagAPI) {
             pluginManager.registerEvents(TeamListener, this);
@@ -96,6 +97,11 @@ public class VillagesPlugin extends JavaPlugin {
         
         //Setup Scoreboards
         VillageScoreboardUtils.SetupScoreboard();
+        
+        //Start Rendering the Dynmap
+        if(VillageUtils.useDynmap) {
+            VillageDynmapUtils.FixDynmapRegions();
+        }
         
         //Managed to load the plugin successfully!
         LoadedPlugin = true;
@@ -119,6 +125,12 @@ public class VillagesPlugin extends JavaPlugin {
         ConfigListener.AutoSaveConfig.cancel();
         VillagesListener.AutoSaveVillages.cancel();
         UpkeepListener.AutoCheckUpkeep.cancel();
+        DynmapListener.FixDynmapMap.cancel();
+        
+        //Unload Dynmap Markers
+        if(VillageUtils.useDynmap && VillageDynmapUtils.markers != null) {
+            VillageDynmapUtils.UnloadDynmapRegions();
+        }
         
         //Save Data
         VillageVillagesUtils.SaveAllVillages();

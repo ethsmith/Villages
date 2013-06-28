@@ -97,6 +97,11 @@ public class VillagesCreateVillageCommand extends VillageBase implements Command
                 return true;
             }
             
+            if(VillageVillagesUtils.isChunkInRegion(sender.getLocation().getChunk())) {
+                VillageUtils.msgPlayer(cs, gK("createvillageregionoverlap"));
+                return true;
+            }
+            
             //All Good, make town and charge player//
             if(VillageUtils.useEconomy) {
                 //Get Money player has

@@ -12,7 +12,6 @@ import static com.domsplace.VillageBase.gK;
 import com.domsplace.VillagesPlugin;
 import java.util.ArrayList;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
