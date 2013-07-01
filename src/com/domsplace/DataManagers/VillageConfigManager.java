@@ -60,15 +60,18 @@ public class VillageConfigManager {
                 config.set("townborder", 3);
             }
             
-            if(!config.contains("economy")) {
-                config.set("economy", true);
-            }
-            
             if(!config.contains("use.worldguard")) {
                 config.set("use.worldguard", true);
             }
             if(!config.contains("use.dynmap")) {
                 config.set("use.dynmap", true);
+            }
+            if(!config.contains("use.economy")) {
+                if(!config.contains("economy")) {
+                    config.set("use.economy", true);
+                } else {
+                    config.set("use.economy", config.getBoolean("use.economy"));
+                }
             }
             
             if(!config.contains("colors")) {
@@ -139,6 +142,16 @@ public class VillageConfigManager {
                 config.set("largebanks", false);
             }
             
+            if(!config.contains("defaultsize")) {
+                config.set("defaultsize", 1);
+            }
+            
+            /*
+            if(!config.contains("use.villageplots")) {
+                config.set("use.villageplots", true);
+            }
+            */
+            
             //Load Values
             VillageSQLUtils.sqlHost = config.getString("sql.host");
             VillageSQLUtils.sqlDB = config.getString("sql.database");
@@ -156,10 +169,10 @@ public class VillageConfigManager {
             VillageBase.EnemyColor = VillageUtils.ColorString(config.getString("colors.enemy"));
             VillageBase.PlayerChatPrefix = VillageUtils.ColorString(config.getString("colors.chatprefix"));
             
-            VillageUtils.useEconomy = config.getBoolean("economy");
             VillageUtils.useSQL = config.getBoolean("sql.use");
             VillageUtils.useTagAPI = config.getBoolean("colors.colornames");
             VillageUtils.useWorldGuard = config.getBoolean("use.worldguard");
+            VillageUtils.useEconomy = config.getBoolean("use.economy");
             VillageUtils.useDynmap = config.getBoolean("use.dynmap");
             
             VillageVillagesListener.PVPWilderness = config.getBoolean("protection.pvpinwilderness");
@@ -169,7 +182,7 @@ public class VillageConfigManager {
             //Load add-ins
             
             /*** Try to use Economy ***/
-            if(config.getBoolean("economy")) {
+            if(config.getBoolean("use.economy")) {
                 if(!VillageEconomyUtils.setupEconomy()) {
                     VillageUtils.Error("Failed to load Vault", "Couldn't find plugin.");
                     VillageUtils.useEconomy = false;

@@ -1,5 +1,6 @@
 package com.domsplace.Commands;
 
+import com.domsplace.DataManagers.VillageConfigManager;
 import com.domsplace.Objects.Village;
 import com.domsplace.Utils.VillageEconomyUtils;
 import com.domsplace.Utils.VillageUtils;
@@ -116,7 +117,7 @@ public class VillagesCreateVillageCommand extends VillageBase implements Command
             newtown.setMayor(sender);
             newtown.setMoney(0);
             newtown.setTownSpawn(sender.getLocation().getChunk());
-            newtown.setTownSize(1);
+            newtown.setTownSize(VillageConfigManager.config.getInt("defaultsize"));
             
             VillageUtils.broadcast(gK("createdvillage", newtown).replaceAll("%p%", sender.getName()));
             VillageVillagesUtils.Villages.add(newtown);
