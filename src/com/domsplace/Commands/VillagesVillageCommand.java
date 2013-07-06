@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -134,6 +135,11 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                 }
                 
                 if(command.equalsIgnoreCase("description")) {
+                    if(!(cs instanceof Player)) {
+                        VillageUtils.msgPlayer(cs, gK("playeronly"));
+                        return true;
+                    }
+                    
                     if(args.length < 2) {
                         VillageUtils.msgPlayer(cs, gK("enterdescription"));
                         return true;
@@ -167,6 +173,11 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                 }
                 
                 if(command.equalsIgnoreCase("msg")) {
+                    if(!(cs instanceof Player)) {
+                        VillageUtils.msgPlayer(cs, gK("playeronly"));
+                        return true;
+                    }
+                    
                     if(args.length < 2) {
                         VillageUtils.msgPlayer(cs, gK("entermessage"));
                         return true;
@@ -210,10 +221,7 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                         return true;
                     }
                     
-                    OfflinePlayer p = Bukkit.getPlayer(args[1]);
-                    if(p == null || !VillageUtils.canSee(cs, p.getPlayer())) {
-                        p = Bukkit.getOfflinePlayer(args[1]);
-                    }
+                    OfflinePlayer p = Bukkit.getOfflinePlayer(args[1]);
                     
                     if(v.isMayor(p)) {
                         VillageUtils.msgPlayer(cs, gK("cantkickmayor"));
@@ -221,7 +229,7 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                     }
                     
                     if(!v.isResident(p)) {
-                        VillageUtils.msgPlayer(cs, gK("notresident").replaceAll("%p%", args[0]));
+                        VillageUtils.msgPlayer(cs, gK("notresident").replaceAll("%p%", args[1]));
                         return true;
                     }
                     
@@ -232,6 +240,11 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                 }
                 
                 if(command.equalsIgnoreCase("expand")) {
+                    if(!(cs instanceof Player)) {
+                        VillageUtils.msgPlayer(cs, gK("playeronly"));
+                        return true;
+                    }
+                    
                     //Expanding the town
                     if(args.length < 2) {
                         VillageUtils.msgPlayer(cs, gK("enterchunks"));
@@ -319,6 +332,201 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                     }
                     
                     v.getItemBank().OpenAsInventory(p);
+                    return true;
+                }
+                
+                //Village Plots
+                if(command.equalsIgnoreCase("plot") && UsePlots) {
+                    if(!(cs instanceof Player)) {
+                        VillageUtils.msgPlayer(cs, gK("playeronly"));
+                        return true;
+                    }
+                    
+                    if(args.length < 2) {
+                        VillageUtils.msgPlayer(cs, gK("notenougharguments"));
+                        return true;
+                    }
+                    
+                    String iArg = args[1];  //Passed Argument
+                    Player p = (Player) cs;
+                    
+                    if(iArg.equalsIgnoreCase("claim")) {
+                        Chunk c = p.getLocation().getChunk();
+                        
+                        if(c == null) {
+                            VillageUtils.msgPlayer(cs, gK("error"));
+                            return true;
+                        }
+                        
+                        Village v = VillageVillagesUtils.getPlayerVillage(p);
+                        if(v == null) {
+                            VillageUtils.msgPlayer(cs, gK("notinvillage"));
+                            return true;
+                        }
+                        
+                        if(!v.isChunkInTown(c)) {
+                            VillageUtils.msgPlayer(cs, gK("plotnotinvillage"));
+                            return true;
+                        }
+                        
+                        //Check if Chunk is claimed
+                        if(v.isChunkClaimed(c)) {
+                            //Chunk has been claimed, get the owner.
+                            VillageUtils.msgPlayer(cs, gK("claimedchunkinfo", v.getPlayerFromChunk(c)));
+                            return true;
+                        }
+                        
+                        //Chunk isn't claimed, try to claim.
+                        
+                        if(VillageUtils.useEconomy) {
+                            //Make sure they have the cash
+                            double playerBalance = VillageEconomyUtils.economy.getBalance(p.getName());
+                            double claimPrice = v.getChunkPrice(c);
+                            
+                            if(playerBalance < claimPrice) {
+                                VillageUtils.msgPlayer(cs, gK("notenoughmoney", claimPrice));
+                                return true;
+                            }
+                        }
+                        
+                        //Try to claim chunk
+                        if(!v.ClaimChunk(p, c)) {
+                            VillageUtils.msgPlayer(cs, gK("error"));
+                            return true;
+                        }
+                        
+                        //Claimed chunk, charge player
+                        if(VillageUtils.useEconomy) {
+                            //Make sure they have the cash
+                            double playerBalance = VillageEconomyUtils.economy.getBalance(p.getName());
+                            double claimPrice = v.getChunkPrice(c);
+                            VillageEconomyUtils.economy.withdrawPlayer(p.getName(), claimPrice);
+                            v.addMoney(claimPrice);
+                        }
+                        
+                        VillageUtils.msgPlayer(cs, gK("claimedchunk", c));
+                        return true;
+                    }
+                    
+                    if(iArg.equalsIgnoreCase("set")) {
+                        //Try to set chunk settings, price etc
+                        if(args.length < 4) {
+                            VillageUtils.msgPlayer(cs, gK("notenougharguments"));
+                            return true;
+                        }
+                        
+                        //Make sure player is in a villaeg
+                        Village v = VillageVillagesUtils.getPlayerVillage((Player) cs);
+                        if(v == null) {
+                            VillageUtils.msgPlayer(cs, gK("notinvillage"));
+                            return true;
+                        }
+                        
+                        //Make sure it's the mayor trying to do this.
+                        if(!v.isMayor(p)) {
+                            VillageUtils.msgPlayer(cs, gK("onlymayorplot"));
+                            return true;
+                        }
+                        
+                        //Get the players current chunk.
+                        Chunk c = p.getLocation().getChunk();
+                        
+                        if(!v.isChunkInTown(c)) {
+                            VillageUtils.msgPlayer(cs, gK("plotnotinvillage"));
+                            return true;
+                        }
+                        
+                        String sArg = args[2];
+                        
+                        if(sArg.equalsIgnoreCase("owner")) {
+                            //Set the owner at the current chunk.
+                            OfflinePlayer tplayer = VillageUtils.getOfflinePlayer(cs, args[3]);
+                            if(tplayer == null) {
+                                VillageUtils.msgPlayer(cs, gK("playernotfound").replaceAll("%p%", args[3]));
+                                return true;
+                            }
+                            
+                            if(!v.isResident(tplayer)) {
+                                VillageUtils.msgPlayer(cs, gK("notresident", tplayer));
+                                return true;
+                            }
+                            
+                            //Force claim chunk
+                            v.forceClaim(tplayer, c);
+                            VillageUtils.msgPlayer(cs, gK("setplotowner", tplayer));
+                            
+                            if(tplayer.isOnline()) {
+                                VillageUtils.msgPlayer(tplayer, gK("chunkclaimed", c));
+                            }
+                            return true;
+                        }
+                        
+                        if(sArg.equalsIgnoreCase("price")) {
+                            //Set the price of the chunk.
+                            
+                            //Try to parse the users input
+                            double amount = -1;
+                            try {
+                                amount = Double.parseDouble(args[3]);
+                            } catch(NumberFormatException ex) {
+                                VillageUtils.msgPlayer(cs, gK("notmoney"));
+                                return true;
+                            }
+                            
+                            if(amount < 0) {
+                                VillageUtils.msgPlayer(cs, gK("mustbeone"));
+                                return true;
+                            }
+                            
+                            //Set the chunk price
+                            v.setChunkPrice(c, amount);
+                            VillageUtils.msgPlayer(cs, gK("setplotprice", amount));
+                            return true;
+                        }
+                        
+                        VillageUtils.msgPlayer(cs, gK("invalidargument"));
+                        return true;
+                    }
+                    
+                    if(iArg.equalsIgnoreCase("check")) {
+                        Chunk c = p.getLocation().getChunk();
+                        
+                        if(c == null) {
+                            VillageUtils.msgPlayer(cs, gK("error"));
+                            return true;
+                        }
+                        
+                        Village v = VillageVillagesUtils.getPlayerVillage((Player) cs);
+                        if(v == null) {
+                            VillageUtils.msgPlayer(cs, gK("notinvillage"));
+                            return true;
+                        }
+                        
+                        if(!v.isChunkInTown(c)) {
+                            VillageUtils.msgPlayer(cs, gK("plotnotinvillage"));
+                            return true;
+                        }
+                        
+                        //Check if Chunk is claimed
+                        if(v.isChunkClaimed(c)) {
+                            //Chunk has been claimed, get the owner.
+                            VillageUtils.msgPlayer(cs, gK("claimedchunkinfo", v.getPlayerFromChunk(c)));
+                            return true;
+                        }
+                        
+                        //Chunk isn't claimed, show pricing details.
+                        String message = gK("chunkavailable");
+                        
+                        if(VillageUtils.useEconomy) {
+                            double d = v.getChunkPrice(c);
+                            message += ChatDefault + " Cost: " + ChatImportant + VillageEconomyUtils.economy.format(d);
+                        }
+                        
+                        VillageUtils.msgPlayer(cs, message);
+                        return true;
+                    }
+                    
+                    VillageUtils.msgPlayer(cs, gK("invalidargument"));
                     return true;
                 }
                 

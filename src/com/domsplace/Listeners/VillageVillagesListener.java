@@ -1,6 +1,7 @@
 package com.domsplace.Listeners;
 
 import com.domsplace.DataManagers.VillageConfigManager;
+import com.domsplace.Events.VillageGriefEvent;
 import com.domsplace.Objects.Village;
 import com.domsplace.Utils.VillageSQLUtils;
 import com.domsplace.Utils.VillageScoreboardUtils;
@@ -12,6 +13,7 @@ import static com.domsplace.VillageBase.gK;
 import com.domsplace.VillagesPlugin;
 import java.util.ArrayList;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -254,6 +256,36 @@ public class VillageVillagesListener extends VillageBase implements Listener {
         
         e.setCancelled(true);
         VillageUtils.msgPlayer(killer, gK("cantattacksamevillage"));
+    }
+    
+    @EventHandler(ignoreCancelled=true)
+    public void onGrief(VillageGriefEvent e) {
+        if(!UsePlots) {
+            return;
+        }
         
+        Chunk c = e.getBlock().getChunk();
+        
+        Village v = VillageVillagesUtils.getVillageFromChunk(c);
+        if(v == null) {
+            return;
+        }
+        
+        if(v.isMayor(e.getPlayer())) {
+            return;
+        }
+        
+        if(v.isChunkClaimed(c)) {
+            if(v.isChunkOwnedByPlayer(e.getPlayer(), c)) {
+                return;
+            }
+            
+            VillageUtils.msgPlayer(e.getPlayer(), gK("chunkclaimedbyplayer"));
+            e.setCancelled(true);
+            return;
+        }
+        
+        e.setCancelled(true);
+        VillageUtils.msgPlayer(e.getPlayer(), gK("chunknotowned"));
     }
 }

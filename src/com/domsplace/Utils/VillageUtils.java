@@ -9,6 +9,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -70,6 +71,13 @@ public class VillageUtils extends VillageBase {
         }
     }
     
+    public static void msgPlayer(OfflinePlayer player, String message) {
+        if(!player.isOnline()) {
+            return;
+        }
+        msgPlayer(player.getPlayer(), message);
+    }
+    
     public static void msgPlayer(Player player, String message) {
         if(!VillageVillagesUtils.isVillageWorld(player.getLocation().getWorld())) {
             return;
@@ -78,6 +86,10 @@ public class VillageUtils extends VillageBase {
     }
     
     public static void msgPlayer(CommandSender player, String message) {
+        if(message == "") {
+            return;
+        }
+        
         player.sendMessage(ChatPrefix + ChatDefault + message);
     }
     
@@ -93,8 +105,35 @@ public class VillageUtils extends VillageBase {
         }
     }
     
-    public static void Error(String reason, String cause) {
-        msgConsole("§fError! §c" + reason + " Caused by " + cause);
+    public static void Error(String reason, Exception cause) {
+        
+        if(!VillagePluginManager.PluginYML.getBoolean("debug")) {
+        msgConsole("§fError! §c" + reason);
+            return;
+        }
+        msgConsole("§fError! §c" + reason + " Caused by: ");
+        
+        String result = "\r\nUknown Error.";
+        String message = "No Message.";
+        
+        if(cause != null) {
+            StackTraceElement[] elements = cause.getStackTrace();
+            
+            result = "\r\n§dStack Trace:\r\n§4";
+            
+            for(StackTraceElement el : elements) {
+                result += "" + el.getLineNumber();
+                result += " : " + el.getMethodName();
+                result += " : " + el.getClassName();
+                result += "\r\n";
+            }
+            
+            result += "";
+            
+            message = cause.getLocalizedMessage();
+        }
+        
+        msgConsole("§7" + result + "§eException: " + message + "\r\n");
     }
     
     public static String ColorString(String msg) {
@@ -159,6 +198,14 @@ public class VillageUtils extends VillageBase {
             if(p == null) {
                 return null;
             }
+        }
+        return p;
+    }
+    
+    public static OfflinePlayer getOfflinePlayer(CommandSender cs, String string) {
+        OfflinePlayer p = getPlayer(cs, string);
+        if(p == null) {
+            p = Bukkit.getOfflinePlayer(string);
         }
         return p;
     }

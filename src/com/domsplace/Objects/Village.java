@@ -6,6 +6,7 @@ import com.domsplace.Utils.VillageUtils;
 import com.domsplace.Utils.VillageVillagesUtils;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -24,15 +25,21 @@ public class Village {
     private Chunk townSquare;
     private int size;
     private double money;
+    public VillageItemBank itemBank;
+    
     public ArrayList<Player> sentWelcome;
     
-    public VillageItemBank itemBank;
+    private HashMap<Chunk, OfflinePlayer> playerPlots;
+    private HashMap<Chunk, Double> plotPrices;
     
     public int idSQL;
     
     public Village(String name) {
         this.name = name;
-        
+        Init();
+    }
+    
+    private void Init() {
         this.setResidents(new ArrayList<OfflinePlayer>());
         
         sentWelcome = new ArrayList<Player>();
@@ -48,6 +55,9 @@ public class Village {
         idSQL = -1;
         
         VillageScoreboardUtils.SetupScoreboard();
+        
+        playerPlots = new HashMap<Chunk, OfflinePlayer>();
+        plotPrices = new HashMap<Chunk, Double>();
     }
     
     public String getName() {
@@ -114,6 +124,9 @@ public class Village {
     public Village removeResident(OfflinePlayer resident) {
         this.getResidents().remove(resident);
         VillageScoreboardUtils.SetupScoreboard();
+        
+        this.removePlayerChunks(resident);
+        
         return this;
     }
     
@@ -142,6 +155,12 @@ public class Village {
     
     public Village setTownSpawn(Chunk spawn) {
         this.townSquare = spawn;
+        
+        //Reserve the block//
+        if(this.getMayor() != null) {
+            this.forceClaim(this.getMayor(), this.getTownSpawn());
+        }
+        
         return this;
     }
     
@@ -293,6 +312,25 @@ public class Village {
         for(OfflinePlayer p : this.getResidents()) {
             names.add(p.getName());
         }
+        
+        for(Chunk c : this.plotPrices.keySet()) {
+            yml.set("plots." + c.getX() + "," + c.getZ() + ".price", this.plotPrices.get(c));
+            yml.set("plots." + c.getX() + "," + c.getZ() + ".x", c.getX());
+            yml.set("plots." + c.getX() + "," + c.getZ() + ".z", c.getZ());
+            yml.set("plots." + c.getX() + "," + c.getZ() + ".world", c.getWorld().getName());
+        }
+        
+        for(Chunk c : this.playerPlots.keySet()) {
+            if(c.equals(this.getTownSpawn())) {
+                continue;
+            }
+            
+            yml.set("plots." + c.getX() + "," + c.getZ() + ".player", this.playerPlots.get(c).getName());
+            yml.set("plots." + c.getX() + "," + c.getZ() + ".x", c.getX());
+            yml.set("plots." + c.getX() + "," + c.getZ() + ".z", c.getZ());
+            yml.set("plots." + c.getX() + "," + c.getZ() + ".world", c.getWorld().getName());
+        }
+        
         yml.set("residents", names);
         yml.set("createDate", this.getCreatedDate());
         yml.set("townsquare.x", this.getTownSpawn().getX());
@@ -371,11 +409,40 @@ public class Village {
     
     public Location getSpawnBlock() {
         //Get Middle block, 8 / 8
-        int y = 64;
+        int y = 256;
         
         Block b = this.getTownSpawn().getBlock(8, y, 8);
-        while(b.getType() != Material.AIR) {
-            b = b.getRelative(0, 1, 0);
+        Block below = this.getTownSpawn().getBlock(8, y-1, 8);
+        Block up = this.getTownSpawn().getBlock(8, y+1, 8);
+        Block d = this.getTownSpawn().getBlock(8, 64, 8);
+        
+        boolean look = true;
+        
+        while(look) {
+            below = b.getRelative(0, -1, 0);
+            up = b.getRelative(0, 1, 0);
+            
+            if(b == null) {
+                return d.getLocation();
+            }
+            
+            if(below == null) {
+                return d.getLocation();
+            }
+            
+            if(up == null) {
+                return d.getLocation();
+            }
+            
+            if(below.getY() <= 0) {
+                return d.getLocation();
+            }
+            
+            if(b.getType().equals(Material.AIR) && up.getType().equals(Material.AIR) && !below.getType().equals(Material.AIR)) {
+                return b.getLocation();
+            }
+            
+            b = b.getRelative(0, -1, 0);
         }
         
         return b.getLocation();
@@ -425,5 +492,77 @@ public class Village {
         }
         
         return chunk;
+    }
+    
+    public OfflinePlayer getPlayerFromChunk(Chunk c) {
+        return this.playerPlots.get(c);
+    }
+    
+    public boolean isChunkClaimed(Chunk c) {
+        return (this.getPlayerFromChunk(c)!=null);
+    }
+    
+    public boolean isChunkOwnedByPlayer(OfflinePlayer p, Chunk c) {
+        return this.getPlayerFromChunk(c).equals(p);
+    }
+    
+    public ArrayList<Chunk> getPlayersChunks(OfflinePlayer p) {
+        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
+        
+        for(Chunk c : this.playerPlots.keySet()) {
+            if(!this.getPlayerFromChunk(c).getName().equalsIgnoreCase(p.getName())) {
+                continue;
+            }
+            chunks.add(c);
+        }
+        
+        return chunks;
+    }
+    
+    public HashMap<Chunk, OfflinePlayer> getPlayerChunks() {
+        return this.playerPlots;
+    }
+    
+    public boolean ClaimChunk(OfflinePlayer p, Chunk c) {
+        if(this.isChunkClaimed(c)) {
+            return false;
+        }
+        
+        this.getPlayerChunks().put(c, p);
+        return this.isChunkOwnedByPlayer(p, c);
+    }
+    
+    public Village forceClaim(OfflinePlayer p, Chunk c) {
+        this.getPlayerChunks().put(c, p);
+        return this;
+    }
+    
+    public HashMap<Chunk, Double> getChunkPrices() {
+        return this.plotPrices;
+    }
+    
+    public boolean isPriceSet(Chunk c) {
+        return this.getChunkPrices().containsKey(c);
+    }
+    
+    public double getChunkPrice(Chunk chunk) {
+        
+        double cost = 0.0d;
+        if(this.getChunkPrices().containsKey(chunk)) {
+            cost = this.getChunkPrices().get(chunk);
+        }
+        return cost;
+    }
+    
+    public Village setChunkPrice(Chunk c, double d) {
+        this.getChunkPrices().put(c, d);
+        return this;
+    }
+
+    public Village removePlayerChunks(OfflinePlayer resident) {
+        for(Chunk c : this.getPlayersChunks(Bukkit.getOfflinePlayer(resident.getName()))) {
+            this.playerPlots.remove(c);
+        }
+        return this;
     }
 }

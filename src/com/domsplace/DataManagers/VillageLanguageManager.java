@@ -1,8 +1,11 @@
 package com.domsplace.DataManagers;
 
 import com.domsplace.Utils.VillageUtils;
-import static com.domsplace.VillageBase.gK;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public class VillageLanguageManager {
@@ -13,6 +16,16 @@ public class VillageLanguageManager {
     
     public static boolean LoadLanguage() {
         try {
+            /*
+            languageFile = new File(VillageUtils.plugin.getDataFolder() + "/languages/");
+            if(!languageFile.exists()) {
+                languageFile.mkdir();
+            }
+            */
+            //Copy Non English Languages from the resources folder
+            //sLanguage("dutch");
+            //sLanguage("french");
+            
             languageFile = new File(VillageUtils.plugin.getDataFolder() + "/messages.yml");
             if(!languageFile.exists()) {
                 languageFile.createNewFile();
@@ -53,7 +66,7 @@ public class VillageLanguageManager {
             cDV("onlymayorexpand", "%e%Only the mayor can expand the Village.");
             cDV("villagebankneedmore", "%e%You don't have enough money in the Village bank! You need %n% to do this.");
             cDV("expandvillageoverlap", "%e%You cannot expand the Village this much, it overlaps another Village.");
-            cDV("createvillageoverlap", "%e%You create a Village here, it overlaps another Village.");
+            cDV("createvillageoverlap", "%e%You can't create a Village here, it overlaps another Village.");
             cDV("villageexpanded", "%d%The Village was expanded %i%%n% %d%chunk(s).");
             cDV("playeronly", "%e%Only players can do this.");
             cDV("entervillagename", "%e%Please enter a Village name.");
@@ -64,7 +77,7 @@ public class VillageLanguageManager {
             cDV("enterplayer", "%e%Please enter a player name.");
             cDV("villageinvite", "%i%%p% %d%has invited you to join %i%%v%%d%,");
             cDV("residentinvited", "%i%%p% %d%was invited to the Village.");
-            cDV("noinvite", "%e%You haven't recieved an invite.");
+            cDV("noinvite", "%e%You haven't received an invite.");
             cDV("joinedvillage", "%i%%p% %d%joined the village.");
             cDV("villageclosed", "%d%The Village %i%%v% %d%fell into Anarchy!");
             cDV("onlymayorbank", "%e%Only the mayor can edit the village bank.");
@@ -77,6 +90,21 @@ public class VillageLanguageManager {
             cDV("expandingvillage", "%i%Expanding Village... please wait...");
             cDV("expandregionoverlap", "%e%Can't expand village, the expansion overlaps a region.");
             cDV("createvillageregionoverlap", "%e%Can't create village here, it overlaps a region.");
+            cDV("notenougharguments", "%e%Not enough arguments.");
+            cDV("error", "%e%An Error occured! please contact the admin.");
+            cDV("claimedchunkinfo", "%i%%p% %d%has claimed this plot.");
+            cDV("claimedchunk", "%d%Claimed %x%, %z%!");
+            cDV("chunkavailable", "%d%This chunk is available!");
+            cDV("onlymayorplot", "%e%Only the mayor can edit plots.");
+            cDV("playernotfound", "%e%Couldn't find %p%!");
+            cDV("setplotowner", "%d%Set the plot owner as %i%%p%");
+            cDV("chunkclaimed", "%d%The %i%Mayor %d%has claimed %i%%x%, %z%%d% for you.");
+            cDV("plotnotinvillage", "%e%This plot is not in the Village.");
+            cDV("notmoney", "%e%The entered number was not a valid amount of money.");
+            cDV("setplotprice", "%d%Set the plot price to %i%%n%");
+            cDV("invalidargument", "%e%Invalid argument supplied.");
+            cDV("chunkclaimedbyplayer", "%e%This plot is claimed by another player.");
+            cDV("chunknotowned", "%e%You don't own this plot.");
             
             //Save YML
             if(language != oldConfig) {
@@ -85,7 +113,7 @@ public class VillageLanguageManager {
             
             return true;
         } catch(Exception ex) {
-            VillageUtils.Error("Failed to load messages.yml", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to load messages.yml", ex);
             return false;
         }
     }
@@ -95,6 +123,23 @@ public class VillageLanguageManager {
             language.set(key, defaultValue);
         }
         defaultLanguage.set(key, defaultValue);
+    }
+    
+    public static void sLanguage(String language) throws IOException {
+        InputStream targetLanguage = VillageUtils.plugin.getResource(language.toLowerCase() + ".yml");
+        languageFile = new File(VillageUtils.plugin.getDataFolder() + "/languages/" + language.toUpperCase() + ".yml");
+        SaveFileToDisk(targetLanguage, languageFile);
+        targetLanguage.close();
+    }
+    
+    public static void SaveFileToDisk(InputStream file, File destination) throws IOException {
+        OutputStream resStreamOut = new FileOutputStream(destination);
+        int readBytes = 0;
+        byte[] buffer = new byte[1024];
+        while ((readBytes = file.read(buffer)) != -1) {
+            resStreamOut.write(buffer, 0, readBytes);
+        }
+        resStreamOut.close();
     }
     
 }

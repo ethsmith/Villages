@@ -34,7 +34,7 @@ public class VillageSQLUtils {
             dbCon = DriverManager.getConnection(url,sqlUser,sqlPass);
             return true;
         } catch (Exception ex) {
-            VillageUtils.Error("Failed to connect to SQL.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to connect to SQL.", ex);
             return false;
         }
     }
@@ -45,7 +45,7 @@ public class VillageSQLUtils {
             boolean result = sqlStmt.execute(query);
             return true;
         } catch (SQLException ex) {
-            VillageUtils.Error("Failed to execute query.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to execute query.", ex);
         }
         return false;
     }
@@ -56,7 +56,7 @@ public class VillageSQLUtils {
             int result = sqlStmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
             return result;
         } catch (SQLException ex) {
-            VillageUtils.Error("Failed to execute query and return ID.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to execute query and return ID.", ex);
         }
         return -1;
     }
@@ -75,7 +75,7 @@ public class VillageSQLUtils {
             }
         }
         catch (Exception sqlEx) {
-            VillageUtils.Error("Failed to fetch SQL. ", sqlEx.getLocalizedMessage());
+            VillageUtils.Error("Failed to fetch SQL. ", sqlEx);
         }
         
         if(results.size() < 1) {
@@ -90,7 +90,7 @@ public class VillageSQLUtils {
             dbCon.close();
             VillageUtils.msgConsole("Closing SQL Connection...");
         } catch (Exception ex) {
-            VillageUtils.Error("Failed to close SQL Connection.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to close SQL Connection.", ex);
         }
     }
     

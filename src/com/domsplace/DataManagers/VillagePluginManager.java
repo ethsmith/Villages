@@ -12,8 +12,6 @@ public class VillagePluginManager {
     public static void LoadPluginYML() {
         PluginYMLIS = VillageUtils.plugin.getResource("plugin.yml");
         PluginYML = YamlConfiguration.loadConfiguration(PluginYMLIS);
-        
-        //Fix Values
     }
     
     public static String getVersion() {

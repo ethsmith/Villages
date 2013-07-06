@@ -58,7 +58,7 @@ public class VillageUpkeepManager extends VillageBase {
             Upkeep.save(UpkeepFile);
             return true;
         } catch(Exception ex) {
-            VillageUtils.Error("Failed to load Upkeep yml.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to load Upkeep yml.", ex);
             return false;
         }
     }
@@ -127,7 +127,7 @@ public class VillageUpkeepManager extends VillageBase {
             yml.save(upkeepF);
             VillageVillagesUtils.SaveVillage(village);
         } catch(Exception ex) {
-            VillageUtils.Error("Failed to save/load Upkeep data yml.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to save/load Upkeep data yml.", ex);
             return;
         }
     }
@@ -151,7 +151,7 @@ public class VillageUpkeepManager extends VillageBase {
             
             yml.save(upkeepF);
         } catch(Exception ex) {
-            VillageUtils.Error("Failed to save Upkeep yml.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to save Upkeep yml.", ex);
         }
     }
     

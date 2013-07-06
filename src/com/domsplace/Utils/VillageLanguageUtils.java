@@ -3,6 +3,7 @@ package com.domsplace.Utils;
 import com.domsplace.DataManagers.VillageLanguageManager;
 import com.domsplace.Objects.Village;
 import com.domsplace.VillageBase;
+import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 
 public class VillageLanguageUtils extends VillageBase {
@@ -54,6 +55,15 @@ public class VillageLanguageUtils extends VillageBase {
     public static String getKey(String key, OfflinePlayer player, double amount) {
         String l = getKey(key, amount);
         l = l.replaceAll("%p%", player.getName());
+        
+        return l;
+    }
+    
+    public static String getKey(String key, Chunk chunk) {
+        String l = getKey(key);
+        
+        l = l.replaceAll("%x%", "" + chunk.getX());
+        l = l.replaceAll("%z%", "" + chunk.getZ());
         
         return l;
     }

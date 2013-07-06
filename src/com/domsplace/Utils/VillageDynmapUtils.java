@@ -49,7 +49,7 @@ public class VillageDynmapUtils extends VillageBase {
     }
     
     private static void dmfail() {
-        VillageUtils.Error("Failed to load Dynmap.", "Couldn't register Villages.");
+        VillageUtils.Error("Failed to load Dynmap.", null);
     }
     
     public static void UnloadDynmapRegions() {

@@ -4,6 +4,7 @@ import com.domsplace.Objects.Village;
 import com.domsplace.Utils.VillageLanguageUtils;
 import com.domsplace.Utils.VillageUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 
 public class VillageBase {
@@ -14,6 +15,7 @@ public class VillageBase {
     public static String VillageColor = ChatColor.GREEN + "";
     public static String EnemyColor = ChatColor.DARK_RED + "";
     public static String PlayerChatPrefix = "§6[§9%v%§6] ";
+    public static boolean UsePlots = true;
     
     
     public static String gK(String key) {
@@ -34,6 +36,10 @@ public class VillageBase {
     
     public static String gK(String key, OfflinePlayer player, double amount) {
         return VillageLanguageUtils.getKey(key, player, amount);
+    }
+    
+    public static String gK(String key, Chunk c) {
+        return VillageLanguageUtils.getKey(key, c);
     }
     
     public static void debug(String message) {

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -146,11 +147,9 @@ public class VillageConfigManager {
                 config.set("defaultsize", 1);
             }
             
-            /*
             if(!config.contains("use.villageplots")) {
                 config.set("use.villageplots", true);
             }
-            */
             
             //Load Values
             VillageSQLUtils.sqlHost = config.getString("sql.host");
@@ -167,7 +166,9 @@ public class VillageConfigManager {
             VillageBase.ChatImportant = VillageUtils.ColorString(config.getString("colors.important"));
             VillageBase.VillageColor = VillageUtils.ColorString(config.getString("colors.samevillage"));
             VillageBase.EnemyColor = VillageUtils.ColorString(config.getString("colors.enemy"));
-            VillageBase.PlayerChatPrefix = VillageUtils.ColorString(config.getString("colors.chatprefix"));
+            VillageBase.PlayerChatPrefix = VillageUtils.ColorString(config.getString("colors.chatprefix")) + ChatColor.RESET;
+            
+            VillageBase.UsePlots = config.getBoolean("use.villageplots");
             
             VillageUtils.useSQL = config.getBoolean("sql.use");
             VillageUtils.useTagAPI = config.getBoolean("colors.colornames");
@@ -184,7 +185,7 @@ public class VillageConfigManager {
             /*** Try to use Economy ***/
             if(config.getBoolean("use.economy")) {
                 if(!VillageEconomyUtils.setupEconomy()) {
-                    VillageUtils.Error("Failed to load Vault", "Couldn't find plugin.");
+                    VillageUtils.Error("Failed to load Vault", null);
                     VillageUtils.useEconomy = false;
                 } else {
                     VillageUtils.msgConsole("Hooked into Economy.");
@@ -194,12 +195,12 @@ public class VillageConfigManager {
             /*** Try to use SQL ***/
             if(config.getBoolean("sql.use")) {
                 if(!VillageSQLUtils.sqlConnect()) {
-                    VillageUtils.Error("Failed to connect to SQL", "See console for error.");
+                    VillageUtils.Error("Failed to connect to SQL", null);
                     VillageUtils.useSQL = false;
                 } else {
                     VillageUtils.msgConsole("Connected to SQL successfully.");
                     if(!VillageSQLManager.SetupDatabase()) {
-                        VillageUtils.Error("Failed to setup SQL Database", "See console for error.");
+                        VillageUtils.Error("Failed to setup SQL Database", null);
                         VillageUtils.useSQL = false;
                     }
                 }
@@ -222,7 +223,7 @@ public class VillageConfigManager {
             /*** Try to use TagAPI ***/
             if(VillageUtils.useTagAPI && !VillageUtils.getTagAPI()) {
                 VillageUtils.useTagAPI = false;
-                VillageUtils.Error("Failed to hook into TagAPI", "Plugin not found.");
+                VillageUtils.Error("Failed to hook into TagAPI", null);
             } else if(VillageUtils.useTagAPI) {
                 VillageUtils.msgConsole("Hooked into TagAPI.");
             }
@@ -231,7 +232,7 @@ public class VillageConfigManager {
             if(VillageUtils.useWorldGuard) {
                 if(VillageUtils.getWorldGuard() == null) {
                     VillageUtils.useWorldGuard = false;
-                    VillageUtils.Error("Failed to hook into WorldGuard", "Plugin not found.");
+                    VillageUtils.Error("Failed to hook into WorldGuard", null);
                 } else {
                     VillageUtils.msgConsole("Hooked into WorldGuard.");
                 }
@@ -250,13 +251,13 @@ public class VillageConfigManager {
                 try {
                     if(!VillageDynmapUtils.canGetDynmapPlugin() || !VillageDynmapUtils.setupDynmap()) {
                         VillageUtils.useDynmap = false;
-                        VillageUtils.Error("Failed to hook into Dynmap", "Plugin not found.");
+                        VillageUtils.Error("Failed to hook into Dynmap", null);
                     } else {
                         VillageUtils.msgConsole("Hooked into Dynmap.");
                     }
                 } catch(NoClassDefFoundError e) {
                     VillageUtils.useDynmap = false;
-                    VillageUtils.Error("Failed to hook into Dynmap", "Plugin not found.");
+                    VillageUtils.Error("Failed to hook into Dynmap", null);
                 }
             }
             
@@ -270,7 +271,7 @@ public class VillageConfigManager {
             
             //
         } catch (Exception ex) {
-            VillageUtils.Error("Failed to load config.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to load config.", ex);
             return false;
         }
         return true;
@@ -280,7 +281,7 @@ public class VillageConfigManager {
         try {
             config.save(configFile);
         } catch (IOException ex) {
-            VillageUtils.Error("Failed to save config.", ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to save config.", ex);
         }
     }
 }

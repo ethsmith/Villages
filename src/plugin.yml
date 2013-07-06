@@ -3,9 +3,10 @@ description: Create player villages, make regions and start wars.
 main: com.domsplace.VillagesPlugin
 authors: [Dominic]
 website: http://domsplace.com/
-version: 1.15
+version: 1.16
 load: POSTWORLD
 softdepend: [WorldGuard, Vault, TagAPI, Dynmap]
+debug: false
 commands:
    villageadmin:
       description: Get Villages stats.
@@ -59,6 +60,7 @@ permissions:
        Villages.accept: true
        Villages.deny: true
        Villages.villagetop: true
+       Villages.claim: true
    Villages.villageadmin:
      description: Allows access to Villages admin command and override Village protection.
    Villages.reload:

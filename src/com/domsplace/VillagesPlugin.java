@@ -29,6 +29,7 @@ public class VillagesPlugin extends JavaPlugin {
     public static VillageUpkeepListener UpkeepListener;
     public static VillageTeamListener TeamListener;
     public static VillageDynmapListener DynmapListener;
+    public static VillageCustomEventListener CustomListener;
     
     @Override
     public void onEnable() {
@@ -67,6 +68,7 @@ public class VillagesPlugin extends JavaPlugin {
         VillagesListener = new VillageVillagesListener(this);
         UpkeepListener = new VillageUpkeepListener(this);
         DynmapListener = new VillageDynmapListener(this);
+        CustomListener = new VillageCustomEventListener(this);
         
         if(VillageUtils.useTagAPI) {
             TeamListener = new VillageTeamListener(this);
@@ -87,6 +89,7 @@ public class VillagesPlugin extends JavaPlugin {
         pluginManager.registerEvents(VillagesListener, this);
         pluginManager.registerEvents(UpkeepListener, this);
         pluginManager.registerEvents(DynmapListener, this);
+        pluginManager.registerEvents(CustomListener, this);
         
         if(VillageUtils.useTagAPI) {
             pluginManager.registerEvents(TeamListener, this);
@@ -116,7 +119,7 @@ public class VillagesPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         if(!LoadedPlugin) {
-            VillageUtils.Error("Failed to load plugin.", "Check console for cause.");
+            VillageUtils.Error("Failed to load plugin.", null);
             Disable();
             return;
         }

@@ -16,6 +16,7 @@ import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -120,11 +121,42 @@ public class VillageVillagesUtils extends VillageBase {
             village.setMayor(VillageSQLUtils.getSQLPlayerByID(id));
             village.setMoney(Double.parseDouble(vil.get("VillageBank")));
             VillageVillagesUtils.LoadVillageBankSQL(village);
+            
+            //Fixed Village size not being saved using SQL
+            village.setTownSize(Integer.parseInt(vil.get("VillageSize")));
+            
+            //Load in Village Plots
+            stmt = "SELECT * FROM `VillagePlots` WHERE `VillageID`='" + village.idSQL + "';";
+            results = VillageSQLUtils.sqlFetch(stmt);
+            if(results != null) {
+                if(results.size() > 0) {
+                    for(Map<String, String> cData : results) {
+                        int chunkX = Integer.parseInt(cData.get("ChunkX"));
+                        int chunkZ = Integer.parseInt(cData.get("ChunkZ"));
+                        World chunkWorld = Bukkit.getWorld(cData.get("ChunkWorld"));
+                        Chunk c = chunkWorld.getChunkAt(chunkX, chunkZ);
+
+                        if(cData.containsKey("VillagePlayerID") && cData.get("VillagePlayerID") != null && !cData.get("VillagePlayerID").equalsIgnoreCase("null")) {
+                            //Player is set for this chunk, let's set the owner
+                            OfflinePlayer p = VillageSQLUtils.getSQLPlayerByID(Integer.parseInt(cData.get("VillagePlayerID")));
+                            if(p != null) {
+                                village.forceClaim(p, c);
+                            }
+                        }
+
+                        if(cData.containsKey("ChunkCost") && cData.get("ChunkCost") != null && !cData.get("ChunkCost").equalsIgnoreCase("null")) {
+                            double cost = Double.parseDouble(cData.get("ChunkCost"));
+                            village.setChunkPrice(c, cost);
+                        }
+                    }
+                }
+            }
+            
         } catch(Exception ex) {
-            VillageUtils.Error("Failed to load village!", name + " didnt load due to: " + ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to load village!", ex);
             return null;
         }
-
+        
         return village;
     }
     
@@ -173,11 +205,32 @@ public class VillageVillagesUtils extends VillageBase {
             village.setMoney(vil.getDouble("money"));
             village.setTownSize(vil.getInt("size"));
             
+            //Load In Plots
+            if(vil.contains("plots")) {
+                //Iterate over the plots
+                for(String s : ((MemorySection) vil.get("plots")).getKeys(false)) {
+                    Chunk c = Bukkit.getWorld(vil.getString("plots." + s + ".world")).getChunkAt(Integer.parseInt(vil.getString("plots." + s + ".x")), Integer.parseInt(vil.getString("plots." + s + ".z")));
+                    if(c == null) {
+                        continue;
+                    }
+                    
+                    if(vil.contains("plots." + s + ".player")) {
+                        OfflinePlayer p = Bukkit.getOfflinePlayer(vil.getString("plots." + s + ".player"));
+                        village.forceClaim(p, c);
+                    }
+                    
+                    if(vil.contains("plots." + s + ".price")) {
+                        double d = vil.getDouble("plots." + s + ".price");
+                        village.setChunkPrice(c, d);
+                    }
+                }
+            }
+            
             Chunk chunk = Bukkit.getWorld(vil.getString("townsquare.world")).getChunkAt(vil.getInt("townsquare.x"), vil.getInt("townsquare.z"));
             village.setTownSpawn(chunk);
             VillageVillagesUtils.LoadVillageBankYML(village);
         } catch (Exception ex) {
-            VillageUtils.Error("Failed to load village!", name + " didnt load due to: " + ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to load village!", ex);
             return null;
         }
         
@@ -228,7 +281,7 @@ public class VillageVillagesUtils extends VillageBase {
             YamlConfiguration configuration = village.getTownAsYML();
             configuration.save(villageFile);
         } catch (Exception ex) {
-            VillageUtils.Error("Failed to save village!", village.getName() + " didnt save due to: " + ex.getLocalizedMessage());
+            VillageUtils.Error("Failed to save village " + village.getName(), ex);
         }
     }
     
@@ -269,6 +322,76 @@ public class VillageVillagesUtils extends VillageBase {
         rstmt = rstmt.substring(0, rstmt.length() - 2);
         rstmt += ";";
         VillageSQLUtils.sqlQuery(rstmt);
+        
+        //Save Plots
+        rstmt = "DELETE FROM `VillagePlots` WHERE `VillageID`='" + village.idSQL + "';";
+        VillageSQLUtils.sqlQuery(rstmt);
+        
+        //Add chunks, we'll run over them later to make the settings final
+        String chunkstmt = "INSERT INTO `VillagePlots` ("
+                + "`ChunkX`,"
+                + "`ChunkZ`,"
+                + "`ChunkWorld`,"
+                + "`VillageID`"
+                + ") VALUES ";
+        
+        String oldchunkstmt = chunkstmt;
+
+        for(Chunk c :  village.getPlayerChunks().keySet()) {
+            if(village.getTownSpawn().equals(c)) {
+                continue;
+            }
+
+            chunkstmt += "('" + c.getX() + "', '" + c.getZ() + "', '" + c.getWorld().getName() + "', '" + village.idSQL + "'), ";
+        }
+
+        for(Chunk c :  village.getChunkPrices().keySet()) {
+            if(village.getTownSpawn().equals(c)) {
+                continue;
+            }
+            
+            if(village.getPlayerChunks().containsKey(c)) {
+                continue;
+            }
+
+            chunkstmt += "('" + c.getX() + "', '" + c.getZ() + "', '" + c.getWorld().getName() + "', '" + village.idSQL + "'), ";
+        }
+        if(!chunkstmt.equals(oldchunkstmt)) {
+            chunkstmt = chunkstmt.substring(0, chunkstmt.length() - 2);
+            chunkstmt += ";";
+            
+            VillageSQLUtils.sqlQuery(chunkstmt);
+
+            //Now I've added the chunks, I can store the data that's been generated.
+
+            for(Chunk c :  village.getPlayerChunks().keySet()) {
+                if(village.getTownSpawn().equals(c)) {
+                    continue;
+                }
+                
+                VillageSQLUtils.sqlQuery(
+                    "UPDATE `VillagePlots` SET `VillagePlayerID`='" + VillageSQLUtils.getSQLPlayerID(village.getPlayerFromChunk(c)) + "'"
+                        + " WHERE `ChunkX`='" + c.getX() + "' "
+                        + "AND `ChunkZ`='" + c.getZ() + "' "
+                        + "AND `ChunkWorld`='" + c.getWorld().getName() + "'"
+                        + "AND `VillageID`='" + village.idSQL + "';"
+                );
+            }
+
+            for(Chunk c :  village.getChunkPrices().keySet()) {
+                if(village.getTownSpawn().equals(c)) {
+                    continue;
+                }
+                
+                VillageSQLUtils.sqlQuery(
+                    "UPDATE `VillagePlots` SET `ChunkCost`='" + village.getChunkPrice(c) + "'"
+                        + " WHERE `ChunkX`='" + c.getX() + "' "
+                        + "AND `ChunkZ`='" + c.getZ() + "' "
+                        + "AND `ChunkWorld`='" + c.getWorld().getName() + "'"
+                        + "AND `VillageID`='" + village.idSQL + "';"
+                );
+            }
+        }
     }
     
     public static boolean isChunkInATownsArea(Chunk chunk) {
@@ -370,6 +493,9 @@ public class VillageVillagesUtils extends VillageBase {
             VillageSQLUtils.sqlQuery(stmt);
             
             stmt = "DELETE FROM `VillageBankItems` WHERE VillageID='" + id + "';";
+            VillageSQLUtils.sqlQuery(stmt);
+            
+            stmt = "DELETE FROM `VillagePlots` WHERE `VillageID`='" + id+ "';";
             VillageSQLUtils.sqlQuery(stmt);
         } else {
             File vill = new File(VillageUtils.plugin.getDataFolder() + "/data/villages/" + village.getName() + ".yml");
