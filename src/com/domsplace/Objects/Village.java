@@ -1,5 +1,7 @@
 package com.domsplace.Objects;
 
+import com.domsplace.Events.VillagePlayerAddedEvent;
+import com.domsplace.Events.VillagePlayerRemovedEvent;
 import com.domsplace.Utils.VillageSQLUtils;
 import com.domsplace.Utils.VillageScoreboardUtils;
 import com.domsplace.Utils.VillageUtils;
@@ -95,7 +97,7 @@ public class Village {
     public Village setMayor(OfflinePlayer mayor) {
         this.mayor = mayor;
         if(mayor != null && !this.getResidents().contains(mayor)) {
-            this.addResident(mayor);
+            this.residents.add(mayor);
         }
         return this;
     }
@@ -110,6 +112,11 @@ public class Village {
     }
     
     public Village addResident(OfflinePlayer resident) {
+        VillagePlayerAddedEvent event = new VillagePlayerAddedEvent(resident, this);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        if(event.isCancelled()) {
+            return this;
+        }
         
         this.getResidents().add(resident);
         
@@ -122,6 +129,12 @@ public class Village {
     }
     
     public Village removeResident(OfflinePlayer resident) {
+        VillagePlayerRemovedEvent event = new VillagePlayerRemovedEvent(resident, this);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        if(event.isCancelled()) {
+            return this;
+        }
+        
         this.getResidents().remove(resident);
         VillageScoreboardUtils.SetupScoreboard();
         

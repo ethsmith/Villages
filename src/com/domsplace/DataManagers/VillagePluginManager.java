@@ -2,6 +2,11 @@ package com.domsplace.DataManagers;
 
 import com.domsplace.Utils.VillageUtils;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public class VillagePluginManager {
@@ -21,5 +26,29 @@ public class VillagePluginManager {
     public static String getName() {
         return PluginYML.getString("name");
     }
+
+    public static List<String> getCommands() {
+        ArrayList<String> commands = new ArrayList<String>();
+        
+        for(String c : ((MemorySection) PluginYML.get("commands")).getKeys(false)) {
+            commands.add(c);
+        }
+        
+        return commands;
+    }
     
+    public static List<Command> getCmds() {
+        List<Command> commands = new ArrayList<Command>();
+        
+        for(String command : getCommands()) {
+            Command cmd = VillageUtils.plugin.getCommand(command);
+            if(cmd == null) {
+                continue;
+            }
+            
+            commands.add(cmd);
+        }
+        
+        return commands;
+    }
 }

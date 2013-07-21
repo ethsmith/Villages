@@ -3,6 +3,7 @@ package com.domsplace;
 import com.domsplace.Objects.Village;
 import com.domsplace.Utils.VillageLanguageUtils;
 import com.domsplace.Utils.VillageUtils;
+import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
@@ -12,11 +13,19 @@ public class VillageBase {
     public static String ChatDefault = ChatColor.GRAY + "";
     public static String ChatImportant = ChatColor.BLUE + "";
     public static String ChatPrefix = "§7[§9Villages§7] ";
+    
     public static String VillageColor = ChatColor.GREEN + "";
     public static String EnemyColor = ChatColor.DARK_RED + "";
+    
     public static String PlayerChatPrefix = "§6[§9%v%§6] ";
+    
     public static boolean UsePlots = true;
     
+    public static List<String> villageCreatedCommands;
+    public static List<String> villageDeletedCommands;
+    public static List<String> villagePlayerAddedCommands;
+    public static List<String> villagePlayerRemovedCommands;
+    public static String WildernessPrefix = ChatColor.BLUE + "Wilderness";
     
     public static String gK(String key) {
         return VillageLanguageUtils.getKey(key);

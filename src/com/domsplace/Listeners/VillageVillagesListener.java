@@ -2,6 +2,7 @@ package com.domsplace.Listeners;
 
 import com.domsplace.DataManagers.VillageConfigManager;
 import com.domsplace.Events.VillageGriefEvent;
+import com.domsplace.Objects.GriefType;
 import com.domsplace.Objects.Village;
 import com.domsplace.Utils.VillageSQLUtils;
 import com.domsplace.Utils.VillageScoreboardUtils;
@@ -128,6 +129,10 @@ public class VillageVillagesListener extends VillageBase implements Listener {
             return;
         }
         
+        if(e.getPlayer().hasPermission("Villages.interact")) {
+            return;
+        }
+        
         if(e.getClickedBlock() == null) {
             return;
         }
@@ -187,6 +192,9 @@ public class VillageVillagesListener extends VillageBase implements Listener {
         Player p = e.getPlayer();
         Village v = VillageVillagesUtils.getPlayerVillage(p);
         if(v == null) {
+            String r = PlayerChatPrefix.replaceAll("%v%", VillageBase.WildernessPrefix) + e.getFormat();
+            e.setFormat(r);
+            
             return;
         }
         
@@ -261,6 +269,14 @@ public class VillageVillagesListener extends VillageBase implements Listener {
     @EventHandler(ignoreCancelled=true)
     public void onGrief(VillageGriefEvent e) {
         if(!UsePlots) {
+            return;
+        }
+        
+        if(e.getPlayer().hasPermission("Villages.villageadmin")) {
+            return;
+        }
+        
+        if(e.getType() == GriefType.INTERACT && e.getPlayer().hasPermission("Villages.interact")) {
             return;
         }
         

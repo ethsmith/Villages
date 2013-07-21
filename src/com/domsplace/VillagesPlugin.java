@@ -1,11 +1,14 @@
 package com.domsplace;
 
+import com.domsplace.Listeners.VillageHeroChatListener;
 import com.domsplace.Commands.*;
 import com.domsplace.Listeners.*;
 import com.domsplace.DataManagers.*;
 import com.domsplace.Utils.*;
+import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,6 +33,8 @@ public class VillagesPlugin extends JavaPlugin {
     public static VillageTeamListener TeamListener;
     public static VillageDynmapListener DynmapListener;
     public static VillageCustomEventListener CustomListener;
+    public static VillageCommandsListener CommandsListener;
+    public static VillageHeroChatListener HeroChatListener;
     
     @Override
     public void onEnable() {
@@ -69,9 +74,16 @@ public class VillagesPlugin extends JavaPlugin {
         UpkeepListener = new VillageUpkeepListener(this);
         DynmapListener = new VillageDynmapListener(this);
         CustomListener = new VillageCustomEventListener(this);
+        CommandsListener = new VillageCommandsListener(this);
         
-        if(VillageUtils.useTagAPI) {
+        if(VillageUtils.useTagAPI && TeamListener == null) {
             TeamListener = new VillageTeamListener(this);
+            pluginManager.registerEvents(TeamListener, this);
+        }
+        
+        if(VillageUtils.useHerochat && HeroChatListener == null) {
+            HeroChatListener = new VillageHeroChatListener(this);
+            pluginManager.registerEvents(HeroChatListener, this);
         }
         
         //Register Commands
@@ -84,16 +96,18 @@ public class VillagesPlugin extends JavaPlugin {
         getCommand("villagedeny").setExecutor(VillageInviteCommand);
         getCommand("villagetop").setExecutor(VillageTopCommand);
         
+        //Set Permissions Error
+        for(String command : VillagePluginManager.getCommands()) {
+            getCommand(command).setPermissionMessage(VillageBase.gK("nopermission"));
+        }
+        
         //Register Events
         pluginManager.registerEvents(ConfigListener, this);
         pluginManager.registerEvents(VillagesListener, this);
         pluginManager.registerEvents(UpkeepListener, this);
         pluginManager.registerEvents(DynmapListener, this);
         pluginManager.registerEvents(CustomListener, this);
-        
-        if(VillageUtils.useTagAPI) {
-            pluginManager.registerEvents(TeamListener, this);
-        }
+        pluginManager.registerEvents(CommandsListener, this);
         
         //Load in Villages
         VillageVillagesUtils.LoadAllVillages();
@@ -131,8 +145,10 @@ public class VillagesPlugin extends JavaPlugin {
         DynmapListener.FixDynmapMap.cancel();
         
         //Unload Dynmap Markers
-        if(VillageUtils.useDynmap && VillageDynmapUtils.markers != null) {
-            VillageDynmapUtils.UnloadDynmapRegions();
+        if(VillageUtils.useDynmap) {
+            if(VillageDynmapUtils.markers != null) {
+                VillageDynmapUtils.UnloadDynmapRegions();
+            }
         }
         
         //Save Data
@@ -156,5 +172,9 @@ public class VillagesPlugin extends JavaPlugin {
         } catch(NoClassDefFoundError e) {
             return null;
         }
+    }
+    
+    public static List<Command> getCommands() {
+        return VillagePluginManager.getCmds();
     }
 }

@@ -1,16 +1,17 @@
 name: Villages
 description: Create player villages, make regions and start wars.
-main: com.minecraft.softegg.Villages
+main: com.domsplace.VillagesPlugin
 authors: [Dominic]
 website: http://domsplace.com/
-version: 1.04
+version: 1.20
 load: POSTWORLD
-permission: You don't have permission for this.
+softdepend: [WorldGuard, Vault, TagAPI, Dynmap, Herochat]
+debug: false
 commands:
    villageadmin:
       description: Get Villages stats.
       aliases: [vadmin]
-      usage: /<command> [reload | delete]
+      usage: /<command> [reload | delete | save]
       permission: Villages.villageadmin
    villages:
       description: Get a list of Villages.
@@ -19,8 +20,8 @@ commands:
       permission: Villages.villages
    village:
       description: Get information about a specific Village.
-      aliases: [v]
-      usage: /<command> (name | close | deposit | leave)
+      aliases: [v, vil]
+      usage: /<command> (name | close | deposit | kick | leave | msg | bank | expand | plot)
       permission: Villages.village
    createvillage:
       description: Creates a new Village at that chunk you're in.
@@ -43,7 +44,7 @@ commands:
       usage: /<command>
       permission: Villages.deny
    villagetop:
-      description: Gets the top 5 best villages.
+      description: Gets the top 3 best villages.
       usage: /<command>
       permission: Villages.villagetop
 permissions:
@@ -59,6 +60,9 @@ permissions:
        Villages.accept: true
        Villages.deny: true
        Villages.villagetop: true
+       Villages.claim: true
+       Villages.villagespawn: true
+       Villages.interact: true
    Villages.villageadmin:
      description: Allows access to Villages admin command and override Village protection.
    Villages.reload:
@@ -77,3 +81,7 @@ permissions:
      description: Allows access to deny a Village invite.
    Villages.villagetop:
      description: Allows access to get the top 5 villages.
+   Villages.villagespawn:
+     description: Allows access to /village spawn.
+   Villages.interact:
+     description: Allows players to interact in villages.

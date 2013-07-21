@@ -105,6 +105,7 @@ public class VillageLanguageManager {
             cDV("invalidargument", "%e%Invalid argument supplied.");
             cDV("chunkclaimedbyplayer", "%e%This plot is claimed by another player.");
             cDV("chunknotowned", "%e%You don't own this plot.");
+            cDV("nopermission", "%e%You don't have permission for this.");
             
             //Save YML
             if(language != oldConfig) {

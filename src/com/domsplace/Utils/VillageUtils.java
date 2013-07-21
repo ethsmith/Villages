@@ -3,19 +3,30 @@ package com.domsplace.Utils;
 import com.domsplace.DataManagers.VillagePluginManager;
 import com.domsplace.VillageBase;
 import com.domsplace.VillagesPlugin;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredListener;
+import org.bukkit.plugin.SimplePluginManager;
 
 public class VillageUtils extends VillageBase {
     public static VillagesPlugin plugin;
@@ -25,6 +36,7 @@ public class VillageUtils extends VillageBase {
     public static boolean useTagAPI = false;
     public static boolean useWorldGuard = false;
     public static boolean useDynmap = false;
+    public static boolean useHerochat = false;
     
     public static void broadcast(String message) {
         for(Player p : Bukkit.getOnlinePlayers()) {
@@ -112,6 +124,7 @@ public class VillageUtils extends VillageBase {
             return;
         }
         msgConsole("§fError! §c" + reason + " Caused by: ");
+        
         
         String result = "\r\nUknown Error.";
         String message = "No Message.";
@@ -324,5 +337,85 @@ public class VillageUtils extends VillageBase {
         }
         
         return blocks;
+    }
+    
+    public static boolean unloadPlugin(Plugin pl) {
+        PluginManager pm = plugin.getServer().getPluginManager();
+        SimplePluginManager spm = (SimplePluginManager) pm;
+        SimpleCommandMap cmdMap = null;
+        List<Plugin> plugins = null;
+        Map<String, Plugin> names = null;
+        Map<String, Command> commands = null;
+        Map<Event, SortedSet<RegisteredListener>> listeners = null;
+        boolean reloadlisteners = true;
+
+        if (spm != null) {
+            try {
+                Field pluginsField = spm.getClass().getDeclaredField("plugins");
+                pluginsField.setAccessible(true);
+                plugins = (List<Plugin>) pluginsField.get(spm);
+
+                Field lookupNamesField = spm.getClass().getDeclaredField("lookupNames");
+                lookupNamesField.setAccessible(true);
+                names = (Map<String, Plugin>) lookupNamesField.get(spm);
+
+                try {
+                    Field listenersField = spm.getClass().getDeclaredField("listeners");
+                    listenersField.setAccessible(true);
+                    listeners = (Map<Event, SortedSet<RegisteredListener>>) listenersField.get(spm);
+                } catch (Exception e) {
+                    reloadlisteners = false;
+                }
+
+                Field commandMapField = spm.getClass().getDeclaredField("commandMap");
+                commandMapField.setAccessible(true);
+                cmdMap = (SimpleCommandMap) commandMapField.get(spm);
+
+                Field knownCommandsField = cmdMap.getClass().getDeclaredField("knownCommands");
+                knownCommandsField.setAccessible(true);
+                commands = (Map<String, Command>) knownCommandsField.get(cmdMap);
+            } catch (NoSuchFieldException e) {
+                return false;
+            } catch (IllegalAccessException e) {
+                return false;
+            }
+        }
+
+        pm.disablePlugin(pl);
+        if (plugins != null && plugins.contains(pl)) {
+            plugins.remove(pl);
+        }
+
+        if (names != null && names.containsKey(pl.getName())) {
+            names.remove(pl.getName());
+        }
+
+        if (listeners != null && reloadlisteners) {
+            for (SortedSet<RegisteredListener> set : listeners.values()) {
+                for (Iterator<RegisteredListener> it = set.iterator(); it.hasNext(); ) {
+                    RegisteredListener value = it.next();
+
+                    if (value.getPlugin() != pl) {
+                        continue;
+                    }
+                    it.remove();
+                }
+            }
+        }
+
+        if (cmdMap != null) {
+            for (Iterator<Map.Entry<String, Command>> it = commands.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry<String, Command> entry = it.next();
+                if (entry.getValue() instanceof PluginCommand) {
+                    PluginCommand c = (PluginCommand) entry.getValue();
+                    if (c.getPlugin() != pl) {
+                        continue;
+                    }
+                    c.unregister(cmdMap);
+                    it.remove();
+                }
+            }
+        }
+        return true;
     }
 }

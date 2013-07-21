@@ -15,6 +15,9 @@ public class VillageEconomyUtils {
         } catch(NoClassDefFoundError e) {
             economy = null;
             return false;
+        } catch(Exception ex) {
+            economy = null;
+            return false;
         }
     }
 }

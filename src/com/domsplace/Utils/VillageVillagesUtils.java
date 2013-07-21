@@ -2,6 +2,7 @@ package com.domsplace.Utils;
 
 import com.domsplace.DataManagers.VillageConfigManager;
 import com.domsplace.DataManagers.VillageUpkeepManager;
+import com.domsplace.Events.VillageDeletedEvent;
 import com.domsplace.Objects.Village;
 import com.domsplace.Objects.VillageItemBank;
 import com.domsplace.VillageBase;
@@ -454,7 +455,16 @@ public class VillageVillagesUtils extends VillageBase {
         return true;
     }
     
-    public static Village getPlayerVillage(Player player) {
+    /*public static Village getPlayerVillage(Player player) {
+        for(Village v : Villages) {
+            if(v.isResident(player) || v.isMayor(player)) {
+                return v;
+            }
+        }
+        return null;
+    }*/
+    
+    public static Village getPlayerVillage(OfflinePlayer player) {
         for(Village v : Villages) {
             if(v.isResident(player) || v.isMayor(player)) {
                 return v;
@@ -484,6 +494,12 @@ public class VillageVillagesUtils extends VillageBase {
     }
 
     public static void DeleteVillage(Village village) {
+        VillageDeletedEvent event = new VillageDeletedEvent(village);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        if(event.isCancelled()) {
+            return;
+        }
+        
         if(VillageUtils.useSQL) {
             int id = VillageSQLUtils.getVillageIDByName(village.getName());
             String stmt = "DELETE FROM `Villages` WHERE VillageID='" + id + "';";

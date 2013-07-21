@@ -122,6 +122,11 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                 }
                 
                 if(command.equalsIgnoreCase("spawn") && (cs instanceof Player)) {
+                    if(!cs.hasPermission("Villages.villagespawn")) {
+                        VillageUtils.msgPlayer(cs, gK("nopermission"));
+                        return true;
+                    }
+                    
                     Village v = VillageVillagesUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
                         VillageUtils.msgPlayer(cs, gK("notinvillage"));

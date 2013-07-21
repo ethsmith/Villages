@@ -1,5 +1,8 @@
 package com.domsplace.DataManagers;
 
+import com.domsplace.Listeners.VillageHeroChatListener;
+import com.domsplace.Listeners.VillageTeamListener;
+import com.domsplace.Utils.VillageHeroChatUtils;
 import com.domsplace.Listeners.VillageVillagesListener;
 import com.domsplace.Utils.VillageDynmapUtils;
 import com.domsplace.Utils.VillageEconomyUtils;
@@ -7,6 +10,10 @@ import com.domsplace.Utils.VillageSQLUtils;
 import com.domsplace.Utils.VillageUtils;
 import com.domsplace.Utils.VillageVillagesUtils;
 import com.domsplace.VillageBase;
+import com.domsplace.VillagesPlugin;
+import static com.domsplace.VillagesPlugin.HeroChatListener;
+import static com.domsplace.VillagesPlugin.TeamListener;
+import com.dthielke.herochat.ChannelChatEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +22,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.kitteh.tag.PlayerReceiveNameTagEvent;
 
 public class VillageConfigManager {
     public static YamlConfiguration config;
@@ -74,20 +82,25 @@ public class VillageConfigManager {
                     config.set("use.economy", config.getBoolean("use.economy"));
                 }
             }
+            if(!config.contains("use.villageplots")) {
+                config.set("use.villageplots", true);
+            }
+            if(!config.contains("use.herochat")) {
+                config.set("use.herochat", true);
+            }
             
-            if(!config.contains("colors")) {
-                if(!config.contains("colors.prefix")) {
-                    config.set("colors.prefix", "&7[&9Villages&7]");
-                }
-                if(!config.contains("colors.error")) {
-                    config.set("colors.error", "&c");
-                }
-                if(!config.contains("colors.default")) {
-                    config.set("colors.default", "&7");
-                }
-                if(!config.contains("colors.important")) {
-                    config.set("colors.important", "&9");
-                }
+            
+            if(!config.contains("colors.prefix")) {
+                config.set("colors.prefix", "&7[&9Villages&7]");
+            }
+            if(!config.contains("colors.error")) {
+                config.set("colors.error", "&c");
+            }
+            if(!config.contains("colors.default")) {
+                config.set("colors.default", "&7");
+            }
+            if(!config.contains("colors.important")) {
+                config.set("colors.important", "&9");
             }
             if(!config.contains("colors.samevillage")) {
                 config.set("colors.samevillage", "&a");
@@ -97,6 +110,9 @@ public class VillageConfigManager {
             }
             if(!config.contains("colors.chatprefix")) {
                 config.set("colors.chatprefix", "&6[&9%v%&6] ");
+            }
+            if(!config.contains("colors.wilderness")) {
+                config.set("colors.wilderness", "&9Wilderness");
             }
             
             String p = "protection.";
@@ -147,8 +163,25 @@ public class VillageConfigManager {
                 config.set("defaultsize", 1);
             }
             
-            if(!config.contains("use.villageplots")) {
-                config.set("use.villageplots", true);
+            if(!config.contains("commands.VillageCreated")) {
+                List<String> createdCommands = new ArrayList<String>();
+                createdCommands.add("villageadmin save");
+                config.set("commands.VillageCreated", createdCommands);
+            }
+            if(!config.contains("commands.PlayerAdded")) {
+                List<String> createdCommands = new ArrayList<String>();
+                createdCommands.add("villageadmin save");
+                config.set("commands.PlayerAdded", createdCommands);
+            }
+            if(!config.contains("commands.PlayerRemoved")) {
+                List<String> createdCommands = new ArrayList<String>();
+                createdCommands.add("villageadmin save");
+                config.set("commands.PlayerRemoved", createdCommands);
+            }
+            if(!config.contains("commands.VillageDeleted")) {
+                List<String> createdCommands = new ArrayList<String>();
+                createdCommands.add("villageadmin save");
+                config.set("commands.VillageDeleted", createdCommands);
             }
             
             //Load Values
@@ -161,12 +194,20 @@ public class VillageConfigManager {
             VillageVillagesUtils.borderRadius = config.getInt("townborder");
             
             VillageBase.ChatError = VillageUtils.ColorString(config.getString("colors.error"));
-            VillageBase.ChatPrefix = VillageUtils.ColorString(config.getString("colors.prefix")) + " ";
+            
+            if(!config.getString("colors.prefix").equalsIgnoreCase("")) {
+                VillageBase.ChatPrefix = VillageUtils.ColorString(config.getString("colors.prefix")) + " ";
+            } else {
+                VillageBase.ChatPrefix = "";
+            }
+            
+            
             VillageBase.ChatDefault = VillageUtils.ColorString(config.getString("colors.default"));
             VillageBase.ChatImportant = VillageUtils.ColorString(config.getString("colors.important"));
             VillageBase.VillageColor = VillageUtils.ColorString(config.getString("colors.samevillage"));
             VillageBase.EnemyColor = VillageUtils.ColorString(config.getString("colors.enemy"));
             VillageBase.PlayerChatPrefix = VillageUtils.ColorString(config.getString("colors.chatprefix")) + ChatColor.RESET;
+            VillageBase.WildernessPrefix = VillageUtils.ColorString(config.getString("colors.wilderness"));
             
             VillageBase.UsePlots = config.getBoolean("use.villageplots");
             
@@ -175,11 +216,17 @@ public class VillageConfigManager {
             VillageUtils.useWorldGuard = config.getBoolean("use.worldguard");
             VillageUtils.useEconomy = config.getBoolean("use.economy");
             VillageUtils.useDynmap = config.getBoolean("use.dynmap");
+            VillageUtils.useHerochat = config.getBoolean("use.herochat");
             
             VillageVillagesListener.PVPWilderness = config.getBoolean("protection.pvpinwilderness");
             VillageVillagesListener.PVPEnemyVillage = config.getBoolean("protection.pvpdifferentvillage");
             VillageVillagesListener.PVPSameVillage = config.getBoolean("protection.pvpsamevillage");
-                    
+            
+            VillageBase.villageCreatedCommands = config.getStringList("commands.VillageCreated");
+            VillageBase.villagePlayerAddedCommands = config.getStringList("commands.PlayerAdded");
+            VillageBase.villagePlayerRemovedCommands = config.getStringList("commands.PlayerRemoved");
+            VillageBase.villageDeletedCommands = config.getStringList("commands.VillageDeleted");
+            
             //Load add-ins
             
             /*** Try to use Economy ***/
@@ -225,6 +272,7 @@ public class VillageConfigManager {
                 VillageUtils.useTagAPI = false;
                 VillageUtils.Error("Failed to hook into TagAPI", null);
             } else if(VillageUtils.useTagAPI) {
+                //Hook into TagAPI (If not hooked already)
                 VillageUtils.msgConsole("Hooked into TagAPI.");
             }
             
@@ -261,15 +309,48 @@ public class VillageConfigManager {
                 }
             }
             
+            /*** Try to Hook into HeroChat ***/
+            if(VillageUtils.useHerochat) {
+                if(!VillageHeroChatUtils.isHeroChatLoaded()) {
+                    VillageUtils.useHerochat = false;
+                    VillageUtils.Error("Failed to hook into Herochat", null);
+                } else {
+                    VillageUtils.msgConsole("Hooked into Herochat.");
+                }
+            }
+            
             saveConfig();
+            
+            
+            /* 
+             * 
+             * Load Optional Components now 
+             * 
+             * Or Unload Un-needed components.
+             * 
+             */
+            
+            if(VillageUtils.useTagAPI && TeamListener == null) {
+                TeamListener = new VillageTeamListener(VillageUtils.plugin);
+                VillagesPlugin.pluginManager.registerEvents(TeamListener, VillageUtils.plugin);
+            } else if (TeamListener != null) {
+                PlayerReceiveNameTagEvent.getHandlerList().unregister(TeamListener);
+                TeamListener = null;
+            }
+
+            if(VillageUtils.useHerochat && HeroChatListener == null) {
+                HeroChatListener = new VillageHeroChatListener(VillageUtils.plugin);
+                VillagesPlugin.pluginManager.registerEvents(HeroChatListener, VillageUtils.plugin);
+            } else if(HeroChatListener != null) {
+                ChannelChatEvent.getHandlerList().unregister(HeroChatListener);
+                HeroChatListener = null;
+            }
             
             //Load Language files//
             VillageLanguageManager.LoadLanguage();
             
             //Refresh Colors
             VillageUtils.refreshTags();
-            
-            //
         } catch (Exception ex) {
             VillageUtils.Error("Failed to load config.", ex);
             return false;

@@ -1,6 +1,7 @@
 package com.domsplace.Commands;
 
 import com.domsplace.DataManagers.VillageConfigManager;
+import com.domsplace.Events.VillageCreatedEvent;
 import com.domsplace.Objects.Village;
 import com.domsplace.Utils.VillageEconomyUtils;
 import com.domsplace.Utils.VillageUtils;
@@ -8,6 +9,7 @@ import com.domsplace.Utils.VillageVillagesUtils;
 import com.domsplace.VillageBase;
 import static com.domsplace.VillageBase.gK;
 import com.domsplace.VillagesPlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -118,6 +120,13 @@ public class VillagesCreateVillageCommand extends VillageBase implements Command
             newtown.setMoney(0);
             newtown.setTownSpawn(sender.getLocation().getChunk());
             newtown.setTownSize(VillageConfigManager.config.getInt("defaultsize"));
+            
+            //Fire Event
+            VillageCreatedEvent event = new VillageCreatedEvent(sender, newtown);
+            Bukkit.getServer().getPluginManager().callEvent(event);
+            if(event.isCancelled()) {
+                return true;
+            }
             
             VillageUtils.broadcast(gK("createdvillage", newtown).replaceAll("%p%", sender.getName()));
             VillageVillagesUtils.Villages.add(newtown);
