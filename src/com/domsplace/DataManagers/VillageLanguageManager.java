@@ -106,6 +106,11 @@ public class VillageLanguageManager {
             cDV("chunkclaimedbyplayer", "%e%This plot is claimed by another player.");
             cDV("chunknotowned", "%e%You don't own this plot.");
             cDV("nopermission", "%e%You don't have permission for this.");
+            cDV("nexttaxday", "The next tax day for %i%%tax% %d%is in %i%%date%%d%.");
+            cDV("notaxes", "There are no taxes!");
+            cDV("taxes", "%i%Taxes, type /taxamount [name] for more info.");
+            cDV("cantfindtax", "%e%Can't find a tax by that name.");
+            cDV("taxesdue", "%i%Taxes due for %tax%:");
             
             //Save YML
             if(language != oldConfig) {

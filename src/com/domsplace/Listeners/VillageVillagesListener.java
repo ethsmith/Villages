@@ -2,7 +2,7 @@ package com.domsplace.Listeners;
 
 import com.domsplace.DataManagers.VillageConfigManager;
 import com.domsplace.Events.VillageGriefEvent;
-import com.domsplace.Objects.GriefType;
+import com.domsplace.Objects.VillageGriefType;
 import com.domsplace.Objects.Village;
 import com.domsplace.Utils.VillageSQLUtils;
 import com.domsplace.Utils.VillageScoreboardUtils;
@@ -90,6 +90,9 @@ public class VillageVillagesListener extends VillageBase implements Listener {
         }
         
         Player p = e.getPlayer();
+        if(!VillageVillagesUtils.isVillageWorld(p.getWorld())) {
+            return;
+        }
         
         if(p.getLocation().getChunk() == null) {
             return;
@@ -190,8 +193,16 @@ public class VillageVillagesListener extends VillageBase implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onChat(AsyncPlayerChatEvent e) {
         Player p = e.getPlayer();
+        if(!VillageVillagesUtils.isVillageWorld(p.getWorld())) {
+            return;
+        }
+        
         Village v = VillageVillagesUtils.getPlayerVillage(p);
         if(v == null) {
+            if(VillageBase.WildernessPrefix.equals("")) {
+                return;
+            }
+            
             String r = PlayerChatPrefix.replaceAll("%v%", VillageBase.WildernessPrefix) + e.getFormat();
             e.setFormat(r);
             
@@ -276,7 +287,7 @@ public class VillageVillagesListener extends VillageBase implements Listener {
             return;
         }
         
-        if(e.getType() == GriefType.INTERACT && e.getPlayer().hasPermission("Villages.interact")) {
+        if(e.getType() == VillageGriefType.INTERACT && e.getPlayer().hasPermission("Villages.interact")) {
             return;
         }
         

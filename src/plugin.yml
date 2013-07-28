@@ -3,10 +3,10 @@ description: Create player villages, make regions and start wars.
 main: com.domsplace.VillagesPlugin
 authors: [Dominic]
 website: http://domsplace.com/
-version: 1.20
+version: 1.21
 load: POSTWORLD
 softdepend: [WorldGuard, Vault, TagAPI, Dynmap, Herochat]
-debug: false
+debug: true
 commands:
    villageadmin:
       description: Get Villages stats.
@@ -20,7 +20,7 @@ commands:
       permission: Villages.villages
    village:
       description: Get information about a specific Village.
-      aliases: [v, vil]
+      aliases: [vil]
       usage: /<command> (name | close | deposit | kick | leave | msg | bank | expand | plot)
       permission: Villages.village
    createvillage:
@@ -47,6 +47,16 @@ commands:
       description: Gets the top 3 best villages.
       usage: /<command>
       permission: Villages.villagetop
+   taxday:
+      description: Gets the next tax day.
+      usage: /<command>
+      aliases: [td]
+      permission: Villages.taxday
+   taxamount:
+      description: Gets what tax is due the next tax day
+      usage: /<command> [tax]
+      aliases: [ta, taxamt]
+      permission: Villages.taxamount
 permissions:
    Villages.*:
      description: Gives access to all Villages permissions.
@@ -55,7 +65,7 @@ permissions:
        Villages.villageadmin: true
        Villages.villages: true
        Villages.village: true
-       Villages.creqatevillage: true
+       Villages.createvillage: true
        Villages.invite: true
        Villages.accept: true
        Villages.deny: true
@@ -63,6 +73,8 @@ permissions:
        Villages.claim: true
        Villages.villagespawn: true
        Villages.interact: true
+       Villages.taxday: true
+       Villages.taxamount: true
    Villages.villageadmin:
      description: Allows access to Villages admin command and override Village protection.
    Villages.reload:
@@ -85,3 +97,7 @@ permissions:
      description: Allows access to /village spawn.
    Villages.interact:
      description: Allows players to interact in villages.
+   Villages.taxday:
+     description: Allows players to use the /taxday command.
+   Villages.taxamount:
+     description: Allows players to use the /taxamount command.

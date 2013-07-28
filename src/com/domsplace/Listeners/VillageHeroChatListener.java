@@ -19,11 +19,19 @@ public class VillageHeroChatListener extends VillageBase implements Listener {
     
     @EventHandler(ignoreCancelled=true, priority=EventPriority.MONITOR)
     public void onHeroChat(ChannelChatEvent e) {
+        if(!VillageVillagesUtils.isVillageWorld(e.getSender().getPlayer().getWorld())) {
+            return;
+        }
+        
         String village = VillageBase.WildernessPrefix;
         
         Village vil = VillageVillagesUtils.getPlayerVillage(e.getSender().getPlayer());
         if(vil != null) {
             village = vil.getName();
+        }
+        
+        if(village.equals("")) {
+            return;
         }
         
         e.setFormat(e.getFormat().replace("{village}", village));

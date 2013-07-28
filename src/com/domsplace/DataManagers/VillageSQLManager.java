@@ -2,10 +2,7 @@ package com.domsplace.DataManagers;
 
 import com.domsplace.Utils.VillageSQLUtils;
 import com.domsplace.Utils.VillageUtils;
-import java.util.List;
-import java.util.Map;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class VillageSQLManager {

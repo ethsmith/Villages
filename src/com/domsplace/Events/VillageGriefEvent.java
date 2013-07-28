@@ -1,6 +1,6 @@
 package com.domsplace.Events;
 
-import com.domsplace.Objects.GriefType;
+import com.domsplace.Objects.VillageGriefType;
 import java.util.List;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -13,9 +13,9 @@ public class VillageGriefEvent extends Event {
     private Player player;
     private Block block;
     private boolean isCancelled = false;
-    private GriefType type;
+    private VillageGriefType type;
     
-    public VillageGriefEvent (Player griefer, Block mainBlock, List<Block> blocks, GriefType type) {
+    public VillageGriefEvent (Player griefer, Block mainBlock, List<Block> blocks, VillageGriefType type) {
         if(!blocks.contains(mainBlock)) {
             blocks.add(mainBlock);
         }
@@ -50,7 +50,7 @@ public class VillageGriefEvent extends Event {
         return handlers;
     }
 
-    public GriefType getType() {
+    public VillageGriefType getType() {
         return this.type;
     }
 }

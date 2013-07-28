@@ -5,6 +5,7 @@ import com.domsplace.Commands.*;
 import com.domsplace.Listeners.*;
 import com.domsplace.DataManagers.*;
 import com.domsplace.Utils.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -25,6 +26,8 @@ public class VillagesPlugin extends JavaPlugin {
     public static VillagesCreateVillageCommand CreateVillageCommand;
     public static VillagesVillageInviteCommand VillageInviteCommand;
     public static VillagesVillageTopCommand VillageTopCommand;
+    public static VillagesTaxDayCommand TaxDayCommand;
+    public static VillagesTaxAmountCommand TaxAmountCommand;
     
     //Listeners
     public static VillageConfigListener ConfigListener;
@@ -67,6 +70,8 @@ public class VillagesPlugin extends JavaPlugin {
         CreateVillageCommand = new VillagesCreateVillageCommand(this);
         VillageInviteCommand = new VillagesVillageInviteCommand(this);
         VillageTopCommand = new VillagesVillageTopCommand(this);
+        TaxDayCommand = new VillagesTaxDayCommand(this);
+        TaxAmountCommand = new VillagesTaxAmountCommand(this);
         
         //Load Listeners
         ConfigListener = new VillageConfigListener(this);
@@ -95,6 +100,8 @@ public class VillagesPlugin extends JavaPlugin {
         getCommand("villageaccept").setExecutor(VillageInviteCommand);
         getCommand("villagedeny").setExecutor(VillageInviteCommand);
         getCommand("villagetop").setExecutor(VillageTopCommand);
+        getCommand("taxday").setExecutor(TaxDayCommand);
+        getCommand("taxamount").setExecutor(TaxAmountCommand);
         
         //Set Permissions Error
         for(String command : VillagePluginManager.getCommands()) {

@@ -47,6 +47,9 @@ public class VillageUpkeepManager extends VillageBase {
                 Upkeep.set(s + ".hours", 24);
                 Upkeep.set(s + ".money", 100.0);
                 
+                Upkeep.set(s + ".multiplier.type", "chunk");
+                Upkeep.set(s + ".multiplier.amount", 2);
+                
                 List<String> items = new ArrayList<String>();
                 items.add("297:0:10");
                 items.add("5:0:20");
@@ -101,25 +104,40 @@ public class VillageUpkeepManager extends VillageBase {
                 
                 yml.set(k, VillageUtils.getNow());
                 
-                double cost = Upkeep.getDouble(key + ".money");
-                village.addMoney(-cost);
+                int times = 1;
                 
-                if(village.getMoney() < 0) {
-                    village.SendMessage(gK("cantcontinuemoney"));
-                    VillageVillagesUtils.DeleteVillage(village);
-                    return;
+                /*** Version 1.12: Added multipliers ***/
+                if(Upkeep.contains(key + ".multiplier")) {
+                    if(Upkeep.getString(key + ".multiplier.type").equalsIgnoreCase("chunk")) {
+                        times = village.getTownChunks().size();
+                    } else if(Upkeep.getString(key + ".multiplier.type").equalsIgnoreCase("size")) {
+                        times = village.getTownSize();
+                    }
+                    
+                    times *= Upkeep.getInt(key + ".multiplier.amount");
                 }
                 
-                List<ItemStack> items = VillageUtils.GetItemFromString(Upkeep.getStringList(key + ".items"));
-                
-                for(ItemStack item : items) {
-                    if(!village.getItemBank().containsItem(item)) {
-                        village.SendMessage(gK("cantcontinueitems"));
+                for(int i = 0; i < times; i++) {
+                    double cost = Upkeep.getDouble(key + ".money");
+                    village.addMoney(-cost);
+
+                    if(village.getMoney() < 0) {
+                        village.SendMessage(gK("cantcontinuemoney"));
                         VillageVillagesUtils.DeleteVillage(village);
                         return;
                     }
-                    
-                    village.getItemBank().removeItem(item);
+
+                    List<ItemStack> items = VillageUtils.GetItemFromString(Upkeep.getStringList(key + ".items"));
+
+                    for(ItemStack item : items) {
+                        if(!village.getItemBank().containsItem(item)) {
+                            village.SendMessage(gK("cantcontinueitems"));
+                            VillageVillagesUtils.DeleteVillage(village);
+                            return;
+                        }
+
+                        village.getItemBank().removeItem(item);
+                    }
                 }
             }
             

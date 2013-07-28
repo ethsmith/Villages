@@ -418,4 +418,69 @@ public class VillageUtils extends VillageBase {
         }
         return true;
     }
+
+    public static String TimeAway(Date unbanDate) {
+        Long NowInMilli = (new Date()).getTime();
+        Long TargetInMilli = unbanDate.getTime();
+        Long diffInSeconds = (TargetInMilli - NowInMilli) / 1000+1;
+
+        long diff[] = new long[] {0,0,0,0,0};
+        /* sec */diff[4] = (diffInSeconds >= 60 ? diffInSeconds % 60 : diffInSeconds);
+        /* min */diff[3] = (diffInSeconds = (diffInSeconds / 60)) >= 60 ? diffInSeconds % 60 : diffInSeconds;
+        /* hours */diff[2] = (diffInSeconds = (diffInSeconds / 60)) >= 24 ? diffInSeconds % 24 : diffInSeconds;
+        /* days */diff[1] = (diffInSeconds = (diffInSeconds / 24)) >= 31 ? diffInSeconds % 31: diffInSeconds;
+        /* months */diff[0] = (diffInSeconds = (diffInSeconds / 31));
+        
+        String message = "";
+        
+        if(diff[0] > 0) {
+            message += diff[0] + " month";
+            if(diff[0] > 1) {
+                message += "s";
+            }
+            return message;
+        }
+        if(diff[1] > 0) {
+            message += diff[1] + " day";
+            if(diff[1] > 1) {
+                message += "s";
+            }
+            return message;
+        }
+        if(diff[2] > 0) {
+            message += diff[2] + " hour";
+            if(diff[2] > 1) {
+                message += "s";
+            }
+            return message;
+        }
+        if(diff[3] > 0) {
+            message += diff[3] + " minute";
+            if(diff[3] > 1) {
+                message += "s";
+            }
+            return message;
+        }
+        if(diff[4] > 0) {
+            message += diff[4] + " second";
+            if(diff[4] > 1) {
+                message += "s";
+            }
+            return message;
+        }
+        
+        return "Invalid Time Diff!";
+    }
+    
+    public static String CapitalizeFirstLetter(String word) {
+        String[] words = word.split("\\s");
+        
+        String returnValue = "";
+        for(int i = 0; i < words.length; i++){
+            char capLetter = Character.toUpperCase(words[i].charAt(0));
+            returnValue +=  " " + capLetter + words[i].substring(1, words[i].length());
+        }
+        
+        return returnValue.substring(1, returnValue.length());
+    }
 }
