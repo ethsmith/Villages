@@ -51,7 +51,7 @@ public class VillageBase {
         return VillageLanguageUtils.getKey(key, c);
     }
     
-    public static void debug(String message) {
-        VillageUtils.broadcast("§a[§bDEBUG§a] §d" + message);
+    public static void debug(Object message) {
+        VillageUtils.broadcast("§a[§bDEBUG§a] §d" + message.toString());
     }
 }

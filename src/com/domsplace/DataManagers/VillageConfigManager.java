@@ -88,6 +88,9 @@ public class VillageConfigManager {
             if(!config.contains("use.herochat")) {
                 config.set("use.herochat", true);
             }
+            if(!config.contains("use.vanish")) {
+                config.set("use.vanish", false);
+            }
             
             if(!config.contains("colors.prefix")) {
                 config.set("colors.prefix", "&7[&9Villages&7]");

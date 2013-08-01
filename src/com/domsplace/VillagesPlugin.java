@@ -5,11 +5,13 @@ import com.domsplace.Commands.*;
 import com.domsplace.Listeners.*;
 import com.domsplace.DataManagers.*;
 import com.domsplace.Utils.*;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandException;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -63,6 +65,11 @@ public class VillagesPlugin extends JavaPlugin {
             return;
         }
         
+        //Set Permissions Error, and add prefix if needed
+        for(String command : VillagePluginManager.getCommands()) {
+            getCommand(command).setPermissionMessage(VillageBase.gK("nopermission"));
+        }
+        
         //Load Commands
         VillageAdminCommand = new VillagesVillageAdminCommand(this);
         VillagesCommand = new VillagesVillagesCommand(this);
@@ -102,11 +109,6 @@ public class VillagesPlugin extends JavaPlugin {
         getCommand("villagetop").setExecutor(VillageTopCommand);
         getCommand("taxday").setExecutor(TaxDayCommand);
         getCommand("taxamount").setExecutor(TaxAmountCommand);
-        
-        //Set Permissions Error
-        for(String command : VillagePluginManager.getCommands()) {
-            getCommand(command).setPermissionMessage(VillageBase.gK("nopermission"));
-        }
         
         //Register Events
         pluginManager.registerEvents(ConfigListener, this);

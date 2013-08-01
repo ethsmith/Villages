@@ -3,7 +3,7 @@ description: Create player villages, make regions and start wars.
 main: com.domsplace.VillagesPlugin
 authors: [Dominic]
 website: http://domsplace.com/
-version: 1.21
+version: 1.22
 load: POSTWORLD
 softdepend: [WorldGuard, Vault, TagAPI, Dynmap, Herochat]
 debug: true
