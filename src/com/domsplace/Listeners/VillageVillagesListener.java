@@ -140,6 +140,10 @@ public class VillageVillagesListener extends VillageBase implements Listener {
             return;
         }
         
+        if(!VillageVillagesUtils.isVillageWorld(e.getPlayer().getWorld())) {
+            return;
+        }
+        
         Village lv = VillageVillagesUtils.getVillageFromChunk(e.getClickedBlock().getChunk());
         if(lv == null) {
             //Wilderness//
@@ -160,13 +164,17 @@ public class VillageVillagesListener extends VillageBase implements Listener {
         VillageUtils.msgPlayer(e.getPlayer(), gK("nointeract"));
     }
     
-    @EventHandler
+    @EventHandler(ignoreCancelled=true)
     public void onBlockPlace(BlockPlaceEvent e) {
         if(e.getPlayer().hasPermission("Villages.villageadmin")) {
             return;
         }
         
         if(e.getBlock() == null) {
+            return;
+        }
+        
+        if(!VillageVillagesUtils.isVillageWorld(e.getBlock().getWorld())) {
             return;
         }
         
@@ -224,6 +232,10 @@ public class VillageVillagesListener extends VillageBase implements Listener {
         }
         
         if(e.getDamager().getType() != EntityType.PLAYER || e.getEntity().getType() != EntityType.PLAYER) {
+            return;
+        }
+        
+        if(!VillageVillagesUtils.isVillageWorld(e.getDamager().getWorld())) {
             return;
         }
         
@@ -288,6 +300,10 @@ public class VillageVillagesListener extends VillageBase implements Listener {
         }
         
         if(e.getType() == VillageGriefType.INTERACT && e.getPlayer().hasPermission("Villages.interact")) {
+            return;
+        }
+        
+        if(!VillageVillagesUtils.isVillageWorld(e.getPlayer().getWorld())) {
             return;
         }
         
