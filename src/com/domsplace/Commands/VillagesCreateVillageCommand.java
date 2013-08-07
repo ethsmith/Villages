@@ -40,6 +40,11 @@ public class VillagesCreateVillageCommand extends VillageBase implements Command
             
             Player sender = (Player) cs;
             
+            if(!VillageVillagesUtils.isVillageWorld(sender.getWorld())) {
+                VillageUtils.msgPlayer(cs, gK("notinthisworld"));
+                return true;
+            }
+            
             //Ensure player has enough cash
             if(VillageUtils.useEconomy) {
                 //Get Money player has

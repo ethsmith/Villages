@@ -111,6 +111,7 @@ public class VillageLanguageManager {
             cDV("taxes", "%i%Taxes, type /taxamount [name] for more info.");
             cDV("cantfindtax", "%e%Can't find a tax by that name.");
             cDV("taxesdue", "%i%Taxes due for %tax%:");
+            cDV("notinthisworld", "%e%You can't do that in this world!");
             
             //Save YML
             if(language != oldConfig) {
