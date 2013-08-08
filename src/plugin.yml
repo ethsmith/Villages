@@ -3,10 +3,10 @@ description: Create player villages, make regions and start wars.
 main: com.domsplace.VillagesPlugin
 authors: [Dominic]
 website: http://domsplace.com/
-version: 1.24
+version: 1.25
 load: POSTWORLD
 softdepend: [WorldGuard, Vault, TagAPI, Dynmap, Herochat]
-debug: true
+debug: false
 commands:
    villageadmin:
       description: Get Villages stats.
@@ -21,7 +21,7 @@ commands:
    village:
       description: Get information about a specific Village.
       aliases: [vil]
-      usage: /<command> (name | close | deposit | kick | leave | msg | bank | expand | plot)
+      usage: /<command> (name | close | deposit | withdraw | kick | leave | msg | bank | expand | plot | explode)
       permission: Villages.village
    createvillage:
       description: Creates a new Village at that chunk you're in.
@@ -101,3 +101,5 @@ permissions:
      description: Allows players to use the /taxday command.
    Villages.taxamount:
      description: Allows players to use the /taxamount command.
+   Villages.explode:
+     description: Allows players to explode their village.

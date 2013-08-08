@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -79,6 +80,48 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                     v.addMoney(amount);
                     VillageEconomyUtils.economy.withdrawPlayer(cs.getName(), amount);
                     v.SendMessage(gK("depositedmoney", (Player) cs, amount));
+                    VillageVillagesUtils.SaveAllVillages();
+                    return true;
+                }
+                
+                if((command.equalsIgnoreCase("withdraw") || command.equalsIgnoreCase("withdrawl")) && VillageUtils.useEconomy && (cs instanceof Player)) {
+                    if(args.length < 2) {
+                        VillageUtils.msgPlayer(cs, gK("enteramount"));
+                        return true;
+                    }
+                    
+                    double amount = -1;
+                    try {
+                        amount = Double.parseDouble(args[1]);
+                    } catch(Exception ex) {
+                        VillageUtils.msgPlayer(cs, gK("mustbenumber"));
+                        return true;
+                    }
+                    
+                    if(amount <= 0) {
+                        VillageUtils.msgPlayer(cs, gK("mustbeone"));
+                        return true;
+                    }
+                    
+                    //Ensure player has enough money to deposit
+                    double pAmount = VillageEconomyUtils.economy.getBalance(cs.getName());
+                    
+                    if(pAmount < amount) {
+                        VillageUtils.msgPlayer(cs, gK("notenoughmoney", amount));
+                        return true;
+                    }
+                    
+                    //Add amount to village
+                    Village v = VillageVillagesUtils.getPlayerVillage((Player) cs);
+                    
+                    if(v == null) {
+                        VillageUtils.msgPlayer(cs, gK("notinvillage"));
+                        return true;
+                    }
+                    
+                    v.addMoney(-amount);
+                    VillageEconomyUtils.economy.depositPlayer(cs.getName(), amount);
+                    v.SendMessage(gK("withdrawledmoney", (Player) cs, amount));
                     VillageVillagesUtils.SaveAllVillages();
                     return true;
                 }
@@ -532,6 +575,40 @@ public class VillagesVillageCommand extends VillageBase implements CommandExecut
                     }
                     
                     VillageUtils.msgPlayer(cs, gK("invalidargument"));
+                    return true;
+                }
+                
+                if(command.equalsIgnoreCase("explode") && (cs instanceof Player)) {
+                    if(!cs.hasPermission("Villages.explode")) {
+                        VillageUtils.msgPlayer(cs, gK("nopermission"));
+                        return true;
+                    }
+                    
+                    village = VillageVillagesUtils.getPlayerVillage((Player) cs);
+                    if(village == null) {
+                        VillageUtils.msgPlayer(cs, gK("notinvillage"));
+                        return true;
+                    }
+                    
+                    if(!village.isMayor((Player) cs)) {
+                        VillageUtils.msgPlayer(cs, gK("onlymayorexplode"));
+                        return true;
+                    }
+                    
+                    village.SendMessage(gK("villageexploded"));
+                    for(Chunk c : village.getTownArea()) {
+                        if(!c.isLoaded()) {
+                            c.load();
+                        }
+                        
+                        Block b = c.getBlock(8, 48, 8);
+                        b.getWorld().createExplosion(b.getLocation(), 15f);
+                        b = c.getBlock(8, 64, 8);
+                        b.getWorld().createExplosion(b.getLocation(), 15f);
+                        b = c.getBlock(8, 86, 8);
+                        b.getWorld().createExplosion(b.getLocation(), 15f);
+                    }
+                    
                     return true;
                 }
                 

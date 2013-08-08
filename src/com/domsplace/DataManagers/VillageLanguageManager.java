@@ -49,6 +49,7 @@ public class VillageLanguageManager {
             cDV("cantfindvillage", "%e%Couldn't find Village.");
             cDV("notenoughmoney", "%e%You don't have %n%.");
             cDV("depositedmoney", "%i%%p% %d%deposited %i%%n% %d%into the Village Bank.");
+            cDV("withdrawledmoney", "%i%%p% %d%withdrew %i%%n% %d%from the Village Bank.");
             cDV("leavevillagemayor", "%e%You cannot leave the Village, you are the mayor.");
             cDV("closevillagenotmayor", "%e%You cannot close the Village, you are not the mayor.");
             cDV("leftvillage", "%i%%p% %d%left the Village");
@@ -112,6 +113,8 @@ public class VillageLanguageManager {
             cDV("cantfindtax", "%e%Can't find a tax by that name.");
             cDV("taxesdue", "%i%Taxes due for %tax%:");
             cDV("notinthisworld", "%e%You can't do that in this world!");
+            cDV("onlymayorexplode", "%e%Only the mayor can explode the Village.");
+            cDV("villageexploded", "%i%The Village was Exploded!");
             
             //Save YML
             if(language != oldConfig) {
