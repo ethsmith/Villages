@@ -455,14 +455,9 @@ public class VillageVillagesUtils extends VillageBase {
         return true;
     }
     
-    /*public static Village getPlayerVillage(Player player) {
-        for(Village v : Villages) {
-            if(v.isResident(player) || v.isMayor(player)) {
-                return v;
-            }
-        }
-        return null;
-    }*/
+    public static Village getPlayerVillage(Player player) {
+        return getPlayerVillage(Bukkit.getOfflinePlayer(player.getName()));
+    }
     
     public static Village getPlayerVillage(OfflinePlayer player) {
         for(Village v : Villages) {

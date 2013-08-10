@@ -3,6 +3,7 @@ package com.domsplace.Listeners;
 import com.domsplace.DataManagers.VillageConfigManager;
 import com.domsplace.Events.VillageCreatedEvent;
 import com.domsplace.Events.VillageDeletedEvent;
+import com.domsplace.Events.VillageMayorDeathEvent;
 import com.domsplace.Events.VillagePlayerAddedEvent;
 import com.domsplace.Events.VillagePlayerRemovedEvent;
 import com.domsplace.Objects.Village;
@@ -53,6 +54,14 @@ public class VillageCommandsListener extends VillageBase implements Listener {
     public void onVillageDeleted(VillageDeletedEvent e) {
         for(String command : VillageBase.villageDeletedCommands) {
             command = formatCommand(command, e.getVillage(), null);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+        }
+    }
+    
+    @EventHandler
+    public void onMayorDeath(VillageMayorDeathEvent e) {
+        for(String command : VillageBase.villageMayorDeathCommands) {
+            command = formatCommand(command, e.getVillage(), e.getPlayer());
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
         }
     }

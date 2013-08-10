@@ -9,9 +9,6 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandException;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,6 +27,7 @@ public class VillagesPlugin extends JavaPlugin {
     public static VillagesVillageTopCommand VillageTopCommand;
     public static VillagesTaxDayCommand TaxDayCommand;
     public static VillagesTaxAmountCommand TaxAmountCommand;
+    public static VillagesBroadcastCommand BroadcastCommand;
     
     //Listeners
     public static VillageConfigListener ConfigListener;
@@ -79,6 +77,7 @@ public class VillagesPlugin extends JavaPlugin {
         VillageTopCommand = new VillagesVillageTopCommand(this);
         TaxDayCommand = new VillagesTaxDayCommand(this);
         TaxAmountCommand = new VillagesTaxAmountCommand(this);
+        BroadcastCommand = new VillagesBroadcastCommand(this);
         
         //Load Listeners
         ConfigListener = new VillageConfigListener(this);
@@ -109,6 +108,7 @@ public class VillagesPlugin extends JavaPlugin {
         getCommand("villagetop").setExecutor(VillageTopCommand);
         getCommand("taxday").setExecutor(TaxDayCommand);
         getCommand("taxamount").setExecutor(TaxAmountCommand);
+        getCommand("villagesbroadcast").setExecutor(BroadcastCommand);
         
         //Register Events
         pluginManager.registerEvents(ConfigListener, this);

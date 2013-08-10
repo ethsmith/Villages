@@ -185,6 +185,11 @@ public class VillageConfigManager {
                 createdCommands.add("villageadmin save");
                 config.set("commands.VillageDeleted", createdCommands);
             }
+            if(!config.contains("commands.MayorKilled")) {
+                List<String> createdCommands = new ArrayList<String>();
+                createdCommands.add("villagebroadcast %v% Mayor %p% has died!");
+                config.set("commands.MayorKilled", createdCommands);
+            }
             
             //Load Values
             VillageSQLUtils.sqlHost = config.getString("sql.host");
@@ -228,6 +233,7 @@ public class VillageConfigManager {
             VillageBase.villagePlayerAddedCommands = config.getStringList("commands.PlayerAdded");
             VillageBase.villagePlayerRemovedCommands = config.getStringList("commands.PlayerRemoved");
             VillageBase.villageDeletedCommands = config.getStringList("commands.VillageDeleted");
+            VillageBase.villageMayorDeathCommands = config.getStringList("commands.MayorKilled");
             
             //Load add-ins
             

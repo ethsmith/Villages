@@ -25,6 +25,8 @@ public class VillageBase {
     public static List<String> villageDeletedCommands;
     public static List<String> villagePlayerAddedCommands;
     public static List<String> villagePlayerRemovedCommands;
+    public static List<String> villageMayorDeathCommands;
+    
     public static String WildernessPrefix = ChatColor.BLUE + "Wilderness";
     
     public static String gK(String key) {

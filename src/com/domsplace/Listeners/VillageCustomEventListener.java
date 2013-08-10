@@ -1,7 +1,10 @@
 package com.domsplace.Listeners;
 
 import com.domsplace.Events.VillageGriefEvent;
+import com.domsplace.Events.VillageMayorDeathEvent;
+import com.domsplace.Objects.Village;
 import com.domsplace.Objects.VillageGriefType;
+import com.domsplace.Utils.VillageVillagesUtils;
 import com.domsplace.VillageBase;
 import com.domsplace.VillagesPlugin;
 import java.util.ArrayList;
@@ -12,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class VillageCustomEventListener extends VillageBase implements Listener {
@@ -44,5 +48,20 @@ public class VillageCustomEventListener extends VillageBase implements Listener 
         VillageGriefEvent event = new VillageGriefEvent(e.getPlayer(), e.getClickedBlock(), blocks, VillageGriefType.INTERACT);
         Bukkit.getServer().getPluginManager().callEvent(event);
         e.setCancelled(event.isCancelled());
+    }
+    
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent e) {
+        Village v = VillageVillagesUtils.getPlayerVillage(e.getEntity());
+        if(v == null) {
+            return;
+        }
+        
+        if(!v.isMayor(e.getEntity())) {
+            return;
+        }
+        
+        VillageMayorDeathEvent event = new VillageMayorDeathEvent(e.getEntity(), v);
+        Bukkit.getServer().getPluginManager().callEvent(event);
     }
 }

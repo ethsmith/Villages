@@ -15,6 +15,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
@@ -143,6 +144,10 @@ public class Village {
         return this;
     }
     
+    public Boolean isResident(Player player) {
+        return isResident(Bukkit.getOfflinePlayer(player.getName()));
+    }
+    
     public Boolean isResident(OfflinePlayer resident) {
         if(this.getResidents() == null) {
             return false;
@@ -155,11 +160,23 @@ public class Village {
         return false;
     }
     
+    public Boolean isResident(CommandSender resident) {
+        if(!(resident instanceof Player)) {
+            return false;
+        }
+        
+        return isResident(Bukkit.getOfflinePlayer(resident.getName()));
+    }
+    
     public boolean isMayor (OfflinePlayer mayor) {
         if(!this.getMayor().getName().equalsIgnoreCase(mayor.getName())) {
             return false;
         }
         return true;
+    }
+    
+    public boolean isMayor (Player mayor) {
+        return isMayor(Bukkit.getOfflinePlayer(mayor.getName()));
     }
     
     public Chunk getTownSpawn() {

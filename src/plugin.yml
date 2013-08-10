@@ -3,7 +3,7 @@ description: Create player villages, make regions and start wars.
 main: com.domsplace.VillagesPlugin
 authors: [Dominic]
 website: http://domsplace.com/
-version: 1.25
+version: 1.26
 load: POSTWORLD
 softdepend: [WorldGuard, Vault, TagAPI, Dynmap, Herochat]
 debug: false
@@ -57,6 +57,11 @@ commands:
       usage: /<command> [tax]
       aliases: [ta, taxamt]
       permission: Villages.taxamount
+   villagesbroadcast:
+      description: Broadcasts a message to a Village.
+      usage: /<command> [village] [msg]
+      aliases: [vb]
+      permission: Villages.broadcast
 permissions:
    Villages.*:
      description: Gives access to all Villages permissions.
@@ -75,6 +80,8 @@ permissions:
        Villages.interact: true
        Villages.taxday: true
        Villages.taxamount: true
+       Villages.explode: true
+       Villages.broadcast: true
    Villages.villageadmin:
      description: Allows access to Villages admin command and override Village protection.
    Villages.reload:
@@ -102,4 +109,6 @@ permissions:
    Villages.taxamount:
      description: Allows players to use the /taxamount command.
    Villages.explode:
+     description: Allows players to explode their village.
+   Villages.broadcast:
      description: Allows players to explode their village.
