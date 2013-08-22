@@ -19,12 +19,12 @@ public class VillageSQLManager {
         
         stmt = "CREATE TABLE IF NOT EXISTS `Villages` ("
                 + "`VillageID` int(11) NOT NULL AUTO_INCREMENT,"
-                + "`VillageName` VARCHAR(200) NOT NULL,"
-                + "`VillageDescription` VARCHAR(2048) NOT NULL,"
+                + "`VillageName` VARCHAR(100) NOT NULL,"
+                + "`VillageDescription` VARCHAR(100) NOT NULL,"
                 + "`VillageCreateDate` DATETIME NOT NULL,"
                 + "`VillageChunkX` int(11) NOT NULL,"
                 + "`VillageChunkZ` int(11) NOT NULL,"
-                + "`VillageWorld` VARCHAR(2048) NOT NULL,"
+                + "`VillageWorld` VARCHAR(255) NOT NULL,"
                 + "`VillageSize` int(11) NOT NULL,"
                 + "`VillageBank` DECIMAL(11, 4) NOT NULL,"
                 + "`VillageMayorID` int(11) NOT NULL,"
@@ -79,8 +79,8 @@ public class VillageSQLManager {
                 + "`ChunkZ` int(6) NOT NULL,"
                 + "`VillagePlayerID` int(11) NULL,"
                 + "`VillageID` int(11) NOT NULL,"
-                + "`ChunkCost` varchar(256) NULL,"
-                + "`ChunkWorld` varchar(256) NOT NULL,"
+                + "`ChunkCost` varchar(255) NULL,"
+                + "`ChunkWorld` varchar(255) NOT NULL,"
                 + "CONSTRAINT VillagePlotsPrimaryKey PRIMARY KEY (ChunkX, ChunkZ, ChunkWorld, VillageID)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
