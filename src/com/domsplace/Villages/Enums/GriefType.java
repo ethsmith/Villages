@@ -1,0 +1,20 @@
+package com.domsplace.Villages.Enums;
+
+import com.domsplace.Villages.Bases.EnumBase;
+
+public class GriefType extends EnumBase {
+    public static final GriefType INTERACT = new GriefType("Interact");
+    public static final GriefType BREAK = new GriefType("Break");
+    public static final GriefType PLACE = new GriefType("Place");
+    public static final GriefType BLOCK_DAMAGE = new GriefType("Block Damage");
+    
+    private String type;
+    
+    public GriefType(String type) {
+        this.type = type;
+    }
+    
+    public String getType() {
+        return this.type;
+    }
+}
