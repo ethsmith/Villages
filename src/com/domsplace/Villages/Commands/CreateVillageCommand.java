@@ -1,6 +1,5 @@
 package com.domsplace.Villages.Commands;
 
-import com.domsplace.Villages.DataManagers.ConfigManager;
 import com.domsplace.Villages.Events.VillageCreatedEvent;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.VillageEconomyUtils;
@@ -8,6 +7,8 @@ import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageUtils;
 import static com.domsplace.Villages.Bases.Base.gK;
 import com.domsplace.Villages.Bases.CommandBase;
+import com.domsplace.Villages.Hooks.WorldGuardHook;
+import com.domsplace.Villages.Objects.SubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,20 +17,19 @@ import org.bukkit.entity.Player;
 public class CreateVillageCommand extends CommandBase {
     public CreateVillageCommand () {
         super("createvillage");
+        this.addSubCommand(SubCommand.make("name"));
     }
 
     @Override
     public boolean cmd(CommandSender cs, Command cmd, String label, String[] args) {
         if(!(cs instanceof Player)) {
             Utils.msgPlayer(cs, gK("playeronly"));
-            Utils.msgPlayer(cs, Utils.getCommandDescription(cmd.getName()));
-            return true;
+            return false;
         }
 
         if(args.length < 1) {
             Utils.msgPlayer(cs, gK("entervillagename"));
-            Utils.msgPlayer(cs, Utils.getCommandDescription(cmd.getName()));
-            return true;
+            return false;
         }
 
         Player sender = (Player) cs;
@@ -99,7 +99,7 @@ public class CreateVillageCommand extends CommandBase {
             return true;
         }
 
-        if(VillageUtils.isChunkInRegion(sender.getLocation().getChunk())) {
+        if(WorldGuardHook.instance.isChunkInRegion(sender.getLocation().getChunk())) {
             Utils.msgPlayer(cs, gK("createvillageregionoverlap"));
             return true;
         }

@@ -1,12 +1,13 @@
 package com.domsplace.Villages.Commands;
 
-import com.domsplace.Villages.DataManagers.ConfigManager;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageEconomyUtils;
 import com.domsplace.Villages.Utils.VillageUtils;
-import static com.domsplace.Villages.Bases.Base.gK;
 import com.domsplace.Villages.Bases.CommandBase;
+import com.domsplace.Villages.Hooks.WorldGuardHook;
+import com.domsplace.Villages.Objects.SubCommand;
+import com.domsplace.Villages.Objects.SubCommand;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -21,6 +22,34 @@ import org.bukkit.entity.Player;
 public class VillageCommand extends CommandBase {
     public VillageCommand () {
         super("village");
+        this.addSubCommand(SubCommand.make(SubCommand.VILLAGE));
+        this.addSubCommand(SubCommand.make("close"));
+        this.addSubCommand(SubCommand.make("leave"));
+        this.addSubCommand(SubCommand.make("spawn"));
+        this.addSubCommand(SubCommand.make("bank"));
+        this.addSubCommand(SubCommand.make("explode"));
+        this.addSubCommand(SubCommand.make("kick", SubCommand.PLAYER));
+        this.addSubCommand(SubCommand.make("lookup", SubCommand.PLAYER));
+        this.addSubCommand(SubCommand.make("msg", "message"));
+        this.addSubCommand(SubCommand.make("expand", "amount"));
+        this.addSubCommand(SubCommand.make("description", "message"));
+        
+        if(Utils.UsePlots) {
+            this.addSubCommand(SubCommand.make("plot",
+                    SubCommand.make("check"),
+                    SubCommand.make("set", 
+                        SubCommand.make("owner", SubCommand.PLAYER),
+                        SubCommand.make("price", "amount")
+                    ),
+                    SubCommand.make("claim")
+            ));
+        }
+        
+        if(Utils.useEconomy) {
+            this.addSubCommand(SubCommand.make("withdraw", "amount"));
+            this.addSubCommand(SubCommand.make("withdrawl", "amount"));
+            this.addSubCommand(SubCommand.make("deposit", "amount"));
+        }
     }
 
     @Override
@@ -28,8 +57,7 @@ public class VillageCommand extends CommandBase {
         if(!isPlayer(cs)) {
             if(args.length == 0) {
                 Utils.msgPlayer(cs, gK("needvillagename"));
-                Utils.msgPlayer(cs, Utils.getCommandDescription(cmd.getName()));
-                return true;
+            return false;
             }
         }
 
@@ -354,7 +382,7 @@ public class VillageCommand extends CommandBase {
                     return true;
                 }
 
-                if(VillageUtils.doesVillageOverlapRegion(v)) {
+                if(WorldGuardHook.instance.doesVillageOverlapRegion(v)) {
                     v.setTownSize(oldsize);
                     Utils.msgPlayer(cs, gK("expandregionoverlap"));
                     return true;
@@ -639,14 +667,12 @@ public class VillageCommand extends CommandBase {
 
         if(village == null && (cs instanceof Player) &&  VillageUtils.getPlayerVillage((Player) cs) == null) {
             Utils.msgPlayer(cs, gK("notinvillage"));
-            Utils.msgPlayer(cs, Utils.getCommandDescription(cmd.getName()));
-            return true;
+            return false;
         }
 
         if(village == null) {
             Utils.msgPlayer(cs, gK("cantfindvillage"));
-            Utils.msgPlayer(cs, Utils.getCommandDescription(cmd.getName()));
-            return true;
+            return false;
         }
 
         String residents = "";

@@ -5,7 +5,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
-public class ThreadBase extends BasesBase implements Runnable {
+public class ThreadBase extends BaseBase implements Runnable {
     private static final List<ThreadBase> THREADS = new ArrayList<ThreadBase>();
     
     //Static

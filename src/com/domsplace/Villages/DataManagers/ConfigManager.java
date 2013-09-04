@@ -1,8 +1,6 @@
 package com.domsplace.Villages.DataManagers;
 
-import com.domsplace.Villages.Utils.VillageHeroChatUtils;
 import com.domsplace.Villages.Listeners.VillagesListener;
-import com.domsplace.Villages.Utils.VillageDynmapUtils;
 import com.domsplace.Villages.Utils.VillageEconomyUtils;
 import com.domsplace.Villages.Utils.VillageSQLUtils;
 import com.domsplace.Villages.Utils.Utils;
@@ -10,6 +8,7 @@ import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.Base;
 import com.domsplace.Villages.Bases.CommandBase;
 import com.domsplace.Villages.Bases.DataManagerBase;
+import com.domsplace.Villages.Bases.PluginHookBase;
 import com.domsplace.Villages.Enums.ManagerType;
 import com.domsplace.Villages.Threads.UpdateThread;
 import java.io.File;
@@ -45,6 +44,8 @@ public class ConfigManager extends DataManagerBase {
 
         config = YamlConfiguration.loadConfiguration(configFile);
         
+        PluginHookBase.unhookAll();
+        
         if(!config.contains("debug")) {
             config.set("debug", false);
         }
@@ -79,9 +80,6 @@ public class ConfigManager extends DataManagerBase {
 
         if(!config.contains("use.worldguard")) {
             config.set("use.worldguard", true);
-        }
-        if(!config.contains("use.dynmap")) {
-            config.set("use.dynmap", true);
         }
         if(!config.contains("use.economy")) {
             if(!config.contains("economy")) {
@@ -244,7 +242,6 @@ public class ConfigManager extends DataManagerBase {
         Utils.useTagAPI = config.getBoolean("colors.colornames");
         Utils.useWorldGuard = config.getBoolean("use.worldguard");
         Utils.useEconomy = config.getBoolean("use.economy");
-        Utils.useDynmap = config.getBoolean("use.dynmap");
         Utils.useHerochat = config.getBoolean("use.herochat");
 
         VillagesListener.PVPWilderness = config.getBoolean("protection.pvpinwilderness");
@@ -297,62 +294,8 @@ public class ConfigManager extends DataManagerBase {
             }
         }
 
-        /*** Try to use TagAPI ***/
-        if(Utils.useTagAPI && !Utils.getTagAPI()) {
-            Utils.useTagAPI = false;
-            Utils.Error("Failed to hook into TagAPI", null);
-        } else if(Utils.useTagAPI) {
-            //Hook into TagAPI (If not hooked already)
-            Utils.msgConsole("Hooked into TagAPI.");
-        }
-
-        /*** Try to use WorldGuard ***/
-        if(Utils.useWorldGuard) {
-            if(Utils.getWorldGuard() == null) {
-                Utils.useWorldGuard = false;
-                Utils.Error("Failed to hook into WorldGuard", null);
-            } else {
-                Utils.msgConsole("Hooked into WorldGuard.");
-            }
-        }
-
-        /*** Try to use Dynamic Map ***/
-        try {
-            if(VillageDynmapUtils.markers != null) {
-                VillageDynmapUtils.UnloadDynmapRegions();
-            }
-        } catch(NoClassDefFoundError e) {
-
-        }
-
-        if(Utils.useDynmap) {
-            try {
-                if(!VillageDynmapUtils.canGetDynmapPlugin() || !VillageDynmapUtils.setupDynmap()) {
-                    Utils.useDynmap = false;
-                    Utils.Error("Failed to hook into Dynmap", null);
-                } else {
-                    Utils.msgConsole("Hooked into Dynmap.");
-                }
-            } catch(NoClassDefFoundError e) {
-                Utils.useDynmap = false;
-                Utils.Error("Failed to hook into Dynmap", null);
-            }
-        }
-
-        /*** Try to Hook into HeroChat ***/
-        if(Utils.useHerochat) {
-            if(!VillageHeroChatUtils.isHeroChatLoaded()) {
-                Utils.useHerochat = false;
-                Utils.Error("Failed to hook into Herochat", null);
-            } else {
-                Utils.msgConsole("Hooked into Herochat.");
-            }
-        }
-
         saveConfig();
-
-        //Refresh Colors
-        Utils.refreshTags();
+        PluginHookBase.hookAll();
         
         //Update CommandPermission messages
         CommandBase.updateAllPermissionMessages();

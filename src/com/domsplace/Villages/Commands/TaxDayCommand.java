@@ -23,8 +23,7 @@ public class TaxDayCommand extends CommandBase {
     public boolean cmd(CommandSender cs, Command cmd, String label, String[] args) {
         if(!isPlayer(cs)) {
             Utils.msgPlayer(cs, gK("playeronly"));
-            Utils.msgPlayer(cs, Utils.getCommandDescription(cmd.getName()));
-            return true;
+            return false;
         }
 
         Player p = (Player) cs;

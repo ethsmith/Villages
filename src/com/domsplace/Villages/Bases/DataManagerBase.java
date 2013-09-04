@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataManagerBase extends BasesBase {
+public class DataManagerBase extends BaseBase {
     private static final List<DataManagerBase> MANAGERS = new ArrayList<DataManagerBase>();
     
     public static final PluginManager PLUGIN_MANAGER = new PluginManager();

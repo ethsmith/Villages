@@ -4,12 +4,14 @@ import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.CommandBase;
+import com.domsplace.Villages.Objects.SubCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 public class BroadcastCommand extends CommandBase {
     public BroadcastCommand () {
         super("villagesbroadcast");
+        this.addSubCommand(SubCommand.make(SubCommand.VILLAGE, "message"));
     }
 
     @Override
@@ -38,7 +40,7 @@ public class BroadcastCommand extends CommandBase {
                 msg += " ";
             }
         }
-        msg = ChatDefault + "[" + ChatImportant + v.getName() + ChatDefault + "] " + ChatImportant + "Broadcast: " + msg;
+        msg = ChatDefault + "[" + ChatImportant + v.getName() + ChatDefault + "] " + ChatImportant + "Broadcast: " + ChatDefault + msg;
 
         v.SendMessage(msg);
         if(!v.isResident(sender)) {

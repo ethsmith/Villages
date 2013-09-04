@@ -1,10 +1,9 @@
 package com.domsplace.Villages;
 
 import com.domsplace.Villages.Commands.*;
-import com.domsplace.Villages.DataManagers.*;
-import com.domsplace.Villages.Listeners.*;
 import com.domsplace.Villages.Utils.*;
 import com.domsplace.Villages.Bases.*;
+import com.domsplace.Villages.Hooks.*;
 import com.domsplace.Villages.Listeners.*;
 import com.domsplace.Villages.Threads.*;
 import org.bukkit.Bukkit;
@@ -38,17 +37,17 @@ public class VillagesPlugin extends JavaPlugin {
         CustomEventListener CustomListener = new CustomEventListener();
         CommandListener CommandsListener = new CommandListener();
         MonsterListener MonsterListener = new MonsterListener();
+        PluginHookListener PluginHookListener = new PluginHookListener();
         
-        if(Utils.useTagAPI) {
-            TagAPIListener TeamListener = new TagAPIListener();
-        }
+        //Load Hooks
+        HeroChatHook HeroChatHook = new HeroChatHook();
+        TagAPIHook TagAPIHook = new TagAPIHook();
+        WorldGuardHook WorldGuardHook = new WorldGuardHook();
         
-        if(Utils.useHerochat) {
-            HeroChatListener HeroChatListener = new HeroChatListener();
-        }
+        //Hook
+        PluginHookBase.hookAll();
         
         //Load in Threads
-        DynmapThread DynmapThread = new DynmapThread();
         ConfigSaveThread ConfigSaveThread = new ConfigSaveThread();
         UpkeepThread UpkeepThread = new UpkeepThread();
         
@@ -57,11 +56,6 @@ public class VillagesPlugin extends JavaPlugin {
         
         //Setup Scoreboards
         VillageScoreboardUtils.SetupScoreboard();
-        
-        //Start Rendering the Dynmap
-        if(Utils.useDynmap) {
-            VillageDynmapUtils.FixDynmapRegions();
-        }
         
         //Update Permission Messages
         CommandBase.updateAllPermissionMessages();
@@ -87,12 +81,8 @@ public class VillagesPlugin extends JavaPlugin {
         //Stop Threads
         ThreadBase.stopAllThreads();
         
-        //Unload Dynmap Markers
-        if(Utils.useDynmap) {
-            if(VillageDynmapUtils.markers != null) {
-                VillageDynmapUtils.UnloadDynmapRegions();
-            }
-        }
+        //Unhook all
+        PluginHookBase.unhookAll();
         
         //Save Data
         VillageUtils.SaveAllVillages();

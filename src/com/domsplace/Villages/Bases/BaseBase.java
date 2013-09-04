@@ -1,4 +1,4 @@
 package com.domsplace.Villages.Bases;
 
-public class BasesBase extends Base {
+public class BaseBase extends Base {
 }

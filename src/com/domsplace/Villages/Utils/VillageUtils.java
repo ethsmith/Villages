@@ -6,6 +6,7 @@ import com.domsplace.Villages.Events.VillageDeletedEvent;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Objects.ItemBank;
 import com.domsplace.Villages.Bases.UtilsBase;
+import com.domsplace.Villages.Hooks.TagAPIHook;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import java.io.File;
@@ -254,10 +255,7 @@ public class VillageUtils extends UtilsBase {
                 continue;
             }
             
-            if(!Utils.useTagAPI) {
-                continue;
-            }
-            Utils.refreshTags(p.getPlayer());
+            TagAPIHook.instance.refreshTags();
         }
         
         VillageScoreboardUtils.SetupScoreboard();
@@ -617,54 +615,6 @@ public class VillageUtils extends UtilsBase {
         }
         
         return players;
-    }
-
-    public static boolean doesVillageOverlapRegion(Village v) {
-        if(!Utils.useWorldGuard) {
-            return false;
-        }
-        
-        com.sk89q.worldguard.bukkit.WorldGuardPlugin plugin = Utils.getWorldGuard();
-        
-        if(plugin == null) {
-            return false;
-        }
-        
-        Player mayor = v.getMayor().getPlayer();
-        
-        for(com.sk89q.worldguard.protection.regions.ProtectedRegion r : plugin.getRegionManager(v.getTownSpawn().getWorld()).getRegions().values()) {
-            List<Block> regionBlocks = Utils.getBlocksFromRegion(r, v.getTownSpawn().getWorld());
-            for(Block b : regionBlocks) {
-                for(Chunk c : v.getTownArea()) {
-                    if(!b.getChunk().equals(c)) {
-                        continue;
-                    }
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
-
-    public static boolean isChunkInRegion(Chunk chunk) {
-        if(!Utils.useWorldGuard) {
-            return false;
-        }
-        
-        com.sk89q.worldguard.bukkit.WorldGuardPlugin plugin = Utils.getWorldGuard();
-        
-        if(plugin == null) {
-            return false;
-        }
-        
-        for(com.sk89q.worldguard.protection.regions.ProtectedRegion r : plugin.getRegionManager(chunk.getWorld()).getRegions().values()) {
-            debug("Checking Region " + r.getId());
-            if(!isCoordBetweenCoords(chunk, r)) continue;
-            return true;
-        }
-        
-        return false;
     }
     
     public static boolean isCoordBetweenCoords(Chunk c, ProtectedRegion r) {

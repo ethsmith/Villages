@@ -1,6 +1,5 @@
 package com.domsplace.Villages.Listeners;
 
-import com.domsplace.Villages.DataManagers.ConfigManager;
 import com.domsplace.Villages.Events.VillageCreatedEvent;
 import com.domsplace.Villages.Events.VillageDeletedEvent;
 import com.domsplace.Villages.Events.MayorDeathEvent;

@@ -6,12 +6,49 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
-public class PluginHookBase {
+public class PluginHookBase extends BaseBase {
     //Constants
     private static final List<PluginHookBase> HOOKS = new ArrayList<PluginHookBase>();
     
     protected static void registerHook(PluginHookBase pluginHook) {
         PluginHookBase.HOOKS.add(pluginHook);
+    }
+
+    public static void hookAll() {
+        for(PluginHookBase hook : HOOKS) {
+            if(hook == null) continue;
+            if(!hook.hook()) continue;
+            log("Hooked into " + hook.getPluginName());
+        }
+    }
+
+    public static void unhookAll() {
+        for(PluginHookBase hook : HOOKS) {
+            if(hook == null) continue;
+            hook.unhook();
+        }
+    }
+
+    public static PluginHookBase unhook(Plugin plugin) {
+        for(PluginHookBase h : HOOKS) {
+            if(h.getHookedPlugin() == null) continue;
+            if(!h.getHookedPlugin().equals(plugin)) continue;
+            h.unhook();
+            return h;
+        }
+        
+        return null;
+    }
+
+    public static PluginHookBase hook(Plugin plugin) {
+        for(PluginHookBase h : HOOKS) {
+            if(h.getHookedPlugin() != null) continue;
+            h.hook();
+            if(!h.getHookedPlugin().equals(plugin)) continue;
+            return h;
+        }
+        
+        return null;
     }
     
     //Instance
@@ -39,13 +76,18 @@ public class PluginHookBase {
         
         return this.hooked != null;
     }
+
+    public void unhook() {
+        this.onUnHook();
+        this.hooked = null;
+    }
     
-    public Plugin getPlugin() {
+    public Plugin getHookedPlugin() {
         return this.hooked;
     }
     
     public Class<? extends Plugin> getHookedClass() {
-        return this.getPlugin().getClass();
+        return this.getHookedPlugin().getClass();
     }
     
     public Type getType() {

@@ -1,7 +1,5 @@
 package com.domsplace.Villages.Commands;
 
-import com.domsplace.Villages.DataManagers.UpkeepManager;
-import com.domsplace.Villages.DataManagers.ConfigManager;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageUtils;
@@ -11,6 +9,7 @@ import static com.domsplace.Villages.Bases.Base.ChatImportant;
 import static com.domsplace.Villages.Bases.Base.gK;
 import com.domsplace.Villages.Bases.CommandBase;
 import com.domsplace.Villages.Bases.DataManagerBase;
+import com.domsplace.Villages.Objects.SubCommand;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.OfflinePlayer;
@@ -21,6 +20,15 @@ import org.bukkit.entity.Player;
 public class AdminCommand extends CommandBase {
     public AdminCommand () {
         super("villageadmin");
+        this.addSubCommand(SubCommand.make("reload"));
+        this.addSubCommand(SubCommand.make("save", "yml"));
+        this.addSubCommand(SubCommand.make("delete", SubCommand.VILLAGE));
+        this.addSubCommand(SubCommand.make("kick", SubCommand.PLAYER));
+        this.addSubCommand(SubCommand.make(
+            SubCommand.VILLAGE, 
+                SubCommand.make("invite", SubCommand.PLAYER), 
+                SubCommand.make("mayor", SubCommand.PLAYER))
+        );
     }
 
     @Override
@@ -66,7 +74,7 @@ public class AdminCommand extends CommandBase {
         if(arg.equals("delete")) {
             if(args.length < 2) {
                 Utils.msgPlayer(sender, gK("neednamedelete"));
-                return true;
+                return false;
             }
 
             String name = args[1];
@@ -84,7 +92,7 @@ public class AdminCommand extends CommandBase {
         if(arg.equalsIgnoreCase("kick")) {
             if(args.length < 2) {
                 Utils.msgPlayer(sender, gK("notenougharguments"));
-                return true;
+                return false;
             }
 
             OfflinePlayer p = Utils.getOfflinePlayer(sender, args[1]);
@@ -126,7 +134,7 @@ public class AdminCommand extends CommandBase {
             if(ar.equalsIgnoreCase("invite")) {
                 if(args.length < 3) {
                     Utils.msgPlayer(sender, gK("notenougharguments"));
-                    return true;
+                    return false;
                 }
 
                 Player p = Utils.getPlayer(sender, args[2]);
@@ -151,7 +159,7 @@ public class AdminCommand extends CommandBase {
             if(ar.equalsIgnoreCase("mayor")) {
                 if(args.length < 3) {
                     Utils.msgPlayer(sender, gK("notenougharguments"));
-                    return true;
+                    return false;
                 }
 
                 OfflinePlayer p = Utils.getOfflinePlayer(sender, args[2]);

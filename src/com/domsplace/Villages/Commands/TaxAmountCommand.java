@@ -7,6 +7,7 @@ import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.CommandBase;
 import com.domsplace.Villages.Bases.DataManagerBase;
+import com.domsplace.Villages.Objects.SubCommand;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 public class TaxAmountCommand extends CommandBase {
     public TaxAmountCommand () {
         super("taxamount");
+        this.addSubCommand(SubCommand.make("tax"));
     }
 
     @Override
@@ -27,8 +29,7 @@ public class TaxAmountCommand extends CommandBase {
         UpkeepManager VillageUpkeepManager = DataManagerBase.UPKEEP_MANAGER;
         if(!isPlayer(sender)) {
             Utils.msgPlayer(sender, gK("playeronly"));
-            Utils.msgPlayer(sender, Utils.getCommandDescription(cmd.getName()));
-            return true;
+            return false;
         }
 
         Player p = (Player) sender;

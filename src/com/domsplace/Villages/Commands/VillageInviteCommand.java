@@ -4,6 +4,7 @@ import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.CommandBase;
+import com.domsplace.Villages.Objects.SubCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,6 +12,7 @@ import org.bukkit.entity.Player;
 public class VillageInviteCommand extends CommandBase {
     public VillageInviteCommand () {
         super("villageinvite");
+        this.addSubCommand(SubCommand.make(SubCommand.PLAYER));
     }
 
     @Override
@@ -22,8 +24,7 @@ public class VillageInviteCommand extends CommandBase {
 
         if(args.length < 1) {
             Utils.msgPlayer(cs, gK("enterplayer"));
-            Utils.msgPlayer(cs, Utils.getCommandDescription(cmd.getName()));
-            return true;
+            return false;
         }
 
         Player sender = (Player) cs;

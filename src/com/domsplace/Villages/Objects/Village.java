@@ -2,6 +2,7 @@ package com.domsplace.Villages.Objects;
 
 import com.domsplace.Villages.Events.VillagePlayerAddedEvent;
 import com.domsplace.Villages.Events.VillagePlayerRemovedEvent;
+import com.domsplace.Villages.Hooks.TagAPIHook;
 import com.domsplace.Villages.Utils.VillageSQLUtils;
 import com.domsplace.Villages.Utils.VillageScoreboardUtils;
 import com.domsplace.Villages.Utils.Utils;
@@ -122,7 +123,7 @@ public class Village {
         this.getResidents().add(resident);
         
         if(Utils.useTagAPI && resident.isOnline()) {
-            Utils.refreshTags(resident.getPlayer());
+            TagAPIHook.instance.refreshTags(resident.getPlayer());
         }
         
         VillageScoreboardUtils.SetupScoreboard();
