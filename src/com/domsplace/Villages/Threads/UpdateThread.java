@@ -2,7 +2,7 @@ package com.domsplace.Villages.Threads;
 
 import com.domsplace.Villages.Bases.DataManagerBase;
 import com.domsplace.Villages.Bases.ThreadBase;
-import com.domsplace.Villages.Utils.Utils;
+
 
 public class UpdateThread extends ThreadBase {
     public UpdateThread() {
@@ -27,7 +27,7 @@ public class UpdateThread extends ThreadBase {
         debug("THIS VERSION: " + DataManagerBase.PLUGIN_MANAGER.getVersion());
         
         log("New version available! Version: " + version);
-        Utils.broadcast("Villages.villageadmin", new String[]{
+        broadcast("Villages.villageadmin", new String[]{
             "New Version of " + getPlugin().getName() + " is available to download!", 
             "Download " + getPlugin().getName() + " v" + version + " from: " + LatestVersionURL
         });

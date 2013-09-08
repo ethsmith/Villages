@@ -3,7 +3,7 @@ package com.domsplace.Villages.Commands;
 import com.domsplace.Villages.Events.VillageCreatedEvent;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.VillageEconomyUtils;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import static com.domsplace.Villages.Bases.Base.gK;
 import com.domsplace.Villages.Bases.CommandBase;
@@ -23,29 +23,29 @@ public class CreateVillageCommand extends CommandBase {
     @Override
     public boolean cmd(CommandSender cs, Command cmd, String label, String[] args) {
         if(!(cs instanceof Player)) {
-            Utils.msgPlayer(cs, gK("playeronly"));
+            msgPlayer(cs, gK("playeronly"));
             return false;
         }
 
         if(args.length < 1) {
-            Utils.msgPlayer(cs, gK("entervillagename"));
+            msgPlayer(cs, gK("entervillagename"));
             return false;
         }
 
         Player sender = (Player) cs;
 
         if(!VillageUtils.isVillageWorld(sender.getWorld())) {
-            Utils.msgPlayer(cs, gK("notinthisworld"));
+            msgPlayer(cs, gK("notinthisworld"));
             return true;
         }
 
         //Ensure player has enough cash
-        if(Utils.useEconomy) {
+        if(getConfigManager().useEconomy) {
             //Get Money player has
             double cash = VillageEconomyUtils.economy.getBalance(sender.getName());
             double townCost = VillageUtils.CreateVillageCost();
             if(cash < townCost) {
-                Utils.msgPlayer(cs, gK("notenoughmoney", townCost));
+                msgPlayer(cs, gK("notenoughmoney", townCost));
                 return true;
             }
         }
@@ -53,12 +53,12 @@ public class CreateVillageCommand extends CommandBase {
         //Make sure name is valid
         String name = args[0];
         if(!name.matches("^[a-zA-Z0-9]*$")) {
-            Utils.msgPlayer(cs, gK("invalidvillagename"));
+            msgPlayer(cs, gK("invalidvillagename"));
             return true;
         }
 
         if(name.length() > 12) {
-            Utils.msgPlayer(cs, gK("invalidvillagename"));
+            msgPlayer(cs, gK("invalidvillagename"));
             return true;
         }
 
@@ -74,7 +74,7 @@ public class CreateVillageCommand extends CommandBase {
 
         for(String s : reservedNames) {
             if(name.equalsIgnoreCase(s)) {
-                Utils.msgPlayer(cs, gK("villagenameused"));
+                msgPlayer(cs, gK("villagenameused"));
                 return true;
             }
         }
@@ -82,30 +82,30 @@ public class CreateVillageCommand extends CommandBase {
         //Check town doesnt exist/
         Village oldtown = VillageUtils.getVillageExact(name);
         if(oldtown != null) {
-            Utils.msgPlayer(cs, gK("villagenameused"));
+            msgPlayer(cs, gK("villagenameused"));
             return true;
         }
 
         //Check user isn't in a town already
         oldtown = VillageUtils.getPlayerVillage(sender);
         if(oldtown != null) {
-            Utils.msgPlayer(cs, gK("alreadyinvillage"));
+            msgPlayer(cs, gK("alreadyinvillage"));
             return true;
         }
 
         //Check Surrounding areas for towns
         if(VillageUtils.isChunkInATownsArea(sender.getLocation().getChunk())) {
-            Utils.msgPlayer(cs, gK("createvillageoverlap"));
+            msgPlayer(cs, gK("createvillageoverlap"));
             return true;
         }
 
         if(WorldGuardHook.instance.isChunkInRegion(sender.getLocation().getChunk())) {
-            Utils.msgPlayer(cs, gK("createvillageregionoverlap"));
+            msgPlayer(cs, gK("createvillageregionoverlap"));
             return true;
         }
 
         //All Good, make town and charge player//
-        if(Utils.useEconomy) {
+        if(getConfigManager().useEconomy) {
             //Get Money player has
             double cash = VillageEconomyUtils.economy.getBalance(sender.getName());
             double townCost = VillageUtils.CreateVillageCost();
@@ -113,7 +113,7 @@ public class CreateVillageCommand extends CommandBase {
         }
 
         Village newtown = new Village(name);
-        newtown.setCreatedDate(Utils.getNow());
+        newtown.setCreatedDate(getNow());
         newtown.setDescription("Welcome to " + name + "!");
         newtown.setMayor(sender);
         newtown.setMoney(0);
@@ -127,9 +127,9 @@ public class CreateVillageCommand extends CommandBase {
             return true;
         }
 
-        Utils.broadcast(gK("createdvillage", newtown).replaceAll("%p%", sender.getName()));
-        VillageUtils.Villages.add(newtown);
-        VillageUtils.SaveAllVillages();
+        broadcast(gK("createdvillage", newtown).replaceAll("%p%", sender.getName()));
+        VillageUtils.getVillages().add(newtown);
+        saveAllData();
 
         sender.teleport(newtown.getSpawnBlock().getBlock().getLocation());
         return true;

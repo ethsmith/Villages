@@ -3,7 +3,7 @@ package com.domsplace.Villages.DataManagers;
 import com.domsplace.Villages.Bases.DataManagerBase;
 import com.domsplace.Villages.Enums.ManagerType;
 import com.domsplace.Villages.Utils.VillageSQLUtils;
-import com.domsplace.Villages.Utils.Utils;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -20,7 +20,7 @@ public class SQLManager extends DataManagerBase {
                 + "CONSTRAINT VillagesPlayerPrimaryKey PRIMARY KEY (`VillagePlayerID`)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
-            Utils.Error("Failed to create VillagesPlayers Table", null);
+            Error("Failed to create VillagesPlayers Table", null);
             return false;
         }
         
@@ -38,7 +38,7 @@ public class SQLManager extends DataManagerBase {
                 + "CONSTRAINT VillagesPrimaryKey PRIMARY KEY (`VillageID`)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
-            Utils.Error("Failed to create Villages Table", null);
+            Error("Failed to create Villages Table", null);
             return false;
         }
         
@@ -51,7 +51,7 @@ public class SQLManager extends DataManagerBase {
                 + "CONSTRAINT VillageResidentsPrimaryKey PRIMARY KEY (`VillagePlayerID`)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
-            Utils.Error("Failed to create VillagesResidents Table", null);
+            Error("Failed to create VillagesResidents Table", null);
             return false;
         }
         
@@ -64,7 +64,7 @@ public class SQLManager extends DataManagerBase {
                 + "CONSTRAINT VillageBankItemsPrimaryKey PRIMARY KEY (`VillageItemID`)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
-            Utils.Error("Failed to create VillageBankItems Table", null);
+            Error("Failed to create VillageBankItems Table", null);
             return false;
         }
         
@@ -77,7 +77,7 @@ public class SQLManager extends DataManagerBase {
                 + "CONSTRAINT VillageBankItemsPrimaryKey PRIMARY KEY (`VillageItemID`)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
-            Utils.Error("Failed to create VillageBankItems Table", null);
+            Error("Failed to create VillageBankItems Table", null);
             return false;
         }
         
@@ -91,7 +91,7 @@ public class SQLManager extends DataManagerBase {
                 + "CONSTRAINT VillagePlotsPrimaryKey PRIMARY KEY (ChunkX, ChunkZ, ChunkWorld, VillageID)"
                 + ");";
         if(!VillageSQLUtils.sqlQuery(stmt)) {
-            Utils.Error("Failed to create VillagePlots Table", null);
+            Error("Failed to create VillagePlots Table", null);
             return false;
         }
         

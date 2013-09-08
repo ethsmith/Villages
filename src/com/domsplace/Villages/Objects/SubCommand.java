@@ -1,12 +1,11 @@
 package com.domsplace.Villages.Objects;
 
-import com.domsplace.Villages.Bases.Base;
-import com.domsplace.Villages.Bases.CommandBase;
+import com.domsplace.Villages.Bases.ObjectBase;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 
-public class SubCommand extends Base {
+public class SubCommand extends ObjectBase {
     public static final SubCommand PLAYER = new SubCommand("[player]");
     public static final SubCommand VILLAGE = new SubCommand("[village]");
     

@@ -1,7 +1,7 @@
 package com.domsplace.Villages.DataManagers;
 
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.DataManagerBase;
 import com.domsplace.Villages.Enums.ManagerType;
@@ -90,7 +90,7 @@ public class UpkeepManager extends DataManagerBase {
             String k = village.getName() + "." + key + ".time";
             
             if(!yml.contains(k)) {
-                yml.set(k, Utils.getNow());
+                yml.set(k, getNow());
                 yml.save(upkeepF);
                 return;
             }
@@ -99,10 +99,10 @@ public class UpkeepManager extends DataManagerBase {
             
             long h = t + Upkeep.getLong(key + ".hours") * 60L * 60L * 1000L;
             
-            if(h <= Utils.getNow()) {
-                village.SendMessage(Upkeep.getString(key + ".message"));
+            if(h <= getNow()) {
+                village.sendMessage(Upkeep.getString(key + ".message"));
                 
-                yml.set(k, Utils.getNow());
+                yml.set(k, getNow());
                 
                 int times = 1;
                 
@@ -122,17 +122,17 @@ public class UpkeepManager extends DataManagerBase {
                     village.addMoney(-cost);
 
                     if(village.getMoney() < 0) {
-                        village.SendMessage(gK("cantcontinuemoney"));
-                        VillageUtils.DeleteVillage(village);
+                        village.sendMessage(gK("cantcontinuemoney"));
+                        getVillageManager().deleteVillage(village);
                         return;
                     }
 
-                    List<ItemStack> items = Utils.GetItemFromString(Upkeep.getStringList(key + ".items"));
+                    List<ItemStack> items = getItemFromString(Upkeep.getStringList(key + ".items"));
 
                     for(ItemStack item : items) {
                         if(!village.getItemBank().containsItem(item)) {
-                            village.SendMessage(gK("cantcontinueitems"));
-                            VillageUtils.DeleteVillage(village);
+                            village.sendMessage(gK("cantcontinueitems"));
+                            getVillageManager().deleteVillage(village);
                             return;
                         }
 
@@ -142,14 +142,14 @@ public class UpkeepManager extends DataManagerBase {
             }
             
             yml.save(upkeepF);
-            VillageUtils.SaveVillage(village);
+            getVillageManager().saveVillage(village);
         } catch(Exception ex) {
-            Utils.Error("Failed to save/load Upkeep data yml.", ex);
+            Error("Failed to save/load Upkeep data yml.", ex);
             return;
         }
     }
     
-    public void DeleteUpkeep(Village village) {
+    public void deleteUpkeep(Village village) {
         try {
             File upkeepF = new File(getDataFolder(), "upkeepdata.yml");
             if(!upkeepF.exists()) {
@@ -168,7 +168,7 @@ public class UpkeepManager extends DataManagerBase {
             
             yml.save(upkeepF);
         } catch(Exception ex) {
-            Utils.Error("Failed to save Upkeep yml.", ex);
+            Error("Failed to save Upkeep yml.", ex);
         }
     }
 }

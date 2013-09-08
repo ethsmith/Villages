@@ -2,7 +2,7 @@ package com.domsplace.Villages.Hooks;
 
 import com.domsplace.Villages.Bases.PluginHookBase;
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import org.bukkit.Chunk;
@@ -59,7 +59,7 @@ public class WorldGuardHook extends PluginHookBase {
     
     @Override
     public void onHook() {
-        if(!Utils.useWorldGuard) return;
+        if(!getConfigManager().useWorldGuard) return;
     }
     
     @Override

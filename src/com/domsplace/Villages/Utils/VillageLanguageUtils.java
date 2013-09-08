@@ -20,7 +20,7 @@ public class VillageLanguageUtils extends UtilsBase {
         }
         
         l = l.replaceAll("%e%", ChatError).replaceAll("%d%", ChatDefault).replaceAll("%i%", ChatImportant);
-        l = Utils.ColorString(l);
+        l = ColorString(l);
         
         return l;
     }

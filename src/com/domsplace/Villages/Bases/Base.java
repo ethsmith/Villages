@@ -1,8 +1,8 @@
 package com.domsplace.Villages.Bases;
 
+import com.domsplace.Villages.DataManagers.ConfigManager;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.VillageLanguageUtils;
-import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.VillagesPlugin;
 import java.io.BufferedReader;
@@ -206,7 +206,7 @@ public class Base {
     
     public static void debug(Object message) {
         if(!DEBUG_MODE) return;
-        Utils.broadcast("§a[§bDEBUG§a] §d" + message.toString());
+        broadcast("§a[§bDEBUG§a] §d" + message.toString());
     }
     
     public static boolean isPlayer(Object o) {
@@ -297,7 +297,7 @@ public class Base {
         return p;
     }
 
-    public static List<ItemStack> GetItemFromString(List<String> stringList) {
+    public static List<ItemStack> getItemFromString(List<String> stringList) {
         List<ItemStack> items = new ArrayList<ItemStack>();
         
         for(String item : stringList) {
@@ -335,7 +335,7 @@ public class Base {
         return blocks;
     }
 
-    public static String TimeAway(Date unbanDate) {
+    public static String getTimeUntilHuman(Date unbanDate) {
         Long NowInMilli = (new Date()).getTime();
         Long TargetInMilli = unbanDate.getTime();
         Long diffInSeconds = (TargetInMilli - NowInMilli) / 1000+1;
@@ -388,7 +388,7 @@ public class Base {
         return "Invalid Time Diff!";
     }
     
-    public static String CapitalizeFirstLetter(String word) {
+    public static String capitalizeFirstLetter(String word) {
         String[] words = word.split("\\s");
         
         String returnValue = "";
@@ -398,5 +398,9 @@ public class Base {
         }
         
         return returnValue.substring(1, returnValue.length());
+    }
+    
+    public static List<Village> getVillages() {
+        return VillageUtils.Villages;
     }
 }

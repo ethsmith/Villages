@@ -1,7 +1,6 @@
 package com.domsplace.Villages.Listeners;
 
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageUtils;
 import static com.domsplace.Villages.Bases.Base.EnemyColor;
 import static com.domsplace.Villages.Bases.Base.VillageColor;
@@ -13,7 +12,7 @@ import org.kitteh.tag.PlayerReceiveNameTagEvent;
 public class TagAPIListener extends ListenerBase {
     @EventHandler
     public void onNameTagChange(PlayerReceiveNameTagEvent e) {
-        if(!Utils.useTagAPI) {
+        if(!getConfigManager().useTagAPI) {
             return;
         }
         

@@ -13,7 +13,7 @@ public class UpkeepThread extends ThreadBase {
     
     @Override
     public void run() {
-        ArrayList<Village> villages = new ArrayList<Village>(VillageUtils.Villages);
+        ArrayList<Village> villages = new ArrayList<Village>(VillageUtils.getVillages());
         for(Village village : villages) {
             DataManagerBase.UPKEEP_MANAGER.checkVillage(village);
         }

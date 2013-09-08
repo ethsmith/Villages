@@ -2,7 +2,6 @@ package com.domsplace.Villages.Bases;
 
 import com.domsplace.Villages.DataManagers.*;
 import com.domsplace.Villages.Enums.ManagerType;
-import com.domsplace.Villages.Utils.Utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +13,8 @@ public class DataManagerBase extends BaseBase {
     public static final ConfigManager CONFIG_MANAGER = new ConfigManager();
     public static final LanguageManager LANGUAGE_MANAGER = new LanguageManager();
     public static final UpkeepManager UPKEEP_MANAGER = new UpkeepManager();
+    public static final VillageManager VILLAGE_MANAGER = new VillageManager();
+    public static final VillageBankManager VILLAGE_BANK_MANAGER = new VillageBankManager();
     
     protected static void registerManager(DataManagerBase manager) {
         DataManagerBase.getManagers().add(manager);
@@ -26,6 +27,14 @@ public class DataManagerBase extends BaseBase {
     public static boolean loadAll() {
         for(DataManagerBase manager : DataManagerBase.getManagers()) {
             if(!manager.load()) return false;
+        }
+        
+        return true;
+    }
+    
+    public static boolean saveAll() {
+        for(DataManagerBase manager : DataManagerBase.getManagers()) {
+            if(!manager.save()) return false;
         }
         
         return true;
@@ -48,12 +57,26 @@ public class DataManagerBase extends BaseBase {
             this.tryLoad();
             return true;
         } catch(Exception ex) {
-            Utils.Error("Failed to load " + this.getType().getType(), ex);
+            Error("Failed to load " + this.getType().getType(), ex);
             return false;
         }
     }
     
     public void tryLoad() throws IOException {
+        
+    }
+    
+    public boolean save() {
+        try {
+            this.trySave();
+            return true;
+        } catch(Exception ex) {
+            Error("Failed to save " + this.getType().getType(), ex);
+            return false;
+        }
+    }
+    
+    public void trySave() throws IOException {
         
     }
 }

@@ -8,6 +8,8 @@ public class ManagerType extends EnumBase {
     public static final ManagerType PLUGIN = new ManagerType("Plugin");
     public static final ManagerType UPKEEP = new ManagerType("Upkeep");
     public static final ManagerType SQL = new ManagerType("SQL");
+    public static final ManagerType VILLAGE = new ManagerType("Village");
+    public static final ManagerType VILLAGE_BANK = new ManagerType("Village Bank");
     
     //Instance
     private String type;

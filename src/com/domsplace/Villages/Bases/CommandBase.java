@@ -162,7 +162,7 @@ public class CommandBase extends BaseBase implements CommandExecutor, TabComplet
                     validArgs.add(p.getName());
                 }
             } else if(sc.compare(SubCommand.VILLAGE)) {
-                for(Village v : VillageUtils.Villages) {
+                for(Village v : VillageUtils.getVillages()) {
                     validArgs.add(v.getName());
                 }
             } else {

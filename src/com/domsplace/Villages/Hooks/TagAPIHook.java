@@ -2,7 +2,7 @@ package com.domsplace.Villages.Hooks;
 
 import com.domsplace.Villages.Bases.PluginHookBase;
 import com.domsplace.Villages.Listeners.TagAPIListener;
-import com.domsplace.Villages.Utils.Utils;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.kitteh.tag.TagAPI;
@@ -36,7 +36,7 @@ public class TagAPIHook extends PluginHookBase {
     
     @Override
     public void onHook() {
-        if(!Utils.useTagAPI) return;
+        if(!getConfigManager().useTagAPI) return;
         this.tagAPIListener = new TagAPIListener();
     }
     

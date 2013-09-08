@@ -1,11 +1,11 @@
 package com.domsplace.Villages;
 
 import com.domsplace.Villages.Commands.*;
-import com.domsplace.Villages.Utils.*;
 import com.domsplace.Villages.Bases.*;
 import com.domsplace.Villages.Hooks.*;
 import com.domsplace.Villages.Listeners.*;
 import com.domsplace.Villages.Threads.*;
+import com.domsplace.Villages.Utils.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -43,6 +43,7 @@ public class VillagesPlugin extends JavaPlugin {
         HeroChatHook HeroChatHook = new HeroChatHook();
         TagAPIHook TagAPIHook = new TagAPIHook();
         WorldGuardHook WorldGuardHook = new WorldGuardHook();
+        VaultHook VaultHook = new VaultHook();
         
         //Hook
         PluginHookBase.hookAll();
@@ -50,9 +51,6 @@ public class VillagesPlugin extends JavaPlugin {
         //Load in Threads
         ConfigSaveThread ConfigSaveThread = new ConfigSaveThread();
         UpkeepThread UpkeepThread = new UpkeepThread();
-        
-        //Load in Villages
-        VillageUtils.LoadAllVillages();
         
         //Setup Scoreboards
         VillageScoreboardUtils.SetupScoreboard();
@@ -62,7 +60,7 @@ public class VillagesPlugin extends JavaPlugin {
         
         //Managed to load the plugin successfully!
         loadedPlugin = true;
-        Utils.broadcast(
+        Base.broadcast(
             "Villages.villageadmin", 
             "§dLoaded " + this.getName() + 
             " version " + DataManagerBase.PLUGIN_MANAGER.getVersion() + 
@@ -73,7 +71,7 @@ public class VillagesPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         if(!loadedPlugin) {
-            Utils.Error("Failed to load plugin.", null);
+            Base.Error("Failed to load plugin.", null);
             Disable();
             return;
         }
@@ -85,7 +83,7 @@ public class VillagesPlugin extends JavaPlugin {
         PluginHookBase.unhookAll();
         
         //Save Data
-        VillageUtils.SaveAllVillages();
+        DataManagerBase.saveAll();
     }
     
     public void Disable() {

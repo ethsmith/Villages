@@ -1,6 +1,6 @@
 package com.domsplace.Villages.Objects;
 
-import com.domsplace.Villages.Bases.Base;
+import com.domsplace.Villages.Bases.ObjectBase;
 import static com.domsplace.Villages.Bases.Base.ChatDefault;
 import static com.domsplace.Villages.Bases.Base.ChatImportant;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class ItemBank extends Base {
+public class ItemBank extends ObjectBase {
     public static ItemBank getExampleBank() {
         ItemBank itemBank = new ItemBank("Test Bank");
         return itemBank;

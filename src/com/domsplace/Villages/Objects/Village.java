@@ -1,11 +1,11 @@
 package com.domsplace.Villages.Objects;
 
+import com.domsplace.Villages.Bases.ObjectBase;
 import com.domsplace.Villages.Events.VillagePlayerAddedEvent;
 import com.domsplace.Villages.Events.VillagePlayerRemovedEvent;
 import com.domsplace.Villages.Hooks.TagAPIHook;
 import com.domsplace.Villages.Utils.VillageSQLUtils;
 import com.domsplace.Villages.Utils.VillageScoreboardUtils;
-import com.domsplace.Villages.Utils.Utils;
 import com.domsplace.Villages.Utils.VillageUtils;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,10 +17,9 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-public class Village {
+public class Village extends ObjectBase {
     private ArrayList<OfflinePlayer> residents;
     private OfflinePlayer mayor;
     private String name;
@@ -40,10 +39,10 @@ public class Village {
     
     public Village(String name) {
         this.name = name;
-        Init();
+        init();
     }
     
-    private void Init() {
+    private void init() {
         this.setResidents(new ArrayList<OfflinePlayer>());
         
         sentWelcome = new ArrayList<Player>();
@@ -122,7 +121,7 @@ public class Village {
         
         this.getResidents().add(resident);
         
-        if(Utils.useTagAPI && resident.isOnline()) {
+        if(getConfigManager().useTagAPI && resident.isOnline()) {
             TagAPIHook.instance.refreshTags(resident.getPlayer());
         }
         
@@ -217,30 +216,7 @@ public class Village {
     }
     
     public ArrayList<Chunk> getTownBorderChunks() {
-        int x = this.getTownSpawn().getX();
-        int z = this.getTownSpawn().getZ();
-        
-        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
-        ArrayList<Chunk> town = this.getTownChunks();
-        
-        int s = this.size - 1;
-        
-        int r = VillageUtils.borderRadius;
-        
-        for(int cx = (x - s - r); cx <= (x + s + r); cx++) {
-            for(int cz = (z - s - r); cz <= (z + s + r); cz++) {
-                Chunk chunk = townSquare.getWorld().getChunkAt(cx, cz);
-                if(chunk == null) {
-                    continue;
-                }
-                if(town.contains(chunk)) {
-                    continue;
-                }
-                chunks.add(chunk);
-            }
-        }
-        
-        return chunks;
+        return this.getTownLocalBorderChunks(VillageUtils.borderRadius);
     }
     
     public ArrayList<Chunk> getTownLocalBorderChunks(int amount) {
@@ -331,94 +307,6 @@ public class Village {
     public Village addMoney(double amount) {
         return this.setMoney(this.getMoney() + amount);
     }
-    
-    public YamlConfiguration getTownAsYML() {
-        YamlConfiguration yml = new YamlConfiguration();
-        
-        yml.set("name", this.getName());
-        yml.set("description", this.getDescription());
-        yml.set("mayor", this.getMayor().getName());
-        
-        ArrayList<String> names = new ArrayList<String>();
-        for(OfflinePlayer p : this.getResidents()) {
-            names.add(p.getName());
-        }
-        
-        for(Chunk c : this.plotPrices.keySet()) {
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".price", this.plotPrices.get(c));
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".x", c.getX());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".z", c.getZ());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".world", c.getWorld().getName());
-        }
-        
-        for(Chunk c : this.playerPlots.keySet()) {
-            if(c.equals(this.getTownSpawn())) {
-                continue;
-            }
-            
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".player", this.playerPlots.get(c).getName());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".x", c.getX());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".z", c.getZ());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".world", c.getWorld().getName());
-        }
-        
-        yml.set("residents", names);
-        yml.set("createDate", this.getCreatedDate());
-        yml.set("townsquare.x", this.getTownSpawn().getX());
-        yml.set("townsquare.z", this.getTownSpawn().getZ());
-        yml.set("townsquare.world", this.getTownSpawn().getWorld().getName());
-        yml.set("bank", this.getItemBank().getItemsAsString());
-        yml.set("size", this.getTownSize());
-        yml.set("money", this.money);
-        
-        return yml;
-    }
-    
-    public String getUpdateQuery() {
-        if(this.getSQLID() == -1) {
-            return null;
-        }
-        
-        String stmt = "UPDATE `Villages` SET "
-                + "`VillageName` = '" + this.getName() + "', "
-                + "`VillageDescription` = '" + this.getDescription() + "', "
-                + "`VillageCreateDate` = '" + VillageSQLUtils.dateToSQL(new Date(this.createDate)) + "',"
-                + "`VillageChunkX` = '" + this.getTownSpawn().getX() + "', "
-                + "`VillageChunkZ` = '" + this.getTownSpawn().getZ() + "', "
-                + "`VillageWorld` = '" + this.getTownSpawn().getWorld().getName() + "', "
-                + "`VillageSize` = '" + this.getTownSize() + "', "
-                + "`VillageBank` = '" + this.money + "', "
-                + "`VillageMayorID` = '" + VillageSQLUtils.recordSQLPlayer(mayor) + "' "
-                + "WHERE `VillageID` = '" + this.getSQLID() + "' LIMIT 1;";
-        
-        return stmt;
-    }
-    
-    public String getCreateQuery() {
-        String stmt = "INSERT INTO `Villages` ("
-                + "`VillageName`,"
-                + "`VillageDescription`,"
-                + "`VillageCreateDate`,"
-                + "`VillageChunkX`,"
-                + "`VillageChunkZ`,"
-                + "`VillageWorld`,"
-                + "`VillageSize`,"
-                + "`VillageBank`,"
-                + "`VillageMayorID`"
-                + ") VALUES ("
-                + "'" + this.getName() + "',"
-                + "'" + this.getDescription() + "',"
-                + "'" + VillageSQLUtils.dateToSQL(new Date(this.createDate)) + "',"
-                + "'" + this.getTownSpawn().getX() + "',"
-                + "'" + this.getTownSpawn().getZ() + "',"
-                + "'" + this.getTownSpawn().getWorld().getName() + "',"
-                + "'" + this.getTownSize() + "',"
-                + "'" + this.money + "',"
-                + "'" + VillageSQLUtils.recordSQLPlayer(mayor) + "'"
-                + ");";
-        
-        return stmt;
-    }
 
     public boolean isChunkInTown(Chunk chunk) {
         if(!this.getTownChunks().contains(chunk)) {
@@ -427,24 +315,23 @@ public class Village {
         return true;
     }
 
-    public Village SendMessage(String string) {
+    public Village sendMessage(String string) {
         for(OfflinePlayer p : this.getResidents()) {
             if(!p.isOnline()) {
                 continue;
             }
             
-            Utils.msgPlayer(p.getPlayer(), string);
+            msgPlayer(p.getPlayer(), string);
         }
         return this;
     }
     
     public Location getSpawnBlock() {
-        //Get Middle block, 8 / 8
         int y = 256;
         
         Block b = this.getTownSpawn().getBlock(8, y, 8);
-        Block below = this.getTownSpawn().getBlock(8, y-1, 8);
-        Block up = this.getTownSpawn().getBlock(8, y+1, 8);
+        Block below;
+        Block up;
         Block d = this.getTownSpawn().getBlock(8, 64, 8);
         
         boolean look = true;
@@ -481,7 +368,7 @@ public class Village {
 
     public double getWorth() {
         double worth = this.getTownSize() * 10;
-        if(Utils.useEconomy) {
+        if(getConfigManager().useEconomy) {
             worth += this.getMoney();
         }
         
@@ -489,7 +376,7 @@ public class Village {
     }
     
     public Village save() {
-        VillageUtils.SaveVillage(this);
+        getVillageManager().saveVillage(this);
         return this;
     }
     
@@ -555,7 +442,7 @@ public class Village {
         return this.playerPlots;
     }
     
-    public boolean ClaimChunk(OfflinePlayer p, Chunk c) {
+    public boolean claimChunk(OfflinePlayer p, Chunk c) {
         if(this.isChunkClaimed(c)) {
             return false;
         }

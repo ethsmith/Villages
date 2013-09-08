@@ -2,7 +2,6 @@ package com.domsplace.Villages.Threads;
 
 import com.domsplace.Villages.Bases.DataManagerBase;
 import com.domsplace.Villages.Bases.ThreadBase;
-import com.domsplace.Villages.Utils.VillageUtils;
 
 public class ConfigSaveThread extends ThreadBase {
     public ConfigSaveThread() {
@@ -12,7 +11,7 @@ public class ConfigSaveThread extends ThreadBase {
     @Override
     public void run() {
         log("Saving Data...");
-        DataManagerBase.CONFIG_MANAGER.saveConfig();
-        VillageUtils.SaveAllVillages();
+        DataManagerBase.CONFIG_MANAGER.save();
+        saveAllData();
     }
 }

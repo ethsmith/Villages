@@ -5,7 +5,7 @@ import com.domsplace.Villages.Enums.GriefType;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.VillageSQLUtils;
 import com.domsplace.Villages.Utils.VillageScoreboardUtils;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.Base;
 import com.domsplace.Villages.Bases.ListenerBase;
@@ -31,7 +31,7 @@ public class VillagesListener extends ListenerBase {
     
     @EventHandler(ignoreCancelled=true)
     public void onPlayerLogin(PlayerLoginEvent e) {
-        if(Utils.useSQL) {
+        if(getConfigManager().useSQL) {
             VillageSQLUtils.recordSQLPlayer(e.getPlayer());
         }
         VillageScoreboardUtils.SetupScoreboard();
@@ -48,7 +48,7 @@ public class VillagesListener extends ListenerBase {
     }
     
     public void onPlayerLeftServer(Player p) {
-        for(Village v : VillageUtils.Villages) {
+        for(Village v : VillageUtils.getVillages()) {
             v.sentWelcome.remove(p);
         }
         VillageScoreboardUtils.SetupScoreboard();
@@ -75,14 +75,14 @@ public class VillagesListener extends ListenerBase {
         
         Village village = VillageUtils.getVillageFromChunk(p.getLocation().getChunk());
         if(village == null) {
-            for(Village v : VillageUtils.Villages) {
+            for(Village v : VillageUtils.getVillages()) {
                 if(v == null) {
                     continue;
                 }
                 v.sentWelcome.remove(p);
             }
             if(getConfig().getBoolean("messages.leavevillage") && !sentWilderness.contains(p)) {
-                Utils.msgPlayer(p, gK("enterwilderness"));
+                msgPlayer(p, gK("enterwilderness"));
                 sentWilderness.add(p);
             }
             return;
@@ -96,7 +96,7 @@ public class VillagesListener extends ListenerBase {
             return;
         }
         
-        Utils.msgPlayer(p, ChatDefault + village.getDescription());
+        msgPlayer(p, ChatDefault + village.getDescription());
         village.sentWelcome.add(p);
         sentWilderness.remove(p);
     }
@@ -113,13 +113,13 @@ public class VillagesListener extends ListenerBase {
             if(getConfig().getBoolean("protection.griefwild")) return;
             
             e.setCancelled(true);
-            Utils.msgPlayer(e.getPlayer(), gK("nointeract"));
+            msgPlayer(e.getPlayer(), gK("nointeract"));
             return;
         }
         if(getConfig().getBoolean("protection.griefvillage")) return;
         if(lv.isResident(e.getPlayer())) return;
         e.setCancelled(true);
-        Utils.msgPlayer(e.getPlayer(), gK("nointeract"));
+        msgPlayer(e.getPlayer(), gK("nointeract"));
     }
     
     @EventHandler(priority = EventPriority.MONITOR)
@@ -167,7 +167,7 @@ public class VillagesListener extends ListenerBase {
         if(!killerInVillage || !attackedInVillage) {
             if(PVPWilderness) return;
             e.setCancelled(true);
-            Utils.msgPlayer(killer, gK("cantattackwilderness"));
+            msgPlayer(killer, gK("cantattackwilderness"));
             return;
         }
         
@@ -182,7 +182,7 @@ public class VillagesListener extends ListenerBase {
             }
             
             e.setCancelled(true);
-            Utils.msgPlayer(killer, gK("cantattackdifferentvillage"));
+            msgPlayer(killer, gK("cantattackdifferentvillage"));
             return;
         }
         
@@ -191,7 +191,7 @@ public class VillagesListener extends ListenerBase {
         }
         
         e.setCancelled(true);
-        Utils.msgPlayer(killer, gK("cantattacksamevillage"));
+        msgPlayer(killer, gK("cantattacksamevillage"));
     }
     
     @EventHandler(ignoreCancelled=true)
@@ -228,12 +228,12 @@ public class VillagesListener extends ListenerBase {
                 return;
             }
             
-            Utils.msgPlayer(e.getPlayer(), gK("chunkclaimedbyplayer"));
+            msgPlayer(e.getPlayer(), gK("chunkclaimedbyplayer"));
             e.setCancelled(true);
             return;
         }
         
         e.setCancelled(true);
-        Utils.msgPlayer(e.getPlayer(), gK("chunknotowned"));
+        msgPlayer(e.getPlayer(), gK("chunknotowned"));
     }
 }

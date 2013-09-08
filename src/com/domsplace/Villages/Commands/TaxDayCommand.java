@@ -2,7 +2,7 @@ package com.domsplace.Villages.Commands;
 
 import com.domsplace.Villages.DataManagers.UpkeepManager;
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.CommandBase;
 import com.domsplace.Villages.Bases.DataManagerBase;
@@ -22,7 +22,7 @@ public class TaxDayCommand extends CommandBase {
     @Override
     public boolean cmd(CommandSender cs, Command cmd, String label, String[] args) {
         if(!isPlayer(cs)) {
-            Utils.msgPlayer(cs, gK("playeronly"));
+            msgPlayer(cs, gK("playeronly"));
             return false;
         }
 
@@ -30,7 +30,7 @@ public class TaxDayCommand extends CommandBase {
         Village v = VillageUtils.getPlayerVillage(p);
 
         if(v == null) {
-            Utils.msgPlayer(cs, gK("notinvillage"));
+            msgPlayer(cs, gK("notinvillage"));
             return true;
         }
 
@@ -38,7 +38,7 @@ public class TaxDayCommand extends CommandBase {
         YamlConfiguration yml = YamlConfiguration.loadConfiguration(upkeepF);
         MemorySection ms = (MemorySection) yml.get(v.getName());
         if(ms == null) {
-            Utils.msgPlayer(cs, gK("error"));
+            msgPlayer(cs, gK("error"));
             return true;
         }
 
@@ -52,14 +52,14 @@ public class TaxDayCommand extends CommandBase {
             Date lastCheck = new Date(time);
             Date nextCheck = new Date(nextTime);
 
-            String nd = Utils.TimeAway(nextCheck);
+            String nd = getTimeUntilHuman(nextCheck);
 
-            Utils.msgPlayer(cs, gK("nexttaxday").replaceAll("%tax%", upkeep).replaceAll("%date%", nd));
+            msgPlayer(cs, gK("nexttaxday").replaceAll("%tax%", upkeep).replaceAll("%date%", nd));
             found++;
         }
 
         if(found == 0) {
-            Utils.msgPlayer(cs, gK("notaxes"));
+            msgPlayer(cs, gK("notaxes"));
         }
 
         return true;

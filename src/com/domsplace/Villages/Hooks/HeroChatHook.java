@@ -2,7 +2,7 @@ package com.domsplace.Villages.Hooks;
 
 import com.domsplace.Villages.Bases.PluginHookBase;
 import com.domsplace.Villages.Listeners.HeroChatListener;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.dthielke.herochat.Herochat;
 
 public class HeroChatHook extends PluginHookBase{
@@ -18,7 +18,7 @@ public class HeroChatHook extends PluginHookBase{
     
     @Override
     public void onHook() {
-        if(!Utils.useHerochat) return;
+        if(!getConfigManager().useHerochat) return;
         this.heroChatListener = new HeroChatListener();
     }
     

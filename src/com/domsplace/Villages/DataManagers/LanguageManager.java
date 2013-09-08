@@ -110,9 +110,12 @@ public class LanguageManager extends DataManagerBase {
         cDV("playervillage", "%d%Player %i%%p%%d% is in Village %i%%v%%d%.");
 
         //Save YML
-        if(language != oldConfig) {
-            language.save(languageFile);
-        }
+        this.save();
+    }
+    
+    @Override
+    public void trySave() throws IOException {
+        language.save(languageFile);
     }
     
     public void cDV(String key, Object defaultValue) {

@@ -31,11 +31,11 @@ public class VillageSQLUtils extends UtilsBase {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             String url = "jdbc:mysql://"+sqlHost+":"+sqlPort+"/" + sqlDB;
-            Utils.msgConsole("Opening SQL connection to " + url);
+            msgConsole("Opening SQL connection to " + url);
             dbCon = DriverManager.getConnection(url,sqlUser,sqlPass);
             return true;
         } catch (Exception ex) {
-            Utils.Error("Failed to connect to SQL.", ex);
+            Error("Failed to connect to SQL.", ex);
             return false;
         }
     }
@@ -46,7 +46,7 @@ public class VillageSQLUtils extends UtilsBase {
             boolean result = sqlStmt.execute(query);
             return true;
         } catch (SQLException ex) {
-            Utils.Error("Failed to execute query.", ex);
+            Error("Failed to execute query.", ex);
         }
         return false;
     }
@@ -57,7 +57,7 @@ public class VillageSQLUtils extends UtilsBase {
             int result = sqlStmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
             return result;
         } catch (SQLException ex) {
-            Utils.Error("Failed to execute query and return ID.", ex);
+            Error("Failed to execute query and return ID.", ex);
         }
         return -1;
     }
@@ -76,7 +76,7 @@ public class VillageSQLUtils extends UtilsBase {
             }
         }
         catch (Exception sqlEx) {
-            Utils.Error("Failed to fetch SQL. ", sqlEx);
+            Error("Failed to fetch SQL. ", sqlEx);
         }
         
         if(results.size() < 1) {
@@ -89,9 +89,9 @@ public class VillageSQLUtils extends UtilsBase {
     public static void sqlClose() {
         try {
             dbCon.close();
-            Utils.msgConsole("Closing SQL Connection...");
+            msgConsole("Closing SQL Connection...");
         } catch (Exception ex) {
-            Utils.Error("Failed to close SQL Connection.", ex);
+            Error("Failed to close SQL Connection.", ex);
         }
     }
     

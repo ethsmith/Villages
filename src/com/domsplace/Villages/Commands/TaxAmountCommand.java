@@ -3,7 +3,7 @@ package com.domsplace.Villages.Commands;
 import com.domsplace.Villages.DataManagers.UpkeepManager;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Utils.VillageEconomyUtils;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.CommandBase;
 import com.domsplace.Villages.Bases.DataManagerBase;
@@ -28,7 +28,7 @@ public class TaxAmountCommand extends CommandBase {
     public boolean cmd(CommandSender sender, Command cmd, String label, String[] args) {
         UpkeepManager VillageUpkeepManager = DataManagerBase.UPKEEP_MANAGER;
         if(!isPlayer(sender)) {
-            Utils.msgPlayer(sender, gK("playeronly"));
+            msgPlayer(sender, gK("playeronly"));
             return false;
         }
 
@@ -36,22 +36,22 @@ public class TaxAmountCommand extends CommandBase {
         Village v = VillageUtils.getPlayerVillage(p);
 
         if(v == null) {
-            Utils.msgPlayer(sender, gK("notinvillage"));
+            msgPlayer(sender, gK("notinvillage"));
             return true;
         }
 
         if(args.length <= 0) {
             int count = 0;
-            Utils.msgPlayer(sender, gK("taxes"));
+            msgPlayer(sender, gK("taxes"));
 
             for(String upkeep : VillageUpkeepManager.upkeeps()) {
                 count ++;
 
-                Utils.msgPlayer(sender, upkeep);
+                msgPlayer(sender, upkeep);
             }
 
             if(count == 0) {
-                Utils.msgPlayer(sender, gK("notaxes"));
+                msgPlayer(sender, gK("notaxes"));
             }
 
             return true;
@@ -63,7 +63,7 @@ public class TaxAmountCommand extends CommandBase {
         }
 
         if(!cap.contains(args[0].toLowerCase())) {
-            Utils.msgPlayer(sender, gK("cantfindtax"));
+            msgPlayer(sender, gK("cantfindtax"));
             return true;
         }
 
@@ -94,7 +94,7 @@ public class TaxAmountCommand extends CommandBase {
         for(int i = 0; i < times; i++) {
             double cost = VillageUpkeepManager.Upkeep.getDouble(n + ".money");
 
-            List<ItemStack> items = Utils.GetItemFromString(VillageUpkeepManager.Upkeep.getStringList(n + ".items"));
+            List<ItemStack> items = getItemFromString(VillageUpkeepManager.Upkeep.getStringList(n + ".items"));
 
             for(ItemStack is : items) {
                 itemsDue.add(is);
@@ -103,10 +103,10 @@ public class TaxAmountCommand extends CommandBase {
             moneyDue += cost;
         }
 
-        Utils.msgPlayer(sender, gK("taxesdue").replaceAll("%tax%", n));
+        msgPlayer(sender, gK("taxesdue").replaceAll("%tax%", n));
 
-        if(Utils.useEconomy) {
-            Utils.msgPlayer(sender, ChatImportant + "Money: " + ChatDefault + VillageEconomyUtils.economy.format(moneyDue));
+        if(getConfigManager().useEconomy) {
+            msgPlayer(sender, ChatImportant + "Money: " + ChatDefault + VillageEconomyUtils.economy.format(moneyDue));
         }
 
         Map<Material, Integer> itemAmounts = new HashMap<Material, Integer>();
@@ -124,9 +124,9 @@ public class TaxAmountCommand extends CommandBase {
 
         for(Material m : itemAmounts.keySet()) {
             int am = itemAmounts.get(m);
-            String nm = Utils.CapitalizeFirstLetter(m.name().toLowerCase().replaceAll("_", " "));
+            String nm = capitalizeFirstLetter(m.name().toLowerCase().replaceAll("_", " "));
 
-            Utils.msgPlayer(
+            msgPlayer(
                 sender,
                 ChatImportant + "[" + ChatDefault + am + "x" + ChatImportant + "] " +
                 ChatDefault + nm

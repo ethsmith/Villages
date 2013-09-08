@@ -3,7 +3,7 @@ package com.domsplace.Villages.DataManagers;
 import com.domsplace.Villages.Listeners.VillagesListener;
 import com.domsplace.Villages.Utils.VillageEconomyUtils;
 import com.domsplace.Villages.Utils.VillageSQLUtils;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.Base;
 import com.domsplace.Villages.Bases.CommandBase;
@@ -24,6 +24,12 @@ public class ConfigManager extends DataManagerBase {
     public YamlConfiguration config;
     public File configFile;
     
+    public boolean useSQL = false;
+    public boolean useEconomy = false;
+    public boolean useTagAPI = false;
+    public boolean useWorldGuard = false;
+    public boolean useHerochat = false;
+    
     public ConfigManager() {
         super(ManagerType.CONFIG);
     }
@@ -40,7 +46,7 @@ public class ConfigManager extends DataManagerBase {
             configFile.createNewFile();
         }
 
-        boolean oldSQL = Utils.useSQL;
+        boolean oldSQL = useSQL;
 
         config = YamlConfiguration.loadConfiguration(configFile);
         
@@ -217,20 +223,20 @@ public class ConfigManager extends DataManagerBase {
 
         VillageUtils.borderRadius = config.getInt("townborder");
 
-        Base.ChatError = Utils.ColorString(config.getString("colors.error"));
+        Base.ChatError = ColorString(config.getString("colors.error"));
 
         if(!config.getString("colors.prefix").equalsIgnoreCase("")) {
-            Base.ChatPrefix = Utils.ColorString(config.getString("colors.prefix")) + " ";
+            Base.ChatPrefix = ColorString(config.getString("colors.prefix")) + " ";
         } else {
             Base.ChatPrefix = "";
         }
 
-        Base.ChatDefault = Utils.ColorString(config.getString("colors.default"));
-        Base.ChatImportant = Utils.ColorString(config.getString("colors.important"));
-        Base.VillageColor = Utils.ColorString(config.getString("colors.samevillage"));
-        Base.EnemyColor = Utils.ColorString(config.getString("colors.enemy"));
-        Base.PlayerChatPrefix = Utils.ColorString(config.getString("colors.chatprefix")) + ChatColor.RESET;
-        Base.WildernessPrefix = Utils.ColorString(config.getString("colors.wilderness"));
+        Base.ChatDefault = ColorString(config.getString("colors.default"));
+        Base.ChatImportant = ColorString(config.getString("colors.important"));
+        Base.VillageColor = ColorString(config.getString("colors.samevillage"));
+        Base.EnemyColor = ColorString(config.getString("colors.enemy"));
+        Base.PlayerChatPrefix = ColorString(config.getString("colors.chatprefix")) + ChatColor.RESET;
+        Base.WildernessPrefix = ColorString(config.getString("colors.wilderness"));
 
         Base.UsePlots = config.getBoolean("use.villageplots");
         
@@ -238,11 +244,11 @@ public class ConfigManager extends DataManagerBase {
             UpdateThread updateThread = new UpdateThread();
         }
 
-        Utils.useSQL = config.getBoolean("sql.use");
-        Utils.useTagAPI = config.getBoolean("colors.colornames");
-        Utils.useWorldGuard = config.getBoolean("use.worldguard");
-        Utils.useEconomy = config.getBoolean("use.economy");
-        Utils.useHerochat = config.getBoolean("use.herochat");
+        useSQL = config.getBoolean("sql.use");
+        useTagAPI = config.getBoolean("colors.colornames");
+        useWorldGuard = config.getBoolean("use.worldguard");
+        useEconomy = config.getBoolean("use.economy");
+        useHerochat = config.getBoolean("use.herochat");
 
         VillagesListener.PVPWilderness = config.getBoolean("protection.pvpinwilderness");
         VillagesListener.PVPEnemyVillage = config.getBoolean("protection.pvpdifferentvillage");
@@ -259,27 +265,27 @@ public class ConfigManager extends DataManagerBase {
         /*** Try to use Economy ***/
         if(config.getBoolean("use.economy")) {
             if(!VillageEconomyUtils.setupEconomy()) {
-                Utils.Error("Failed to load Vault", null);
-                Utils.useEconomy = false;
+                Error("Failed to load Vault", null);
+                useEconomy = false;
             } else {
-                Utils.msgConsole("Hooked into Economy.");
+                msgConsole("Hooked into Economy.");
             }
         }
 
         /*** Try to use SQL ***/
         if(config.getBoolean("sql.use")) {
             if(!VillageSQLUtils.sqlConnect()) {
-                Utils.useSQL = false;
+                useSQL = false;
             } else {
-                Utils.msgConsole("Connected to SQL successfully.");
+                msgConsole("Connected to SQL successfully.");
                 SQLManager sqlManager = new SQLManager();
                 if(!sqlManager.load()) {
-                    Utils.Error("Failed to setup SQL Database", null);
-                    Utils.useSQL = false;
+                    Error("Failed to setup SQL Database", null);
+                    useSQL = false;
                 }
             }
         } else if(oldSQL) {
-            Utils.useSQL = false;
+            useSQL = false;
             VillageSQLUtils.sqlClose();
         }
 
@@ -294,18 +300,15 @@ public class ConfigManager extends DataManagerBase {
             }
         }
 
-        saveConfig();
+        this.save();
         PluginHookBase.hookAll();
         
         //Update CommandPermission messages
         CommandBase.updateAllPermissionMessages();
     }
     
-    public void saveConfig() {
-        try {
-            config.save(configFile);
-        } catch (IOException ex) {
-            Utils.Error("Failed to save config.", ex);
-        }
+    @Override
+    public void trySave() throws IOException {
+        config.save(configFile);
     }
 }

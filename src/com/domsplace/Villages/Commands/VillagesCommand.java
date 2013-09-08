@@ -1,7 +1,7 @@
 package com.domsplace.Villages.Commands;
 
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.CommandBase;
 import java.util.List;
@@ -15,7 +15,7 @@ public class VillagesCommand extends CommandBase {
 
     @Override
     public boolean cmd(CommandSender sender, Command cmd, String label, String[] args) {
-        List<Village> villages = VillageUtils.Villages;
+        List<Village> villages = VillageUtils.getVillages();
 
         String msg = ChatImportant + "Villages: " + ChatDefault;
         for(int i = 0; i < villages.size(); i++) {
@@ -25,7 +25,7 @@ public class VillagesCommand extends CommandBase {
             }
         }
 
-        Utils.msgPlayer(sender, msg);
+        msgPlayer(sender, msg);
         return true;
     }
 }

@@ -1,7 +1,7 @@
 package com.domsplace.Villages.Commands;
 
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.CommandBase;
 import com.domsplace.Villages.Objects.SubCommand;
@@ -17,18 +17,18 @@ public class BroadcastCommand extends CommandBase {
     @Override
     public boolean cmd(CommandSender sender, Command cmd, String label, String[] args) {
         if(args.length < 1) {
-            Utils.msgPlayer(sender, gK("entervillagename"));
+            msgPlayer(sender, gK("entervillagename"));
             return false;
         }
 
         if(args.length < 2) {
-            Utils.msgPlayer(sender, gK("entermessage"));
+            msgPlayer(sender, gK("entermessage"));
             return false;
         }
 
         Village v = VillageUtils.getVillage(args[0]);
         if(v == null) {
-            Utils.msgPlayer(sender, gK("cantfindvillage"));
+            msgPlayer(sender, gK("cantfindvillage"));
             return true;
         }
 
@@ -42,9 +42,9 @@ public class BroadcastCommand extends CommandBase {
         }
         msg = ChatDefault + "[" + ChatImportant + v.getName() + ChatDefault + "] " + ChatImportant + "Broadcast: " + ChatDefault + msg;
 
-        v.SendMessage(msg);
+        v.sendMessage(msg);
         if(!v.isResident(sender)) {
-            Utils.msgPlayer(sender, msg);
+            msgPlayer(sender, msg);
         }
         return true;
     }

@@ -1,7 +1,7 @@
 package com.domsplace.Villages.Commands;
 
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.Utils;
+
 import com.domsplace.Villages.Utils.VillageEconomyUtils;
 import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.CommandBase;
@@ -34,7 +34,7 @@ public class VillageCommand extends CommandBase {
         this.addSubCommand(SubCommand.make("expand", "amount"));
         this.addSubCommand(SubCommand.make("description", "message"));
         
-        if(Utils.UsePlots) {
+        if(UsePlots) {
             this.addSubCommand(SubCommand.make("plot",
                     SubCommand.make("check"),
                     SubCommand.make("set", 
@@ -45,7 +45,7 @@ public class VillageCommand extends CommandBase {
             ));
         }
         
-        if(Utils.useEconomy) {
+        if(getConfigManager().useEconomy) {
             this.addSubCommand(SubCommand.make("withdraw", "amount"));
             this.addSubCommand(SubCommand.make("withdrawl", "amount"));
             this.addSubCommand(SubCommand.make("deposit", "amount"));
@@ -56,7 +56,7 @@ public class VillageCommand extends CommandBase {
     public boolean cmd(CommandSender cs, Command cmd, String string, String[] args) {
         if(!isPlayer(cs)) {
             if(args.length == 0) {
-                Utils.msgPlayer(cs, gK("needvillagename"));
+                msgPlayer(cs, gK("needvillagename"));
             return false;
             }
         }
@@ -67,9 +67,9 @@ public class VillageCommand extends CommandBase {
         } else if(args.length >= 1) {
             String command = args[0].toLowerCase();
 
-            if(command.equalsIgnoreCase("deposit") && Utils.useEconomy && isPlayer(cs)) {
+            if(command.equalsIgnoreCase("deposit") && getConfigManager().useEconomy && isPlayer(cs)) {
                 if(args.length < 2) {
-                    Utils.msgPlayer(cs, gK("enteramount"));
+                    msgPlayer(cs, gK("enteramount"));
                     return true;
                 }
 
@@ -77,12 +77,12 @@ public class VillageCommand extends CommandBase {
                 try {
                     amount = Double.parseDouble(args[1]);
                 } catch(Exception ex) {
-                    Utils.msgPlayer(cs, gK("mustbenumber"));
+                    msgPlayer(cs, gK("mustbenumber"));
                     return true;
                 }
 
                 if(amount <= 0) {
-                    Utils.msgPlayer(cs, gK("mustbeone"));
+                    msgPlayer(cs, gK("mustbeone"));
                     return true;
                 }
 
@@ -90,7 +90,7 @@ public class VillageCommand extends CommandBase {
                 double pAmount = VillageEconomyUtils.economy.getBalance(cs.getName());
 
                 if(pAmount < amount) {
-                    Utils.msgPlayer(cs, gK("notenoughmoney", amount));
+                    msgPlayer(cs, gK("notenoughmoney", amount));
                     return true;
                 }
 
@@ -98,20 +98,20 @@ public class VillageCommand extends CommandBase {
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
 
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 v.addMoney(amount);
                 VillageEconomyUtils.economy.withdrawPlayer(cs.getName(), amount);
-                v.SendMessage(gK("depositedmoney", (Player) cs, amount));
-                VillageUtils.SaveAllVillages();
+                v.sendMessage(gK("depositedmoney", (Player) cs, amount));
+                saveAllData();
                 return true;
             }
 
-            if((command.equalsIgnoreCase("withdraw") || command.equalsIgnoreCase("withdrawl")) && Utils.useEconomy && (cs instanceof Player)) {
+            if((command.equalsIgnoreCase("withdraw") || command.equalsIgnoreCase("withdrawl")) && getConfigManager().useEconomy && (cs instanceof Player)) {
                 if(args.length < 2) {
-                    Utils.msgPlayer(cs, gK("enteramount"));
+                    msgPlayer(cs, gK("enteramount"));
                     return true;
                 }
 
@@ -119,12 +119,12 @@ public class VillageCommand extends CommandBase {
                 try {
                     amount = Double.parseDouble(args[1]);
                 } catch(Exception ex) {
-                    Utils.msgPlayer(cs, gK("mustbenumber"));
+                    msgPlayer(cs, gK("mustbenumber"));
                     return true;
                 }
 
                 if(amount <= 0) {
-                    Utils.msgPlayer(cs, gK("mustbeone"));
+                    msgPlayer(cs, gK("mustbeone"));
                     return true;
                 }
 
@@ -132,7 +132,7 @@ public class VillageCommand extends CommandBase {
                 double pAmount = VillageEconomyUtils.economy.getBalance(cs.getName());
 
                 if(pAmount < amount) {
-                    Utils.msgPlayer(cs, gK("notenoughmoney", amount));
+                    msgPlayer(cs, gK("notenoughmoney", amount));
                     return true;
                 }
 
@@ -140,93 +140,93 @@ public class VillageCommand extends CommandBase {
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
 
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 v.addMoney(-amount);
                 VillageEconomyUtils.economy.depositPlayer(cs.getName(), amount);
-                v.SendMessage(gK("withdrawledmoney", (Player) cs, amount));
-                VillageUtils.SaveAllVillages();
+                v.sendMessage(gK("withdrawledmoney", (Player) cs, amount));
+                saveAllData();
                 return true;
             }
 
             if(command.equalsIgnoreCase("leave") && (cs instanceof Player)) {
                 village = VillageUtils.getPlayerVillage((Player) cs);
                 if(village == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 if(village.isMayor((Player) cs)) {
-                    Utils.msgPlayer(cs, gK("leavevillagemayor"));
+                    msgPlayer(cs, gK("leavevillagemayor"));
                     return true;
                 }
 
-                village.SendMessage(gK("leftvillage", (Player) cs));
+                village.sendMessage(gK("leftvillage", (Player) cs));
                 village.removeResident((Player) cs);
-                VillageUtils.SaveAllVillages();
+                saveAllData();
                 return true;
             }
 
             if(command.equalsIgnoreCase("close") && (cs instanceof Player)) {
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 if(!v.isMayor((Player) cs)) {
-                    Utils.msgPlayer(cs, gK("closevillagenotmayor"));
+                    msgPlayer(cs, gK("closevillagenotmayor"));
                     return true;
                 }
 
-                if(Utils.useEconomy) {
+                if(getConfigManager().useEconomy) {
                     VillageEconomyUtils.economy.depositPlayer(cs.getName(), v.getMoney());
                 }
-                VillageUtils.DeleteVillage(v);
-                VillageUtils.SaveAllVillages();
+                getVillageManager().deleteVillage(v);
+                saveAllData();
                 return true;
             }
 
             if(command.equalsIgnoreCase("spawn") && (cs instanceof Player)) {
                 if(!cs.hasPermission("Villages.villagespawn")) {
-                    Utils.msgPlayer(cs, gK("nopermission"));
+                    msgPlayer(cs, gK("nopermission"));
                     return true;
                 }
 
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 ((Player) cs).teleport(v.getSpawnBlock());
-                Utils.msgPlayer(cs, gK("goingtovillage"));
-                VillageUtils.SaveAllVillages();
+                msgPlayer(cs, gK("goingtovillage"));
+                saveAllData();
                 return true;
             }
 
             if(command.equalsIgnoreCase("description")) {
                 if(!(cs instanceof Player)) {
-                    Utils.msgPlayer(cs, gK("playeronly"));
+                    msgPlayer(cs, gK("playeronly"));
                     return true;
                 }
 
                 if(args.length < 2) {
-                    Utils.msgPlayer(cs, gK("enterdescription"));
+                    msgPlayer(cs, gK("enterdescription"));
                     return true;
                 }
 
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 Player s = (Player) cs;
                 if(!v.isMayor(s)) {
-                    Utils.msgPlayer(cs, gK("notmayordescription"));
+                    msgPlayer(cs, gK("notmayordescription"));
                     return true;
                 }
 
@@ -239,26 +239,26 @@ public class VillageCommand extends CommandBase {
                     }
                 }
 
-                v.SendMessage(gK("newdescription").replaceAll("%description%", ChatColor.ITALIC + msg));
+                v.sendMessage(gK("newdescription").replaceAll("%description%", ChatColor.ITALIC + msg));
                 v.setDescription(msg);
-                VillageUtils.SaveAllVillages();
+                saveAllData();
                 return true;
             }
 
             if(command.equalsIgnoreCase("msg")) {
                 if(!(cs instanceof Player)) {
-                    Utils.msgPlayer(cs, gK("playeronly"));
+                    msgPlayer(cs, gK("playeronly"));
                     return true;
                 }
 
                 if(args.length < 2) {
-                    Utils.msgPlayer(cs, gK("entermessage"));
+                    msgPlayer(cs, gK("entermessage"));
                     return true;
                 }
 
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
@@ -272,67 +272,67 @@ public class VillageCommand extends CommandBase {
                     }
                 }
 
-                v.SendMessage(msg);
+                v.sendMessage(msg);
                 return true;
             }
 
             if(command.equalsIgnoreCase("kick") && (cs instanceof Player)) {
                 if(args.length < 2) {
-                    Utils.msgPlayer(cs, gK("enterkickname"));
+                    msgPlayer(cs, gK("enterkickname"));
                     return true;
                 }
 
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 Player s = (Player) cs;
                 if(!v.isMayor(s)) {
-                    Utils.msgPlayer(cs, gK("mayorkickonly"));
+                    msgPlayer(cs, gK("mayorkickonly"));
                     return true;
                 }
 
                 OfflinePlayer p = Bukkit.getOfflinePlayer(args[1]);
 
                 if(v.isMayor(p)) {
-                    Utils.msgPlayer(cs, gK("cantkickmayor"));
+                    msgPlayer(cs, gK("cantkickmayor"));
                     return true;
                 }
 
                 if(!v.isResident(p)) {
-                    Utils.msgPlayer(cs, gK("notresident").replaceAll("%p%", args[1]));
+                    msgPlayer(cs, gK("notresident").replaceAll("%p%", args[1]));
                     return true;
                 }
 
-                v.SendMessage(gK("residentkicked", p));
+                v.sendMessage(gK("residentkicked", p));
                 v.removeResident(p);
-                VillageUtils.SaveAllVillages();
+                saveAllData();
                 return true;
             }
 
             if(command.equalsIgnoreCase("expand")) {
                 if(!(cs instanceof Player)) {
-                    Utils.msgPlayer(cs, gK("playeronly"));
+                    msgPlayer(cs, gK("playeronly"));
                     return true;
                 }
 
                 //Expanding the town
                 if(args.length < 2) {
-                    Utils.msgPlayer(cs, gK("enterchunks"));
+                    msgPlayer(cs, gK("enterchunks"));
                     return true;
                 }
 
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 Player s = (Player) cs;
                 if(!v.isMayor(s)) {
-                    Utils.msgPlayer(cs, gK("onlymayorexpand"));
+                    msgPlayer(cs, gK("onlymayorexpand"));
                     return true;
                 }
 
@@ -340,17 +340,17 @@ public class VillageCommand extends CommandBase {
                 try {
                      amount = Integer.parseInt(args[1]);
                 } catch (Exception ex) {
-                    Utils.msgPlayer(cs, gK("mustbenumber"));
+                    msgPlayer(cs, gK("mustbenumber"));
                     return true;
                 }
 
                 if(amount < 1) {
-                    Utils.msgPlayer(cs, gK("mustbeone"));
+                    msgPlayer(cs, gK("mustbeone"));
                     return true;
                 }
 
                 if(amount > 5) {
-                    Utils.msgPlayer(cs, gK("maxofthreeexpand"));
+                    msgPlayer(cs, gK("maxofthreeexpand"));
                     return true;
                 }
 
@@ -360,39 +360,39 @@ public class VillageCommand extends CommandBase {
                 double cost = getConfig().getDouble("cost.expand") * chunksToExpand;
                 double totalcost = cost * amount;
                 //Ensure town has enough
-                if(totalcost > v.getMoney() && Utils.useEconomy) {
-                    Utils.msgPlayer(cs, gK("villagebankneedmore", totalcost));
+                if(totalcost > v.getMoney() && getConfigManager().useEconomy) {
+                    msgPlayer(cs, gK("villagebankneedmore", totalcost));
                     return true;
                 }
 
                 //Expand town//
                 int oldsize = v.getTownSize();
 
-                Utils.msgConsole(ChatImportant + v.getName() + ChatDefault + " is expanding " + chunksToExpand + " chunks.");
+                msgConsole(ChatImportant + v.getName() + ChatDefault + " is expanding " + chunksToExpand + " chunks.");
 
                 //Msg player, since this lags the server a tad
-                Utils.msgPlayer(cs, gK("expandingvillage"));
+                msgPlayer(cs, gK("expandingvillage"));
 
                 //Set new size
                 v.setTownSize(v.getTownSize() + amount);
 
                 if(VillageUtils.doVillagesOverlap(v)) {
                     v.setTownSize(oldsize);
-                    Utils.msgPlayer(cs, gK("expandvillageoverlap"));
+                    msgPlayer(cs, gK("expandvillageoverlap"));
                     return true;
                 }
 
                 if(WorldGuardHook.instance.doesVillageOverlapRegion(v)) {
                     v.setTownSize(oldsize);
-                    Utils.msgPlayer(cs, gK("expandregionoverlap"));
+                    msgPlayer(cs, gK("expandregionoverlap"));
                     return true;
                 }
 
-                if(Utils.useEconomy) {
+                if(getConfigManager().useEconomy) {
                     v.addMoney(-totalcost);
                 }
-                v.SendMessage(gK("villageexpanded").replaceAll("%n%", "" + amount));
-                VillageUtils.SaveAllVillages();
+                v.sendMessage(gK("villageexpanded").replaceAll("%n%", "" + amount));
+                saveAllData();
                 return true;
             }
 
@@ -400,7 +400,7 @@ public class VillageCommand extends CommandBase {
                 Player p = (Player) cs;
                 Village v = VillageUtils.getPlayerVillage((Player) cs);
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
@@ -411,12 +411,12 @@ public class VillageCommand extends CommandBase {
             //Village Plots
             if(command.equalsIgnoreCase("plot") && UsePlots) {
                 if(!(cs instanceof Player)) {
-                    Utils.msgPlayer(cs, gK("playeronly"));
+                    msgPlayer(cs, gK("playeronly"));
                     return true;
                 }
 
                 if(args.length < 2) {
-                    Utils.msgPlayer(cs, gK("notenougharguments"));
+                    msgPlayer(cs, gK("notenougharguments"));
                     return true;
                 }
 
@@ -427,49 +427,49 @@ public class VillageCommand extends CommandBase {
                     Chunk c = p.getLocation().getChunk();
 
                     if(c == null) {
-                        Utils.msgPlayer(cs, gK("error"));
+                        msgPlayer(cs, gK("error"));
                         return true;
                     }
 
                     Village v = VillageUtils.getPlayerVillage(p);
                     if(v == null) {
-                        Utils.msgPlayer(cs, gK("notinvillage"));
+                        msgPlayer(cs, gK("notinvillage"));
                         return true;
                     }
 
                     if(!v.isChunkInTown(c)) {
-                        Utils.msgPlayer(cs, gK("plotnotinvillage"));
+                        msgPlayer(cs, gK("plotnotinvillage"));
                         return true;
                     }
 
                     //Check if Chunk is claimed
                     if(v.isChunkClaimed(c)) {
                         //Chunk has been claimed, get the owner.
-                        Utils.msgPlayer(cs, gK("claimedchunkinfo", v.getPlayerFromChunk(c)));
+                        msgPlayer(cs, gK("claimedchunkinfo", v.getPlayerFromChunk(c)));
                         return true;
                     }
 
                     //Chunk isn't claimed, try to claim.
 
-                    if(Utils.useEconomy) {
+                    if(getConfigManager().useEconomy) {
                         //Make sure they have the cash
                         double playerBalance = VillageEconomyUtils.economy.getBalance(p.getName());
                         double claimPrice = v.getChunkPrice(c);
 
                         if(playerBalance < claimPrice) {
-                            Utils.msgPlayer(cs, gK("notenoughmoney", claimPrice));
+                            msgPlayer(cs, gK("notenoughmoney", claimPrice));
                             return true;
                         }
                     }
 
                     //Try to claim chunk
-                    if(!v.ClaimChunk(p, c)) {
-                        Utils.msgPlayer(cs, gK("error"));
+                    if(!v.claimChunk(p, c)) {
+                        msgPlayer(cs, gK("error"));
                         return true;
                     }
 
                     //Claimed chunk, charge player
-                    if(Utils.useEconomy) {
+                    if(getConfigManager().useEconomy) {
                         //Make sure they have the cash
                         double playerBalance = VillageEconomyUtils.economy.getBalance(p.getName());
                         double claimPrice = v.getChunkPrice(c);
@@ -477,27 +477,27 @@ public class VillageCommand extends CommandBase {
                         v.addMoney(claimPrice);
                     }
 
-                    Utils.msgPlayer(cs, gK("claimedchunk", c));
+                    msgPlayer(cs, gK("claimedchunk", c));
                     return true;
                 }
 
                 if(iArg.equalsIgnoreCase("set")) {
                     //Try to set chunk settings, price etc
                     if(args.length < 4) {
-                        Utils.msgPlayer(cs, gK("notenougharguments"));
+                        msgPlayer(cs, gK("notenougharguments"));
                         return true;
                     }
 
                     //Make sure player is in a villaeg
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
-                        Utils.msgPlayer(cs, gK("notinvillage"));
+                        msgPlayer(cs, gK("notinvillage"));
                         return true;
                     }
 
                     //Make sure it's the mayor trying to do this.
                     if(!v.isMayor(p)) {
-                        Utils.msgPlayer(cs, gK("onlymayorplot"));
+                        msgPlayer(cs, gK("onlymayorplot"));
                         return true;
                     }
 
@@ -505,7 +505,7 @@ public class VillageCommand extends CommandBase {
                     Chunk c = p.getLocation().getChunk();
 
                     if(!v.isChunkInTown(c)) {
-                        Utils.msgPlayer(cs, gK("plotnotinvillage"));
+                        msgPlayer(cs, gK("plotnotinvillage"));
                         return true;
                     }
 
@@ -513,23 +513,23 @@ public class VillageCommand extends CommandBase {
 
                     if(sArg.equalsIgnoreCase("owner")) {
                         //Set the owner at the current chunk.
-                        OfflinePlayer tplayer = Utils.getOfflinePlayer(cs, args[3]);
+                        OfflinePlayer tplayer = getOfflinePlayer(cs, args[3]);
                         if(tplayer == null) {
-                            Utils.msgPlayer(cs, gK("playernotfound").replaceAll("%p%", args[3]));
+                            msgPlayer(cs, gK("playernotfound").replaceAll("%p%", args[3]));
                             return true;
                         }
 
                         if(!v.isResident(tplayer)) {
-                            Utils.msgPlayer(cs, gK("notresident", tplayer));
+                            msgPlayer(cs, gK("notresident", tplayer));
                             return true;
                         }
 
                         //Force claim chunk
                         v.forceClaim(tplayer, c);
-                        Utils.msgPlayer(cs, gK("setplotowner", tplayer));
+                        msgPlayer(cs, gK("setplotowner", tplayer));
 
                         if(tplayer.isOnline()) {
-                            Utils.msgPlayer(tplayer, gK("chunkclaimed", c));
+                            msgPlayer(tplayer, gK("chunkclaimed", c));
                         }
                         return true;
                     }
@@ -542,22 +542,22 @@ public class VillageCommand extends CommandBase {
                         try {
                             amount = Double.parseDouble(args[3]);
                         } catch(NumberFormatException ex) {
-                            Utils.msgPlayer(cs, gK("notmoney"));
+                            msgPlayer(cs, gK("notmoney"));
                             return true;
                         }
 
                         if(amount < 0) {
-                            Utils.msgPlayer(cs, gK("mustbeone"));
+                            msgPlayer(cs, gK("mustbeone"));
                             return true;
                         }
 
                         //Set the chunk price
                         v.setChunkPrice(c, amount);
-                        Utils.msgPlayer(cs, gK("setplotprice", amount));
+                        msgPlayer(cs, gK("setplotprice", amount));
                         return true;
                     }
 
-                    Utils.msgPlayer(cs, gK("invalidargument"));
+                    msgPlayer(cs, gK("invalidargument"));
                     return true;
                 }
 
@@ -565,87 +565,87 @@ public class VillageCommand extends CommandBase {
                     Chunk c = p.getLocation().getChunk();
 
                     if(c == null) {
-                        Utils.msgPlayer(cs, gK("error"));
+                        msgPlayer(cs, gK("error"));
                         return true;
                     }
 
                     Village v = VillageUtils.getPlayerVillage((Player) cs);
                     if(v == null) {
-                        Utils.msgPlayer(cs, gK("notinvillage"));
+                        msgPlayer(cs, gK("notinvillage"));
                         return true;
                     }
 
                     if(!v.isChunkInTown(c)) {
-                        Utils.msgPlayer(cs, gK("plotnotinvillage"));
+                        msgPlayer(cs, gK("plotnotinvillage"));
                         return true;
                     }
 
                     //Check if Chunk is claimed
                     if(v.isChunkClaimed(c)) {
                         //Chunk has been claimed, get the owner.
-                        Utils.msgPlayer(cs, gK("claimedchunkinfo", v.getPlayerFromChunk(c)));
+                        msgPlayer(cs, gK("claimedchunkinfo", v.getPlayerFromChunk(c)));
                         return true;
                     }
 
                     //Chunk isn't claimed, show pricing details.
                     String message = gK("chunkavailable");
 
-                    if(Utils.useEconomy) {
+                    if(getConfigManager().useEconomy) {
                         double d = v.getChunkPrice(c);
                         message += ChatDefault + " Cost: " + ChatImportant + VillageEconomyUtils.economy.format(d);
                     }
 
-                    Utils.msgPlayer(cs, message);
+                    msgPlayer(cs, message);
                     return true;
                 }
 
-                Utils.msgPlayer(cs, gK("invalidargument"));
+                msgPlayer(cs, gK("invalidargument"));
                 return true;
             }
 
             if(command.equalsIgnoreCase("lookup")) {
                 if(!cs.hasPermission("Villages.lookup")) {
-                    Utils.msgPlayer(cs, gK("nopermission"));
+                    msgPlayer(cs, gK("nopermission"));
                     return true;
                 }
                 if(args.length < 2) {
-                    Utils.msgPlayer(cs, gK("enterplayer"));
+                    msgPlayer(cs, gK("enterplayer"));
                     return false;
                 }
-                OfflinePlayer p = Utils.getOfflinePlayer(cs, args[1]);
+                OfflinePlayer p = getOfflinePlayer(cs, args[1]);
                 if(p == null) {
-                    Utils.msgPlayer(cs, gK("playernotfound").replaceAll("%p%", args[1]));
+                    msgPlayer(cs, gK("playernotfound").replaceAll("%p%", args[1]));
                     return true;
                 }
 
                 Village v = VillageUtils.getPlayerVillage(p);
                 if(v == null) {
-                    Utils.msgPlayer(cs, gK("playernotinvillage", p));
+                    msgPlayer(cs, gK("playernotinvillage", p));
                     return true;
                 }
 
-                Utils.msgPlayer(cs, gK("player").replaceAll("%v%", v.getName()));
+                msgPlayer(cs, gK("player").replaceAll("%v%", v.getName()));
                 return true;
             }
 
             if(command.equalsIgnoreCase("explode") && (cs instanceof Player)) {
                 if(!cs.hasPermission("Villages.explode")) {
-                    Utils.msgPlayer(cs, gK("nopermission"));
+                    msgPlayer(cs, gK("nopermission"));
                     return true;
                 }
 
                 village = VillageUtils.getPlayerVillage((Player) cs);
                 if(village == null) {
-                    Utils.msgPlayer(cs, gK("notinvillage"));
+                    msgPlayer(cs, gK("notinvillage"));
                     return true;
                 }
 
                 if(!village.isMayor((Player) cs)) {
-                    Utils.msgPlayer(cs, gK("onlymayorexplode"));
+                    msgPlayer(cs, gK("onlymayorexplode"));
                     return true;
                 }
 
-                village.SendMessage(gK("villageexploded"));
+                village.sendMessage(gK("villageexploded"));
                 for(Chunk c : village.getTownArea()) {
                     if(!c.isLoaded()) {
                         c.load();
@@ -666,12 +666,12 @@ public class VillageCommand extends CommandBase {
         }
 
         if(village == null && (cs instanceof Player) &&  VillageUtils.getPlayerVillage((Player) cs) == null) {
-            Utils.msgPlayer(cs, gK("notinvillage"));
+            msgPlayer(cs, gK("notinvillage"));
             return false;
         }
 
         if(village == null) {
-            Utils.msgPlayer(cs, gK("cantfindvillage"));
+            msgPlayer(cs, gK("cantfindvillage"));
             return false;
         }
 
@@ -689,14 +689,14 @@ public class VillageCommand extends CommandBase {
         msg.add(ChatImportant + ChatColor.ITALIC + village.getDescription() + ChatColor.RESET + ChatDefault + " - Mayor " + village.getMayor().getName());
         msg.add(ChatDefault + "Residents (" + ChatImportant + village.getResidents().size() + ChatDefault + "): " + residents);
 
-        if(Utils.useEconomy) {
+        if(getConfigManager().useEconomy) {
             msg.add(ChatDefault + "Village Wealth: " + ChatImportant + VillageEconomyUtils.economy.format(village.getMoney()));
         }
 
-        msg.add(ChatDefault + "Located at: " + ChatImportant + Utils.getStringLocation(village.getTownSpawn()));
+        msg.add(ChatDefault + "Located at: " + ChatImportant + getStringLocation(village.getTownSpawn()));
         msg.add(ChatDefault + "Village Size: " + ChatImportant + village.getTownSize());
 
-        Utils.msgPlayer(cs, msg);
+        msgPlayer(cs, msg);
         return true;
     }
     

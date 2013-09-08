@@ -42,7 +42,7 @@ public class PluginHookBase extends BaseBase {
 
     public static PluginHookBase hook(Plugin plugin) {
         for(PluginHookBase h : HOOKS) {
-            if(h.getHookedPlugin() != null) continue;
+            if(h.getHookedPlugin() == null) continue;
             h.hook();
             if(!h.getHookedPlugin().equals(plugin)) continue;
             return h;
