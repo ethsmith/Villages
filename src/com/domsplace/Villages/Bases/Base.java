@@ -1,169 +1,95 @@
 package com.domsplace.Villages.Bases;
 
-import com.domsplace.Villages.DataManagers.ConfigManager;
+import com.domsplace.Villages.Enums.ExpandMethod;
+import com.domsplace.Villages.GUI.VillagesGUIManager;
+import com.domsplace.Villages.Objects.Resident;
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.VillageLanguageUtils;
-import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.VillagesPlugin;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
-public class Base {
-    public static final String TAB = "     ";
-    public static boolean DEBUG_MODE = true;
-    private static VillagesPlugin plugin;
+public class Base extends RawBase {
+    public static final String TAB = "    ";
     
-    public static String ChatError = ChatColor.RED + "";
-    public static String ChatDefault = ChatColor.GRAY + "";
-    public static String ChatImportant = ChatColor.BLUE + "";
-    public static String ChatPrefix = "§7[§9Villages§7] ";
+    public static String GUIScreen;
     
-    public static String VillageColor = ChatColor.GREEN + "";
-    public static String EnemyColor = ChatColor.DARK_RED + "";
+    public static boolean DebugMode = true;
+    public static VillagesPlugin plugin;
     
-    public static String PlayerChatPrefix = "§6[§9%v%§6] ";
+    public static String ChatDefault = ChatColor.GRAY.toString();
+    public static String ChatImportant = ChatColor.BLUE.toString();
+    public static String ChatError = ChatColor.RED.toString();
     
-    public static boolean UsePlots = true;
+    public static String ChatPrefix = "&9[&7Villages&9]";
+    public static String VillagePrefix = "&9[&7%v%&9]";
+    public static String WildernessPrefix = "&9[&7Wilderness&9]";
     
-    public static List<String> villageCreatedCommands;
-    public static List<String> villageDeletedCommands;
-    public static List<String> villagePlayerAddedCommands;
-    public static List<String> villagePlayerRemovedCommands;
-    public static List<String> villageMayorDeathCommands;
+    public static String Wilderness = "Wilderness";
     
-    public static String WildernessPrefix = ChatColor.BLUE + "Wilderness";
+    public static String FriendColor = "&a";
+    public static String EnemyColor = "&4";
     
-    public static String CheckUpdateURL = "http://domsplace.com/ajax/getProjectVersion.php?name=Villages";
-    public static String LatestVersionURL = "http://dev.bukkit.org/bukkit-plugins/villages/";
+    private static String permissionMessage = "&4You don't have permission to do this!";
     
-    public static void broadcast(String message) {
-        for(Player p : Bukkit.getOnlinePlayers()) {
-            msgPlayer(p, message);
-        }
-        msgConsole(message);
+    public static List<World> VillageWorlds = new ArrayList<World>();
+    public static List<String> TryWorlds = new ArrayList<String>();
+    
+    public static ExpandMethod ExpandingMethod = ExpandMethod.PER_CHUNK;
+    
+    public static VillagesGUIManager guiManager;
+    
+    //HOOKING OPTIONS
+    public static boolean useSQL = false;
+    public static boolean useWorldGuard = false;
+    public static boolean useTagAPI = false;
+    public static boolean useVault = false;
+    public static boolean useHeroChat = false;
+    public static boolean useScoreboards = false;
+
+    //String Utils
+    public static String getPrefix() {
+        if(!ChatPrefix.contains("§")) ChatPrefix = colorise(ChatPrefix);
+        if(ChatPrefix.equalsIgnoreCase("")) return "";
+        if(ChatPrefix.endsWith(" ")) return ChatPrefix;
+        return ChatPrefix + " ";
     }
     
-    public static void broadcast(String permission, String message) {
-        for(Player p : Bukkit.getOnlinePlayers()) {
-            if(!p.hasPermission(permission)) {
-                continue;
-            }
-            
-            msgPlayer(p, message);
-        }
-        msgConsole(message);
-    }
-    
-    public static void broadcast(String permission, List<String> messages) {
-        for(String s : messages) {
-            broadcast(s);
-        }
-    }
-    public static void broadcast(String permission, String[] messages) {
-        for(String s : messages) {
-            broadcast(s);
-        }
-    }
-    
-    public static void msgConsole(String message) {
-        msgPlayer(Bukkit.getConsoleSender(), message);
-    }
-    
-    public static void msgConsole(List<String> messages) {
-        for(String message : messages) {
-            msgPlayer(Bukkit.getConsoleSender(), message);
-        }
-    }
-    
-    public static void msgConsole(String[] messages) {
-        for(String message : messages) {
-            msgPlayer(Bukkit.getConsoleSender(), message);
-        }
-    }
-    
-    public static void msgPlayer(OfflinePlayer player, String message) {
-        if(!player.isOnline()) {
-            return;
-        }
-        msgPlayer(player.getPlayer(), message);
-    }
-    
-    public static void msgPlayer(Player player, String message) {
-        if(!VillageUtils.isVillageWorld(player.getLocation().getWorld())) {
-            return;
-        }
-        msgPlayer((CommandSender) player, message);
-    }
-    
-    public static void msgPlayer(CommandSender player, String message) {
-        if("".equals(message)) return;
-        message = message.replaceAll("\\t", TAB);
-        player.sendMessage(ChatPrefix + ChatDefault + message);
-    }
-    
-    public static void msgPlayer(CommandSender player, List<String> messages) {
-        for(String s : messages) {
-            msgPlayer(player, s);
-        }
-    }
-    
-    public static void msgPlayer(CommandSender player, String[] messages) {
-        for(String s : messages) {
-            msgPlayer(player, s);
-        }
-    }
-    
-    public static void Error(String reason, Exception cause) {
-        if(!DEBUG_MODE) {
-            msgConsole("§fError! §c" + reason);
-            return;
-        }
-        msgConsole("§fError! §c" + reason + " Caused by: ");
+    public static String getVillagePrefix(Village v) {
+        String p = VillagePrefix;
+        if(v == null) p = WildernessPrefix;
         
-        
-        String result = "\r\nUknown Error.";
-        String message = "No Message.";
-        
-        if(cause != null) {
-            StackTraceElement[] elements = cause.getStackTrace();
-            
-            result = "\r\n§dStack Trace:\r\n§4";
-            
-            for(StackTraceElement el : elements) {
-                result += "" + el.getLineNumber();
-                result += " : " + el.getMethodName();
-                result += " : " + el.getClassName();
-                result += "\r\n";
-            }
-            
-            result += "";
-            
-            message = cause.getLocalizedMessage();
-        }
-        
-        msgConsole("§7" + result + "§eException: " + message + "\r\n");
+        if(!p.contains("§")) p = colorise(p);
+        if(p.replaceAll(" ", "").equalsIgnoreCase("")) return "";
+        return p;
     }
     
-    public static String ColorString(String msg) {
-        String[] andCodes = {"&0", "&1", "&2", "&3", "&4", "&5", "&6", "&7", "&8", "&9", "&a", "&b", "&c", "&d", "&e", "&f", "&l", "&o", "&n", "&m", "&k", "&r"};
-        String[] altCodes = {"§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f", "§l", "§o", "§n", "§m", "§k", "§r"};
+    public static String getDebugPrefix() {
+        return ChatColor.LIGHT_PURPLE + "DEBUG: " + ChatColor.AQUA;
+    }
+    
+    public static String colorise(Object o) {
+        String msg = o.toString();
+        
+        String[] andCodes = {"&0", "&1", "&2", "&3", "&4", "&5", "&6", "&7", 
+            "&8", "&9", "&a", "&b", "&c", "&d", "&e", "&f", "&l", "&o", "&n", 
+            "&m", "&k", "&r"};
+        
+        String[] altCodes = {"§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", 
+            "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f", "§l", "§o", "§n", 
+            "§m", "§k", "§r"};
         
         for(int x = 0; x < andCodes.length; x++) {
             msg = msg.replaceAll(andCodes[x], altCodes[x]);
@@ -172,173 +98,372 @@ public class Base {
         return msg;
     }
     
-    public static String getStringLocation (Location location) {
-        return location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ() + " " + location.getWorld().getName();
+    public static String getPermissionMessage() {
+        return Base.permissionMessage;
     }
     
-    public static String getStringLocation (Chunk chunk) {
-        return chunk.getX() + ", " + chunk.getZ() + " : " + chunk.getWorld().getName();
+    public static void setPermissionMessage(String msg) {
+        Base.permissionMessage = msg;
+    }
+
+    public static String[] listToArray(List<String> c) {
+        String[] s = new String[c.size()];
+        for(int i = 0; i < c.size(); i++) {
+            s[i] = c.get(i);
+        }
+        
+        return s;
     }
     
-    public static String gK(String key) {
-        return VillageLanguageUtils.getKey(key);
+    public static String capitalizeFirstLetter(String s) {
+        if(s.length() < 2) return s.toUpperCase();
+        String end = s.substring(1, s.length());
+        return s.substring(0, 1).toUpperCase() + end;
+    }
+
+    public static String capitalizeEachWord(String toLowerCase) {
+        String[] words = toLowerCase.split(" ");
+        String w = "";
+        for(int i = 0; i < words.length; i++) {
+            w += capitalizeFirstLetter(words[i]);
+            if(i < (words.length-1)) {
+                w += " ";
+            }
+        }
+        return w;
     }
     
-    public static String gK(String key, Village village) {
-        return VillageLanguageUtils.getKey(key, village);
+    public static String trim(String s, int length) {
+        if(s.length() < length) return s;
+        return s.substring(0, length);
     }
     
-    public static String gK(String key, double money) {
-        return VillageLanguageUtils.getKey(key, money);
+    //Messaging Utils
+    public static void sendMessage(CommandSender sender, String msg) {
+        if(msg.replaceAll(" ", "").equalsIgnoreCase("")) return;
+        if(!inVillageWorld(sender)) return;
+        msg = msg.replaceAll("\\t", TAB);
+        sender.sendMessage(ChatDefault + getPrefix() + ChatDefault + msg);
+    }
+
+    public static void sendMessage(CommandSender sender, String msg, Object... objs) {
+        String s = msg;
+        for(int i = 0; i < objs.length; i++) {
+            s = s.replaceAll("{" + i + "}", objs[i].toString());
+        }
+        sendMessage(sender, s);
     }
     
-    public static String gK(String key, OfflinePlayer player) {
-        return VillageLanguageUtils.getKey(key, player);
+    public static void sendMessage(CommandSender sender, Object[] msg) {
+        for(Object o : msg) {
+            sendMessage(sender, o);
+        }
+    }
+
+    public static void sendMessage(CommandSender sender, List<?> msg) {
+        sendMessage(sender, msg.toArray());
+    }
+
+    public static void sendMessage(CommandSender sender, Object msg) {
+        if(msg == null) return;
+        if(msg instanceof String) {
+            sendMessage(sender, (String) msg);
+            return;
+        }
+        
+        if(msg instanceof Object[]) {
+            sendMessage(sender, (Object[]) msg);
+            return;
+        }
+        
+        if(msg instanceof List<?>) {
+            sendMessage(sender, (List<?>) msg);
+            return;
+        }
+        sendMessage(sender, msg.toString());
+    }
+
+    public static void sendMessage(Player sender, Object... msg) {
+        sendMessage((CommandSender) sender, msg);
+    }
+
+    public static void sendMessage(OfflinePlayer sender, Object... msg) {
+        if(!sender.isOnline()) return;
+        sendMessage(sender.getPlayer());
+    }
+
+    public static void sendMessage(Entity sender, Object... msg) {
+        if(!(sender instanceof CommandSender)) return;
+        sendMessage(sender, msg);
+    }
+
+    public static void sendMessage(Resident sender, Object... msg) {
+        sendMessage(sender.getOfflinePlayer(), msg);
     }
     
-    public static String gK(String key, OfflinePlayer player, double amount) {
-        return VillageLanguageUtils.getKey(key, player, amount);
+    public static void sendMessage(Object o) {
+        sendMessage(Bukkit.getConsoleSender(), o);
     }
     
-    public static String gK(String key, Chunk c) {
-        return VillageLanguageUtils.getKey(key, c);
+    public static void sendAll(List<Player> players, Object o) {
+        for(Player p : players) {
+            sendMessage(p, o);
+        }
     }
     
-    public static void debug(Object message) {
-        if(!DEBUG_MODE) return;
-        broadcast("§a[§bDEBUG§a] §d" + message.toString());
+    public static void sendAll(Player[] players, Object o) {
+        for(Player p : players) {
+            sendMessage(p, o);
+        }
     }
     
+    public static void sendAll(Object o) {
+        sendAll(Bukkit.getOnlinePlayers(), o);
+    }
+    
+    public static void sendAll(String permission, Object o) {
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            if(!hasPermission(p, permission)) continue;
+            sendMessage(p, o);
+        }
+    }
+    
+    public static void broadcast(Object o) {
+        sendMessage(o);
+        sendAll(o);
+    }
+    
+    public static void broadcast(String permission, Object o) {
+        sendMessage(o);
+        sendAll(permission, o);
+    }
+    
+    public static void debug(Object o) {
+        if(!DebugMode) return;
+        broadcast(getDebugPrefix() + o.toString());
+    }
+    
+    public static void error(String message, boolean postfix) {
+        String msg = ChatError + "Error: " + ChatColor.DARK_RED + message;
+        if(postfix && DebugMode) msg += ChatColor.YELLOW + " Caused by: ";
+        if(postfix && !DebugMode) msg += ChatColor.YELLOW + " Turn debug mode on to view whole error.";
+        sendMessage(msg);
+    }
+    
+    public static void error(String message) {
+        error(message, false);
+    }
+    
+    public static void error(String message, Exception e) {
+        error(message, true);
+        if(!DebugMode) return;
+        String lines = "\n" + e.getClass().getName() + ":  " +  e.getMessage();
+        for(StackTraceElement ste : e.getStackTrace()) {
+            
+            lines += "\t" + ChatColor.GRAY + "at " + ste.getClassName() + "." 
+                    + ste.getMethodName() + "(" + ste.getFileName() + ":" + 
+                    ste.getLineNumber() + ")\n";
+        }
+        
+        sendMessage(lines);
+    }
+    
+    public static void log(Object o) {
+        getPlugin().getLogger().info(o.toString());
+    }
+    
+    //Conversion Utils
     public static boolean isPlayer(Object o) {
-        return (o instanceof Player) && (o != null);
+        return o instanceof Player;
     }
     
+    public static Player getPlayer(Object o) {
+        return (Player) o;
+    }
+    
+    public static OfflinePlayer getOfflinePlayer(Player player) {
+        return Bukkit.getOfflinePlayer(player.getName());
+    }
+    
+    public static OfflinePlayer getOfflinePlayer(String player) {
+        return Bukkit.getOfflinePlayer(player);
+    }
+    
+    public static boolean isInt(Object o) {
+        try {
+            Integer.parseInt(o.toString());
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+    
+    public static int getInt(Object o) {
+        return Integer.parseInt(o.toString());
+    }
+    
+    public static double getDouble(Object o) {
+        return Double.parseDouble(o.toString());
+    }
+    
+    public static boolean isDouble(Object o) {
+        try {
+            Double.parseDouble(o.toString());
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+    
+    public static boolean isByte(Object o) {
+        try {
+            Byte.parseByte(o.toString());
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+    
+    public static byte getByte(Object o) {
+        return Byte.parseByte(o.toString());
+    }
+    
+    public static String listToString(List<String> strings) {
+        return listToString(strings, ", ");
+    }
+    
+    public static String listToString(List<String> strings, String seperator) {
+        String m = "";
+        
+        for(int i = 0; i < strings.size(); i++) {
+            m += strings.get(i);
+            if(i < (strings.size() - 1)) m += seperator;
+        }
+        
+        return m;
+    }
+    
+    //Plugin Utils
     public static void setPlugin(VillagesPlugin plugin) {
         Base.plugin = plugin;
     }
     
     public static VillagesPlugin getPlugin() {
-        return Base.plugin;
+        return plugin;
     }
     
     public static File getDataFolder() {
         return getPlugin().getDataFolder();
     }
     
-    public static void log(Object o) {
-        getPlugin().getLogger().log(Level.INFO, o.toString());
-    }
-    
     public static YamlConfiguration getConfig() {
-        return DataManagerBase.CONFIG_MANAGER.config;
+        return DataManager.CONFIG_MANAGER.getCFG();
     }
     
-    public static String getStringFromURL(String url) throws Exception {
-        URL website = new URL(url);
-        URLConnection connection = website.openConnection();
-        BufferedReader in = new BufferedReader(
-                                new InputStreamReader(
-                                    connection.getInputStream()));
-
-        StringBuilder response = new StringBuilder();
-        String inputLine;
-
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
-
-        in.close();
-
-        return response.toString();
+    //Location Utils
+    public static boolean isVillageWorld(World world) {
+        for(World w : VillageWorlds) if(w.equals(world)) return true;
+        return false;
     }
     
-    public static boolean canSee(CommandSender player, CommandSender player0) {
-        if(!(player instanceof Player)) {
-            return true;
-        }
-        if(!(player0 instanceof Player)) {
-            return true;
-        }
-        
-        
-        
-        if(((Player) player).canSee((Player) player0)) {
-            return true;
+    public static boolean inVillageWorld(Player player) {
+        return isVillageWorld(player.getWorld());
+    }
+    
+    public static boolean inVillageWorld(Entity player) {
+        return isVillageWorld(player.getWorld());
+    }
+    
+    public static boolean inVillageWorld(Block block) {
+        return isVillageWorld(block.getWorld());
+    }
+    
+    public static boolean inVillageWorld(CommandSender sender) {
+        if(!isPlayer(sender)) return true;
+        return inVillageWorld(getPlayer(sender));
+    }
+    
+    public static String getLocationString(Location location) {
+        return location.getX() + ", " + location.getY() + ", " + location.getZ()
+                + " " + location.getWorld().getName();
+    }
+    
+    public static String getStringLocation (Chunk chunk) {
+        return chunk.getX() + ", " + chunk.getZ() + " : " + chunk.getWorld().getName();
+    }
+    
+    public static boolean isCoordBetweenCoords(int checkX, int checkZ, int outerX, int outerZ, int maxX, int maxZ) {
+        if(checkX >= Math.min(outerX, maxX) && checkX <= Math.max(outerX, maxX)) {
+            if(checkZ >= Math.min(outerZ, maxZ) && checkZ <= Math.max(outerZ, maxZ)) { return true; }
         }
         return false;
     }
     
-    public static long getNow() {
-        Date someTime = new Date();
-        long currentMS = someTime.getTime();
-        return currentMS;
-    }
-
-    public static Player getPlayer(CommandSender cs, String string) {
-        Player p = Bukkit.getPlayer(string);
-        if(p == null) {
-            return null;
-        }
-        
-        if(!canSee(cs, p)) {
-            p = Bukkit.getPlayerExact(string);
-            if(p == null) {
-                return null;
-            }
-        }
-        return p;
+    //Player Utils
+    public static boolean hasPermission(CommandSender sender, String permission) {
+        if(permission.equals("Villages.none")) return true;
+        return sender.hasPermission(permission);
     }
     
-    public static OfflinePlayer getOfflinePlayer(CommandSender cs, String string) {
-        OfflinePlayer p = getPlayer(cs, string);
-        if(p == null) {
-            p = Bukkit.getOfflinePlayer(string);
-        }
-        return p;
+    //Language Utils
+    public static List<String> gk(String key, Object... o) {
+        return DataManager.LANGUAGE_MANAGER.getKey(key, o);
     }
-
-    public static List<ItemStack> getItemFromString(List<String> stringList) {
-        List<ItemStack> items = new ArrayList<ItemStack>();
-        
-        for(String item : stringList) {
-            //id:data:amount to get parsed
-            String[] data = item.split(":");
-            
-            int id = Integer.parseInt(data[0]);
-            byte dt = Byte.parseByte(data[1]);
-            int amount = Integer.parseInt(data[2]);
-            
-            ItemStack is = new ItemStack(id);
-            is.getData().setData(dt);
-            is.setAmount(amount);
-            items.add(is);
-        }
-        
-        return items;
+    
+    public static void sk(CommandSender sender, String key, Object... o) {
+        sendMessage(sender, gk(key, o));
     }
-            
-    public static List<Block> getBlocksFromChunk(Chunk c) {
-        List<Block> blocks = new ArrayList<Block>();
-        
-        for(int x = 0; x < 16; x++) {
-            for(int y = 0; y < 256; y++) {
-                for(int z = 0; z < 16; z++) {
-                    Block b = c.getBlock(x, y, z);
-                    if(b == null) {
-                        continue;
-                    }
-                    
-                    blocks.add(b);
-                }
-            }
-        }
-        return blocks;
+    
+    public static void sk(Resident sender, String key, Object... o) {
+        sendMessage(sender, gk(key, o));
     }
-
-    public static String getTimeUntilHuman(Date unbanDate) {
-        Long NowInMilli = (new Date()).getTime();
-        Long TargetInMilli = unbanDate.getTime();
-        Long diffInSeconds = (TargetInMilli - NowInMilli) / 1000+1;
+    
+    public static void bk(String key, Object... o) {
+        broadcast(gk(key, o));
+    }
+    
+    //Economy Utils
+    public static boolean hasBalance(String player, double amt) {
+        if(!useVault || PluginHook.VAULT_HOOK.getEconomy() == null) return true;
+        if(getBalance(player) >= amt) return true;
+        return false;
+    }
+    
+    public static boolean hasBalance(Village village, double amt) {
+        if(!useVault || PluginHook.VAULT_HOOK.getEconomy() == null) return true;
+        if(getBalance(village) >= amt) return true;
+        return false;
+    }
+    
+    public static double getBalance(String player) {
+        if(!useVault || PluginHook.VAULT_HOOK.getEconomy() == null) return -1.0d;
+        return PluginHook.VAULT_HOOK.getEconomy().getBalance(player);
+    }
+    
+    public static double getBalance(Village village) {
+        if(!useVault || PluginHook.VAULT_HOOK.getEconomy() == null) return -1.0d;
+        return village.getBank().getWealth();
+    }
+    
+    public static double getCost(String key) {
+        return getConfig().getDouble("costs." + key, 0d);
+    }
+    
+    public static String getMoney(double money) {
+        return PluginHook.VAULT_HOOK.getEconomy().format(money);
+    }
+    
+    //Time Utils
+    public static long getNow() {
+        return System.currentTimeMillis();
+    }
+    
+    public static String getTimeDifference(Date late) {return Base.getTimeDifference(new Date(), late);}
+    
+    public static String getTimeDifference(Date early, Date late) {
+        Long NowInMilli = late.getTime();
+        Long TargetInMilli = early.getTime();
+        Long diffInSeconds = (NowInMilli - TargetInMilli) / 1000;
 
         long diff[] = new long[] {0,0,0,0,0};
         /* sec */diff[4] = (diffInSeconds >= 60 ? diffInSeconds % 60 : diffInSeconds);
@@ -385,22 +510,6 @@ public class Base {
             return message;
         }
         
-        return "Invalid Time Diff!";
-    }
-    
-    public static String capitalizeFirstLetter(String word) {
-        String[] words = word.split("\\s");
-        
-        String returnValue = "";
-        for(int i = 0; i < words.length; i++){
-            char capLetter = Character.toUpperCase(words[i].charAt(0));
-            returnValue +=  " " + capLetter + words[i].substring(1, words[i].length());
-        }
-        
-        return returnValue.substring(1, returnValue.length());
-    }
-    
-    public static List<Village> getVillages() {
-        return VillageUtils.Villages;
+        return "Time Error";
     }
 }

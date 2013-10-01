@@ -1,314 +1,269 @@
-package com.domsplace.Villages.DataManagers;
+    package com.domsplace.Villages.DataManagers;
 
-import com.domsplace.Villages.Listeners.VillagesListener;
-import com.domsplace.Villages.Utils.VillageEconomyUtils;
-import com.domsplace.Villages.Utils.VillageSQLUtils;
-
-import com.domsplace.Villages.Utils.VillageUtils;
 import com.domsplace.Villages.Bases.Base;
-import com.domsplace.Villages.Bases.CommandBase;
-import com.domsplace.Villages.Bases.DataManagerBase;
-import com.domsplace.Villages.Bases.PluginHookBase;
+import com.domsplace.Villages.Bases.DataManager;
+import com.domsplace.Villages.Bases.PluginHook;
+import com.domsplace.Villages.Enums.ExpandMethod;
 import com.domsplace.Villages.Enums.ManagerType;
-import com.domsplace.Villages.Threads.UpdateThread;
+import com.domsplace.Villages.Threads.VillageScoreboardThread;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 
-public class ConfigManager extends DataManagerBase {
-    public YamlConfiguration config;
-    public File configFile;
+public class ConfigManager extends DataManager {
+    private YamlConfiguration config;
+    private File configFile;
     
-    public boolean useSQL = false;
-    public boolean useEconomy = false;
-    public boolean useTagAPI = false;
-    public boolean useWorldGuard = false;
-    public boolean useHerochat = false;
+    private VillageScoreboardThread scoreboardThread;
     
     public ConfigManager() {
         super(ManagerType.CONFIG);
     }
     
+    public YamlConfiguration getCFG() {
+        return config;
+    }
+    
     @Override
     public void tryLoad() throws IOException {
-        if(!getDataFolder().exists()){
-            getDataFolder().mkdir();
-        }
-
-        configFile = new File(getDataFolder(), "/config.yml");
-
-        if(!configFile.exists()) {
-            configFile.createNewFile();
-        }
-
-        boolean oldSQL = useSQL;
-
-        config = YamlConfiguration.loadConfiguration(configFile);
+        this.configFile = new File(getDataFolder(), "config.yml");
+        if(!this.configFile.exists()) configFile.createNewFile();
+        this.config = YamlConfiguration.loadConfiguration(configFile);
         
-        PluginHookBase.unhookAll();
+        /*** GENERATE DEFAULT CONFIG ***/
+        df("debug", false);
+        Base.DebugMode = config.getBoolean("debug", false);
         
-        if(!config.contains("debug")) {
-            config.set("debug", false);
-        }
-        Base.DEBUG_MODE = config.getBoolean("debug");
-        
-        debug("Debug Mode Is Enabled!");
-        
-        //Add Worlds
-        if(!config.contains("Worlds")) {
+        //Worlds
+        if(!config.contains("worlds")) {
             List<String> worlds = new ArrayList<String>();
             for(World w : Bukkit.getWorlds()) {
                 worlds.add(w.getName());
             }
-            config.set("Worlds", worlds);
-        }
-
-        if(!config.contains("sql")) {
-            if(!config.contains("sql.use")) {
-                config.set("sql.use", true);
-            }
-
-            config.set("sql.username", "root");
-            config.set("sql.password", "password");
-            config.set("sql.host", "localhost");
-            config.set("sql.database", "minecraft");
-            config.set("sql.port", "3306");
-        }
-
-        if(!config.contains("townborder")) {
-            config.set("townborder", 3);
-        }
-
-        if(!config.contains("use.worldguard")) {
-            config.set("use.worldguard", true);
-        }
-        if(!config.contains("use.economy")) {
-            if(!config.contains("economy")) {
-                config.set("use.economy", true);
-            } else {
-                config.set("use.economy", config.getBoolean("use.economy"));
-            }
-        }
-        if(!config.contains("use.villageplots")) {
-            config.set("use.villageplots", true);
-        }
-        if(!config.contains("use.herochat")) {
-            config.set("use.herochat", true);
-        }
-        if(!config.contains("use.vanish")) {
-            config.set("use.vanish", false);
-        }
-        if(!config.contains("use.updates")) {
-            config.set("use.updates", true);
-        }
-
-        if(!config.contains("colors.prefix")) {
-            config.set("colors.prefix", "&7[&9Villages&7]");
-        }
-        if(!config.contains("colors.error")) {
-            config.set("colors.error", "&c");
-        }
-        if(!config.contains("colors.default")) {
-            config.set("colors.default", "&7");
-        }
-        if(!config.contains("colors.important")) {
-            config.set("colors.important", "&9");
-        }
-        if(!config.contains("colors.samevillage")) {
-            config.set("colors.samevillage", "&a");
-        }
-        if(!config.contains("colors.enemy")) {
-            config.set("colors.enemy", "&4");
-        }
-        if(!config.contains("colors.chatprefix")) {
-            config.set("colors.chatprefix", "&6[&9%v%&6] ");
-        }
-        if(!config.contains("colors.wilderness")) {
-            config.set("colors.wilderness", "&9Wilderness");
-        }
-
-        String p = "protection.";
-        if(!config.contains(p + "griefwild")) {
-            config.set(p + "griefwild", true);
-        }
-        if(!config.contains(p + "griefvillage")) {
-            config.set(p + "griefvillage", false);
-        }
-        if(!config.contains(p + "pvpinwilderness")) {
-            config.set(p + "pvpinwilderness", true);
-        }
-        if(!config.contains(p + "pvpsamevillage")) {
-            config.set(p + "pvpsamevillage", false);
-        }   
-        if(!config.contains(p + "pvpdifferentvillage")) {
-            config.set(p + "pvpdifferentvillage", true);
+            
+            df("worlds", worlds);
         }
         
-        p = "disable.";
-        if(!config.contains(p + "mobspawning.village")) {
-            config.set(p + "mobspawning.village", true);
+        //SQL Settings
+        df("sql.use", false);
+        df("sql.host", "localhost");
+        df("sql.port", "3306");
+        df("sql.username", "root");
+        df("sql.password", "password");
+        df("sql.database", "minecraft");
+        df("sql.prefix", "Villages");
+        
+        //Colors
+        df("colors.default", "&7");
+        df("colors.important", "&9");
+        df("colors.error", "&c");
+        df("colors.prefix.messages", "&9[&7Villages&9]");
+        df("colors.prefix.village", "&9[&7%v%&9]");
+        df("colors.prefix.wilderness", "&9[&7Wilderness&9]");
+        df("colors.players.friend", "&a");
+        df("colors.players.foe", "&4");
+        
+        //Protection
+        df("protection.grief.village.use", true);
+        df("protection.grief.village.break", false);
+        df("protection.grief.village.place", false);
+        df("protection.grief.village.mine", false);
+        df("protection.grief.village.tnt", false);
+        
+        df("protection.grief.wilderness.use", true);
+        df("protection.grief.wilderness.break", true);
+        df("protection.grief.wilderness.place", true);
+        df("protection.grief.wilderness.mine", true);
+        df("protection.grief.wilderness.tnt", false);
+        
+        
+        df("protection.pvp.village.samevillage", false);
+        df("protection.pvp.village.differentvillage", true);
+        df("protection.pvp.village.notinvillage", false);
+        
+        df("protection.pvp.wilderness.samevillage", false);
+        df("protection.pvp.wilderness.differentvillage", true);
+        df("protection.pvp.wilderness.notinvillage", false);
+        
+        String mobspawningkey = "protection.mobspawning.village.";
+        for(EntityType t : EntityType.values()) {
+            if(t == null || t.getName() == null) continue;
+            if(!t.isAlive()) continue;
+            df(mobspawningkey + t.getName(), true);
         }
-        if(!config.contains(p + "mobspawning.wilderness")) {
-            config.set(p + "mobspawning.wilderness", false);
+        
+        mobspawningkey = "protection.mobspawning.wilderness.";
+        for(EntityType t : EntityType.values()) {
+            if(t == null || t.getName() == null) continue;
+            if(!t.isAlive()) continue;
+            df(mobspawningkey + t.getName(), true);
         }
-
-        p = "cost.";
-        if(!config.contains(p + "createvillage")) {
-            config.set(p + "createvillage", 1000.00);
+        
+        //PLANNED:
+        //df("protection.mobgriefing.village.creeper", false);
+        //df("protection.mobgriefing.village.enderman", false);
+        
+        //df("protection.mobgriefing.wilderness.creeper", true);
+        //df("protection.mobgriefing.wilderness.enderman", true);
+        
+        //Plugins
+        df("plugins.worldguard", true);
+        df("plugins.tagapi", true);
+        df("plugins.herochat", true);
+        df("plugins.vault", true);
+        //df("plugins.dynmap", true); (REMOVED TEMPORARILY)
+        
+        //Features
+        df("features.lists.topvillages", true);
+        df("features.lists.villagemembers", true);
+        df("features.lists.taxday", true);
+        df("features.cyclespeed", 60);
+        //df("features.map", true); (COMING SOON!)
+        df("features.banks.item", true);
+        df("features.banks.money", true);
+        df("features.plots", true);
+        //df("features.ranks", true); (COMING SOON!)
+        df("features.updates", true);
+        df("features.expand.method", "CHUNK");
+        df("features.guiscreen", true);
+        
+        //Costs
+        df("costs.createvillage", 1000);
+        df("costs.expandvillage", 100);
+        
+        //Messages
+        df("messages.names.wilderness", "Wilderness");
+        
+        df("messages.village.youenter", true);
+        df("messages.village.friendlyenters", false);
+        df("messages.village.othervillage", false);
+        df("messages.village.wilderness", false);
+        
+        df("messages.wilderness.youenter", true);
+        df("messages.wilderness.friendlyenters", false);
+        df("messages.wilderness.othervillage", false);
+        df("messages.wilderness.wilderness", false);    
+        
+        //Commands
+        List<String> cmds;
+        
+        cmds = new ArrayList<String>();
+        cmds.add("say Please Change this command in the config.yml file.");
+        df("commands.village.created", cmds);
+        
+        cmds = new ArrayList<String>();
+        cmds.add("say Please Change this command in the config.yml file.");
+        df("commands.village.deleted", cmds);
+        
+        cmds = new ArrayList<String>();
+        cmds.add("say Please Change this command in the config.yml file.");
+        df("commands.village.playeradded", cmds);
+        
+        cmds = new ArrayList<String>();
+        cmds.add("say Please Change this command in the config.yml file.");
+        df("commands.village.playerremoved", cmds);
+        
+        //Load Worlds
+        List<World> worlds = new ArrayList<World>();
+        Base.TryWorlds = config.getStringList("worlds");
+        for(String s : TryWorlds) {
+            World w = Bukkit.getWorld(s);
+            if(w == null) {
+                log("Unknown world \"" + s + "\".");
+                continue;
+            }
+            
+            worlds.add(w);
         }
-        if(!config.contains(p + "expand")) {
-            config.set(p + "expand", 2000.00);
+        Base.VillageWorlds = worlds;
+        
+        //Load SQL
+        DataManager.SQL_MANAGER.setupSQL(
+            gs("sql.host"), 
+            gs("sql.port", "3306"),
+            gs("sql.username"), 
+            gs("sql.password"), 
+            gs("sql.database"), 
+            gs("sql.prefix")
+        );
+        
+        if(config.getBoolean("sql.use", false)) {
+            log("Opening Connection to SQL...");
+            if(!DataManager.SQL_MANAGER.connect()) {
+                log("Failed to Connect to SQL! Using YML instead.");
+                Base.useSQL = false;
+            } else {
+                log("Connected to SQL!");
+                Base.useSQL = true;
+            }
         }
-
-        p = "messages.";
-        if(!config.contains(p + "entervillage")) {
-            config.set(p + "entervillage", true);
-        }
-        if(!config.contains(p + "leavevillage")) {
-            config.set(p + "leavevillage", true);
-        }
-
-        if(!config.contains("colors.colornames")) {
-            config.set("colors.colornames", true);
-        }
-        if(!config.contains("colors.ingamelist")) {
-            config.set("colors.ingamelist", true);
-        }
-
-        if(!config.contains("largebanks")) {
-            config.set("largebanks", false);
-        }
-
-        if(!config.contains("defaultsize")) {
-            config.set("defaultsize", 1);
-        }
-
-        if(!config.contains("commands.VillageCreated")) {
-            List<String> createdCommands = new ArrayList<String>();
-            createdCommands.add("villageadmin save");
-            config.set("commands.VillageCreated", createdCommands);
-        }
-        if(!config.contains("commands.PlayerAdded")) {
-            List<String> createdCommands = new ArrayList<String>();
-            createdCommands.add("villageadmin save");
-            config.set("commands.PlayerAdded", createdCommands);
-        }
-        if(!config.contains("commands.PlayerRemoved")) {
-            List<String> createdCommands = new ArrayList<String>();
-            createdCommands.add("villageadmin save");
-            config.set("commands.PlayerRemoved", createdCommands);
-        }
-        if(!config.contains("commands.VillageDeleted")) {
-            List<String> createdCommands = new ArrayList<String>();
-            createdCommands.add("villageadmin save");
-            config.set("commands.VillageDeleted", createdCommands);
-        }
-        if(!config.contains("commands.MayorKilled")) {
-            List<String> createdCommands = new ArrayList<String>();
-            createdCommands.add("villagebroadcast %v% Mayor %p% has died!");
-            config.set("commands.MayorKilled", createdCommands);
-        }
-
-        //Load Values
-        VillageSQLUtils.sqlHost = config.getString("sql.host");
-        VillageSQLUtils.sqlDB = config.getString("sql.database");
-        VillageSQLUtils.sqlUser = config.getString("sql.username");
-        VillageSQLUtils.sqlPass = config.getString("sql.password");
-        VillageSQLUtils.sqlPort = config.getString("sql.port");
-
-        VillageUtils.borderRadius = config.getInt("townborder");
-
-        Base.ChatError = ColorString(config.getString("colors.error"));
-
-        if(!config.getString("colors.prefix").equalsIgnoreCase("")) {
-            Base.ChatPrefix = ColorString(config.getString("colors.prefix")) + " ";
+        
+        //Load Colors
+        Base.ChatDefault = colorise(loadColor("colors.default"));
+        Base.ChatImportant = colorise(loadColor("colors.important"));
+        Base.ChatError = colorise(loadColor("colors.error"));
+        
+        Base.ChatPrefix = loadColor("colors.prefix.messages");
+        Base.VillagePrefix = loadColor("colors.prefix.village");
+        Base.WildernessPrefix = loadColor("colors.prefix.wilderness");
+        
+        Base.FriendColor = loadColor("colors.players.friend");
+        Base.EnemyColor = loadColor("colors.players.foe");
+        
+        Base.Wilderness = loadColor("messages.names.wilderness");
+        
+        if(gs("features.expand.method", "CHUNK").equalsIgnoreCase("CLASSIC")){
+            Base.ExpandingMethod = ExpandMethod.CLASSIC;
         } else {
-            Base.ChatPrefix = "";
+            Base.ExpandingMethod = ExpandMethod.PER_CHUNK;
         }
-
-        Base.ChatDefault = ColorString(config.getString("colors.default"));
-        Base.ChatImportant = ColorString(config.getString("colors.important"));
-        Base.VillageColor = ColorString(config.getString("colors.samevillage"));
-        Base.EnemyColor = ColorString(config.getString("colors.enemy"));
-        Base.PlayerChatPrefix = ColorString(config.getString("colors.chatprefix")) + ChatColor.RESET;
-        Base.WildernessPrefix = ColorString(config.getString("colors.wilderness"));
-
-        Base.UsePlots = config.getBoolean("use.villageplots");
         
-        if(config.getBoolean("use.updates")) {
-            UpdateThread updateThread = new UpdateThread();
-        }
-
-        useSQL = config.getBoolean("sql.use");
-        useTagAPI = config.getBoolean("colors.colornames");
-        useWorldGuard = config.getBoolean("use.worldguard");
-        useEconomy = config.getBoolean("use.economy");
-        useHerochat = config.getBoolean("use.herochat");
-
-        VillagesListener.PVPWilderness = config.getBoolean("protection.pvpinwilderness");
-        VillagesListener.PVPEnemyVillage = config.getBoolean("protection.pvpdifferentvillage");
-        VillagesListener.PVPSameVillage = config.getBoolean("protection.pvpsamevillage");
-
-        Base.villageCreatedCommands = config.getStringList("commands.VillageCreated");
-        Base.villagePlayerAddedCommands = config.getStringList("commands.PlayerAdded");
-        Base.villagePlayerRemovedCommands = config.getStringList("commands.PlayerRemoved");
-        Base.villageDeletedCommands = config.getStringList("commands.VillageDeleted");
-        Base.villageMayorDeathCommands = config.getStringList("commands.MayorKilled");
-
-        //Load add-ins
-
-        /*** Try to use Economy ***/
-        if(config.getBoolean("use.economy")) {
-            if(!VillageEconomyUtils.setupEconomy()) {
-                Error("Failed to load Vault", null);
-                useEconomy = false;
-            } else {
-                msgConsole("Hooked into Economy.");
-            }
-        }
-
-        /*** Try to use SQL ***/
-        if(config.getBoolean("sql.use")) {
-            if(!VillageSQLUtils.sqlConnect()) {
-                useSQL = false;
-            } else {
-                msgConsole("Connected to SQL successfully.");
-                SQLManager sqlManager = new SQLManager();
-                if(!sqlManager.load()) {
-                    Error("Failed to setup SQL Database", null);
-                    useSQL = false;
-                }
-            }
-        } else if(oldSQL) {
-            useSQL = false;
-            VillageSQLUtils.sqlClose();
-        }
-
-        if(config.getBoolean("sql.use") != true) {
-            File dataFolder = new File(getDataFolder(), "data");
-            if(!dataFolder.exists()){
-                dataFolder.mkdir();
-            }
-            dataFolder = new File(dataFolder, "villages");
-            if(!dataFolder.exists()){
-                dataFolder.mkdir();
-            }
-        }
-
-        this.save();
-        PluginHookBase.hookAll();
+        //Setup Hooking Options
+        PluginHook.VAULT_HOOK.shouldHook(config.getBoolean("plugins.vault", true));
+        PluginHook.WORLD_GUARD_HOOK.shouldHook(config.getBoolean("plugins.worldguard", true));
+        PluginHook.HERO_CHAT_HOOK.shouldHook(config.getBoolean("plugins.herochat", true));
+        PluginHook.TAG_API_HOOK.shouldHook(config.getBoolean("plugins.tagapi", true));
         
-        //Update CommandPermission messages
-        CommandBase.updateAllPermissionMessages();
+        Base.useScoreboards = 
+                Base.getConfig().getBoolean("features.lists.topvillages", true) || 
+                Base.getConfig().getBoolean("features.lists.villagemembers", true) ||
+                Base.getConfig().getBoolean("features.lists.taxday", true);
+        
+        //Restart Scoreboard Thread
+        if(this.scoreboardThread != null) {
+            this.scoreboardThread.stopThread();
+        }
+        
+        this.scoreboardThread = new VillageScoreboardThread();
+        
+        this.trySave();
     }
     
     @Override
     public void trySave() throws IOException {
-        config.save(configFile);
+        this.config.save(configFile);
+    }
+    
+    private void df(String key, Object o) {
+        if(config.contains(key)) return;
+        config.set(key, o);
+    }
+    
+    private String gs(String key) {
+        return gs(key, "");
+    }
+    
+    private String gs(String key, String dv) {
+        if(!config.contains(key)) return dv;
+        return config.getString(key);
+    }
+    
+    private String loadColor(String key) {
+        return gs(key, "&7");
     }
 }

@@ -1,5 +1,6 @@
 package com.domsplace.Villages.Bases;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -9,6 +10,8 @@ public class EventBase extends Event {
     public EventBase() {
         
     }
+    
+    public void fireEvent() {Bukkit.getPluginManager().callEvent(this);}
     
     @Override
     public HandlerList getHandlers() {

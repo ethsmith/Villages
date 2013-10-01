@@ -1,21 +1,16 @@
 package com.domsplace.Villages.Events;
 
-import com.domsplace.Villages.Bases.CancellableEventBase;
+import com.domsplace.Villages.Bases.CancellableEvent;
 import com.domsplace.Villages.Enums.GriefType;
-import java.util.List;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-public class GriefEvent extends CancellableEventBase {
+public class GriefEvent extends CancellableEvent {
     private Player player;
     private Block block;
     private GriefType type;
     
-    public GriefEvent (Player griefer, Block mainBlock, List<Block> blocks, GriefType type) {
-        if(!blocks.contains(mainBlock)) {
-            blocks.add(mainBlock);
-        }
-        
+    public GriefEvent (Player griefer, Block mainBlock, GriefType type) {
         this.player = griefer;
         this.block = mainBlock;
         this.type = type;

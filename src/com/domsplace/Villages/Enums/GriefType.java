@@ -1,8 +1,8 @@
 package com.domsplace.Villages.Enums;
 
-import com.domsplace.Villages.Bases.EnumBase;
+import com.domsplace.Villages.Bases.Enum;
 
-public class GriefType extends EnumBase {
+public class GriefType extends Enum {
     public static final GriefType INTERACT = new GriefType("Interact");
     public static final GriefType BREAK = new GriefType("Break");
     public static final GriefType PLACE = new GriefType("Place");

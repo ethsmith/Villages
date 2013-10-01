@@ -1,29 +1,30 @@
 package com.domsplace.Villages.Hooks;
 
-import com.domsplace.Villages.Bases.PluginHookBase;
+import com.domsplace.Villages.Bases.Base;
+import com.domsplace.Villages.Bases.PluginHook;
 import com.domsplace.Villages.Listeners.HeroChatListener;
 
-import com.dthielke.herochat.Herochat;
-
-public class HeroChatHook extends PluginHookBase{
-    private HeroChatListener heroChatListener;
+public class HeroChatHook extends PluginHook {
+    HeroChatListener listener;
     
     public HeroChatHook() {
-        super("Herochat");
-    }
-    
-    public Herochat getHerochat() {
-        return (Herochat) this.getHookedPlugin();
+        super("HeroChat");
     }
     
     @Override
     public void onHook() {
-        if(!getConfigManager().useHerochat) return;
-        this.heroChatListener = new HeroChatListener();
+        super.onHook();
+        Base.useHeroChat = true;
+        this.listener = new HeroChatListener();
     }
     
     @Override
-    public void onUnHook() {
-        if(this.heroChatListener != null) this.heroChatListener.deRegisterListener();
+    public void onUnhook() {
+        super.onUnhook();
+        Base.useHeroChat = false;
+        
+        if(this.listener == null) return;
+        this.listener.deRegisterListener();
+        this.listener = null;
     }
 }

@@ -1,59 +1,55 @@
 package com.domsplace.Villages.Listeners;
 
+import com.domsplace.Villages.Bases.Base;
+import com.domsplace.Villages.Bases.VillageListener;
+import com.domsplace.Villages.Objects.Resident;
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.VillageUtils;
-import static com.domsplace.Villages.Bases.Base.EnemyColor;
-import static com.domsplace.Villages.Bases.Base.VillageColor;
-import com.domsplace.Villages.Bases.ListenerBase;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.kitteh.tag.PlayerReceiveNameTagEvent;
 
-public class TagAPIListener extends ListenerBase {
+public class TagAPIListener extends VillageListener {
     @EventHandler
-    public void onNameTagChange(PlayerReceiveNameTagEvent e) {
-        if(!getConfigManager().useTagAPI) {
-            return;
-        }
+    public void handleVillageFoe(PlayerReceiveNameTagEvent e) {
+        if(!useTagAPI) return;
+        if(e.getPlayer() == null) return;
+        if(e.getNamedPlayer() == null) return;
         
-        Player p = e.getPlayer();
-        Player r = e.getNamedPlayer();
+        if(e.getPlayer().equals(e.getNamedPlayer())) return;
         
-        if(p == r) {
-            return;
-        }
+        if(!inVillageWorld(e.getNamedPlayer())) return;
+        if(!inVillageWorld(e.getPlayer())) return;
         
-        if(p == null || r == null) {
-            return;
-        }
+        Resident target = Resident.getResident(e.getPlayer());
+        Resident named = Resident.getResident(e.getNamedPlayer());
         
-        if(!VillageUtils.isVillageWorld(p.getWorld())) {
-            return;
-        }
-        if(!VillageUtils.isVillageWorld(r.getWorld())) {
-            return;
-        }
+        Village tVillage = Village.getPlayersVillage(target);
+        Village nVillage = Village.getPlayersVillage(named);
         
-        Village v = VillageUtils.getPlayerVillage(p);
-        if(v == null) {
-            e.setTag(EnemyColor + r.getName());
-        }
+        if(tVillage != null && nVillage != null && tVillage.equals(nVillage)) return;
         
-        if(r == null) {
-            return;
-        }
+        e.setTag(Base.EnemyColor + e.getNamedPlayer().getName());
+    }
+    
+    @EventHandler
+    public void handleVillageFriend(PlayerReceiveNameTagEvent e) {
+        if(!useTagAPI) return;
+        if(e.getPlayer() == null) return;
+        if(e.getNamedPlayer() == null) return;
         
-        boolean isRes = false;
-        try {
-            isRes = v.isResident(r);
-        } catch(Exception ex) {
-            isRes = false;
-        }
+        if(e.getPlayer().equals(e.getNamedPlayer())) return;
         
-        if(isRes) {
-            e.setTag(VillageColor + r.getName());
-            return;
-        }
-        e.setTag(EnemyColor + r.getName());
+        if(!inVillageWorld(e.getNamedPlayer())) return;
+        if(!inVillageWorld(e.getPlayer())) return;
+        
+        Resident target = Resident.getResident(e.getPlayer());
+        Resident named = Resident.getResident(e.getNamedPlayer());
+        
+        Village tVillage = Village.getPlayersVillage(target);
+        Village nVillage = Village.getPlayersVillage(named);
+        
+        if(tVillage == null || nVillage == null) return;
+        if(!tVillage.equals(nVillage)) return;
+        
+        e.setTag(Base.FriendColor + e.getNamedPlayer().getName());
     }
 }

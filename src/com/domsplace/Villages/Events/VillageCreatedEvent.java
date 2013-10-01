@@ -1,24 +1,18 @@
 package com.domsplace.Villages.Events;
 
-import com.domsplace.Villages.Bases.CancellableEventBase;
+import com.domsplace.Villages.Bases.CancellableEvent;
+import com.domsplace.Villages.Objects.Resident;
 import com.domsplace.Villages.Objects.Village;
-import org.bukkit.entity.Player;
 
-public class VillageCreatedEvent extends CancellableEventBase {
-    private Player player;
+public class VillageCreatedEvent extends CancellableEvent {
+    private Resident resident;
     private Village village;
     
-    public VillageCreatedEvent (Player mayor, Village village) {
-        this.player = mayor;
+    public VillageCreatedEvent(Resident resident, Village village) {
+        this.resident = resident;
         this.village = village;
     }
     
-    public Player getPlayer() {
-        return this.player;
-    }
-    
-    public Village getVillage() {
-        return this.village;
-    }
+    public Resident getResident() {return this.resident;}
+    public Village getVillage() {return this.village;}
 }
-    

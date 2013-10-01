@@ -1,8 +1,8 @@
 package com.domsplace.Villages.Enums;
 
-import com.domsplace.Villages.Bases.EnumBase;
+import com.domsplace.Villages.Bases.Enum;
 
-public class ManagerType extends EnumBase {
+public class ManagerType extends Enum {
     public static final ManagerType CONFIG = new ManagerType("Configuration");
     public static final ManagerType LANGUAGE = new ManagerType("Language");
     public static final ManagerType PLUGIN = new ManagerType("Plugin");

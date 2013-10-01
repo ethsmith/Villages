@@ -1,17 +1,16 @@
 package com.domsplace.Villages.Threads;
 
-import com.domsplace.Villages.Bases.DataManagerBase;
-import com.domsplace.Villages.Bases.ThreadBase;
+import com.domsplace.Villages.Bases.DataManager;
+import com.domsplace.Villages.Bases.VillageThread;
 
-public class ConfigSaveThread extends ThreadBase {
+public class ConfigSaveThread extends VillageThread {
     public ConfigSaveThread() {
-        super(3, 1500);
+        super(3, 1500, true);
     }
     
     @Override
     public void run() {
         log("Saving Data...");
-        DataManagerBase.CONFIG_MANAGER.save();
-        saveAllData();
+        DataManager.saveAll();
     }
 }

@@ -1,92 +1,124 @@
-package com.domsplace.Villages;
+    package com.domsplace.Villages;
 
-import com.domsplace.Villages.Commands.*;
+import com.domsplace.Villages.Commands.SubCommands.Bank.VillageBankWithdraw;
+import com.domsplace.Villages.Commands.SubCommands.Bank.VillageBankDeposit;
+import com.domsplace.Villages.Commands.SubCommands.Bank.VillageBankOpen;
+import com.domsplace.Villages.Commands.SubCommands.AdminCommands.*;
 import com.domsplace.Villages.Bases.*;
-import com.domsplace.Villages.Hooks.*;
+import com.domsplace.Villages.Commands.*;
+import com.domsplace.Villages.Commands.SubCommands.*;
+import com.domsplace.Villages.Commands.SubCommands.Mayor.*;
+import com.domsplace.Villages.Commands.SubCommands.Plot.*;
+import com.domsplace.Villages.Commands.SubCommands.Tax.VillageTaxCheck;
 import com.domsplace.Villages.Listeners.*;
 import com.domsplace.Villages.Threads.*;
-import com.domsplace.Villages.Utils.*;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public class VillagesPlugin extends JavaPlugin {
-    public static boolean loadedPlugin = false;
+public class VillagesPlugin extends PluginBase {
+    public boolean enabled;
     
     @Override
     public void onEnable() {
-        //Reference this plugin globally.
         Base.setPlugin(this);
         
-        DataManagerBase.loadAll();
+        if(!DataManager.loadAll()) {
+            disable();
+            return;
+        }
         
-        //Load Commands
-        AdminCommand VillageAdminCommand = new AdminCommand();
-        VillagesCommand VillagesCommand = new VillagesCommand();
-        VillageCommand VillageCommand = new VillageCommand();
-        CreateVillageCommand CreateVillageCommand = new CreateVillageCommand();
-        VillageInviteCommand VillageInviteCommand = new VillageInviteCommand();
-        VillageAcceptCommand VillageAcceptCommand = new VillageAcceptCommand();
-        VillageDenyCommand VillageDenyCommand = new VillageDenyCommand();
-        VillageTopCommand VillageTopCommand = new VillageTopCommand();
-        TaxDayCommand TaxDayCommand = new TaxDayCommand();
-        TaxAmountCommand TaxAmountCommand = new TaxAmountCommand();
-        BroadcastCommand BroadcastCommand = new BroadcastCommand();
+        //Load Base Commands
+        new VillageCommand();
         
-        //Load Listeners
-        VillagesListener VillagesListener = new VillagesListener();
-        CustomEventListener CustomListener = new CustomEventListener();
-        CommandListener CommandsListener = new CommandListener();
-        MonsterListener MonsterListener = new MonsterListener();
-        PluginHookListener PluginHookListener = new PluginHookListener();
+        //Load SubCommands
+        new VillageList();
+        new VillageCreate();
+        new VillageHelp();
+        new VillageInfo();
+        new VillageInvite();
+        new VillageMessage();
+        new VillageAccept();
+        new VillageDeny();
+        new VillageSpawn();
+        new VillageLeave();
+        new VillageTop();
+        new VillageLookup();
         
-        //Load Hooks
-        HeroChatHook HeroChatHook = new HeroChatHook();
-        TagAPIHook TagAPIHook = new TagAPIHook();
-        WorldGuardHook WorldGuardHook = new WorldGuardHook();
-        VaultHook VaultHook = new VaultHook();
+        new VillageAdmin();
+        new VillageAdminSave();
+        new VillageAdminReload();
+        new VillageAdminDelete();
+        new VillageAdminAddPlayer();
+        new VillageAdminRemovePlayer();
+        new VillageAdminSetName();
+        new VillageAdminSetMayor();
+        new VillageAdminSetDescription();
+        
+        new VillageBankDeposit();
+        new VillageBankOpen();
+        new VillageBankWithdraw();
+        
+        new VillageMayor();
+        new VillageMayorClose();
+        new VillageMayorKick();
+        new VillageMayorSetMayor();
+        new VillageMayorSetDescription();
+        new VillageMayorSetName();
+        new VillageMayorExpand();
+        new VillageMayorSetSpawn();
+        new VillageMayorExplode();
+        
+        new VillagePlotCheck();
+        new VillagePlotClaim();
+        new VillagePlotSetOwner();
+        new VillagePlotSetPrice();
+        
+        new VillageTaxCheck();
         
         //Hook
-        PluginHookBase.hookAll();
+        PluginHook.hookAll();
         
-        //Load in Threads
-        ConfigSaveThread ConfigSaveThread = new ConfigSaveThread();
-        UpkeepThread UpkeepThread = new UpkeepThread();
+        //Start Threads
+        new ConfigSaveThread();
+        new UpdateThread();
+        new UpkeepThread();
         
-        //Setup Scoreboards
-        VillageScoreboardUtils.SetupScoreboard();
+        //Load Listeners
+        new CustomEventListener();
+        new VillageGriefListener();
+        new PlotGriefListener();
+        new VillagePvPListener();
+        new WildernessGriefListener();
+        new WildernessPvPListener();
+        new MoveNotificationListener();
+        new MobSpawningListener();
+        new VillageInviteListener();
+        new VillageScoreboardListener();
+        new ServerUnloadListener();
+        new VillageCommandListener();
         
-        //Update Permission Messages
-        CommandBase.updateAllPermissionMessages();
-        
-        //Managed to load the plugin successfully!
-        loadedPlugin = true;
-        Base.broadcast(
-            "Villages.villageadmin", 
-            "§dLoaded " + this.getName() + 
-            " version " + DataManagerBase.PLUGIN_MANAGER.getVersion() + 
-            " successfully."
-        );
+        this.enabled = true;
+        Base.debug("Enabled Villages!");
+        if(Base.getConfig().getBoolean("features.guiscreen", true)) {
+            System.out.println("\n" + Base.GUIScreen);
+        }
     }
     
     @Override
     public void onDisable() {
-        if(!loadedPlugin) {
-            Base.Error("Failed to load plugin.", null);
-            Disable();
+        if(!enabled) {
+            Base.debug("Failed to Enable Villages!");
             return;
         }
         
-        //Stop Threads
-        ThreadBase.stopAllThreads();
-        
-        //Unhook all
-        PluginHookBase.unhookAll();
-        
-        //Save Data
-        DataManagerBase.saveAll();
+        VillageThread.stopAllThreads();
+        DataManager.saveAll();
     }
     
-    public void Disable() {
+    public boolean enabled() {
+        return this.enabled;
+    }
+    
+    public void disable() {
         Bukkit.getPluginManager().disablePlugin(this);
     }
 }

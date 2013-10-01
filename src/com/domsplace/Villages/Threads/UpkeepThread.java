@@ -1,21 +1,36 @@
 package com.domsplace.Villages.Threads;
 
-import com.domsplace.Villages.Bases.DataManagerBase;
-import com.domsplace.Villages.Bases.ThreadBase;
+import com.domsplace.Villages.Bases.Base;
+import com.domsplace.Villages.Bases.VillageThread;
+import com.domsplace.Villages.Objects.Tax;
+import com.domsplace.Villages.Objects.TaxData;
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.VillageUtils;
-import java.util.ArrayList;
 
-public class UpkeepThread extends ThreadBase {
+public class UpkeepThread extends VillageThread {
     public UpkeepThread() {
-        super(3, 30);
+        super(1, 10, true);
     }
     
     @Override
     public void run() {
-        ArrayList<Village> villages = new ArrayList<Village>(VillageUtils.getVillages());
-        for(Village village : villages) {
-            DataManagerBase.UPKEEP_MANAGER.checkVillage(village);
+        for(Tax t : Tax.getTaxes()) {
+            for(Village v : Village.getVillages()) {
+                TaxData td = v.getTaxData(t);
+                if(td == null) {
+                    td = new TaxData(v, t);
+                    v.addTaxData(td);
+                }
+                
+                long lastChecked = td.getLastChecked();
+                long now = Base.getNow();
+                
+                long diff = (long) (t.getHours() * 3600000d); //Hours to Milliseconds
+                
+                long difference = now - lastChecked;
+                if(difference < diff) continue;
+                
+                td.run();
+            }
         }
     }
 }

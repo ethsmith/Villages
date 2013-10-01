@@ -1,0 +1,120 @@
+createdb: 'CREATE DATABASE IF NOT EXISTS `%db%`;'
+selectdb: 'USE `%db%`;'
+players: '
+    CREATE TABLE IF NOT EXISTS `%db%`.`%t%Players` (
+      `PlayerID` int(11) NOT NULL AUTO_INCREMENT,
+      `PlayerName` varchar(64) NOT NULL,
+      CONSTRAINT `VillagesPlayerPrimaryKey` PRIMARY KEY (`PlayerID`),
+      CONSTRAINT `VillagesPlayerUniqueKey` UNIQUE KEY (`PlayerName`)
+    ) ENGINE=MyISAM;
+'
+
+villages: '
+    CREATE TABLE IF NOT EXISTS `%db%`.`%t%Villages` (
+      `VillageID` int(11) NOT NULL AUTO_INCREMENT,
+      `VillageName` VARCHAR(100) NOT NULL,
+      `VillageDescription` VARCHAR(100) NOT NULL,
+      `VillageCreateDate` DATETIME NOT NULL,
+      `VillageBank` varchar(250) NOT NULL,
+      `PlayerID` int(11) NOT NULL,
+      CONSTRAINT `VillagesPrimaryKey` PRIMARY KEY (`VillageID`),
+      CONSTRAINT `VillagesUniqueKey` UNIQUE KEY (`VillageName`),
+      CONSTRAINT `VillagesToMayorFK` FOREIGN KEY (`PlayerID`) REFERENCES `%db%`.`%t%Players`(`PlayerID`)
+    ) ENGINE=MyISAM;
+'
+
+residents: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%Residents` (
+    `ResidentID` int(11) NOT NULL AUTO_INCREMENT,
+    `PlayerID` int(11) NOT NULL,
+    `VillageID` int(11) NOT NULL,
+    CONSTRAINT `ResidentsPrimaryKey` PRIMARY KEY (`ResidentID`),
+    CONSTRAINT `ResidentsUniqueKey` UNIQUE KEY(`PlayerID`),
+    CONSTRAINT `ResidentsToPlayerFK` FOREIGN KEY (`PlayerID`) REFERENCES `%db%`.`%t%Players`(`PlayerID`)
+  ) ENGINE=MyISAM;
+'
+
+item: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%Items` (
+    `ItemID` int(11) NOT NULL AUTO_INCREMENT,
+    `ID` int(5) NOT NULL,
+    `Data` int(5) NOT NULL,
+    CONSTRAINT `ItemPrimarKey` PRIMARY KEY (`ItemID`)
+  ) ENGINE=MyISAM;
+'
+itemenchants: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%ItemEnchantments` (
+    `ItemEnchantmentID` int(11) NOT NULL AUTO_INCREMENT,
+    `ItemID` int(11) NOT NULL,
+    `EnchantmentID` int(5) NOT NULL,
+    `EnchantmentLevel` int(5) NOT NULL,
+    CONSTRAINT `ItemEnchantmentPrimaryKey` PRIMARY KEY (`ItemEnchantmentID`),
+    CONSTRAINT `ItemEnchantmentToItemFK` FOREIGN KEY (`ItemID`) REFERENCES `%db%`.`%t%Items`(`ItemID`)
+  ) ENGINE=MyISAM;
+'
+itemnames: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%ItemNames` (
+    `ItemNameID` int(11) NOT NULL AUTO_INCREMENT,
+    `ItemID` int(11) NOT NULL,
+    `ItemName` varchar(200) NOT NULL,
+    CONSTRAINT `ItemNamePrimaryKey` PRIMARY KEY (`ItemNameID`),
+    CONSTRAINT `ItemNameToItemFK` FOREIGN KEY (`ItemID`) REFERENCES `%db%`.`%t%Items`(`ItemID`)
+  ) ENGINE=MyISAM;
+'
+itemlores: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%ItemLores` (
+    `ItemLoreID` int(11) NOT NULL AUTO_INCREMENT,
+    `ItemID` int(11) NOT NULL,
+    `ItemLore` varchar(200) NOT NULL,
+    CONSTRAINT `ItemLorePrimaryKey` PRIMARY KEY (`ItemLoreID`),
+    CONSTRAINT `ItemLoreToItemFK` FOREIGN KEY (`ItemID`) REFERENCES `%db%`.`%t%Items`(`ItemID`)
+  ) ENGINE=MyISAM;
+'
+itembook: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%ItemBooks` (
+    `ItemBookID` int(11) NOT NULL AUTO_INCREMENT,
+    `ItemID` int(11) NOT NULL,
+    `ItemBookData` varchar(256) NOT NULL,
+    `ItemBookPage` int(6) NOT NULL,
+    `ItemBookTitle` varchar(96) NULL,
+    `PlayerID` int(11) NULL,
+    CONSTRAINT `ItemBookPrimaryKey` PRIMARY KEY (`ItemBookID`),
+    CONSTRAINT `ItemBookToPlayerFK` FOREIGN KEY (`PlayerID`) REFERENCES `%db%`.`%t%Players`(`PlayerID`),
+    CONSTRAINT `ItemBookToItemFK` FOREIGN KEY (`ItemID`) REFERENCES `%db%`.`%t%Items`(`ItemID`)
+  ) ENGINE=MyISAM;
+'
+bank: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%BankItems` (
+    `BankItemID` int(11) NOT NULL AUTO_INCREMENT,
+    `ItemID` int(11) NOT NULL,
+    `VillageID` int(11) NOT NULL,
+    CONSTRAINT `BankItemPrimaryKey` PRIMARY KEY (`BankItemID`),
+    CONSTRAINT `BankItemToItemFK` FOREIGN KEY (`ItemID`) REFERENCES `%db%`.`%t%Items`(`ItemID`),
+    CONSTRAINT `BankItemToVillageFK` FOREIGN KEY (`VillageID`) REFERENCES `%db%`.`%t%Villages`(`VillageID`)
+  ) ENGINE=MyISAM;
+'
+plots: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%Plots` (
+    `PlotID` int(11) NOT NULL AUTO_INCREMENT,
+    `PlotPrice` varchar(256) NULL,
+    `VillageID` int(11) NOT NULL,
+    `PlotX` int(11) NOT NULL,
+    `PlotZ` int(11) NOT NULL,
+    `PlotWorld` varchar(256) NOT NULL,
+    `PlayerID` int(11) NULL,
+    CONSTRAINT `PlotsPrimaryKey` PRIMARY KEY (`PlotID`),
+    CONSTRAINT `PlotsToVillageFK` FOREIGN KEY (`VillageID`) REFERENCES `%db%`.`%t%Villages`(`VillageID`),
+    CONSTRAINT `PlotsToPlayersFK` FOREIGN KEY (`PlayerID`) REFERENCES `%db%`.`%t%Players`(`PlayerID`)
+  ) ENGINE=MyISAM;
+'
+spawns: '
+  CREATE TABLE IF NOT EXISTS `%db%`.`%t%Spawns` (
+    `SpawnID` int(11) NOT NULL AUTO_INCREMENT,
+    `VillageID` int(11) NOT NULL,
+    `PlotID` int(11) NOT NULL,
+    CONSTRAINT `SpawnsPrimaryKey` PRIMARY KEY (`SpawnID`),
+    CONSTRAINT `SpawnsUniqueKey` UNIQUE KEY (`VillageID`),
+    CONSTRAINT `SpawnsToVillageFK` FOREIGN KEY (`VillageID`) REFERENCES `%db%`.`%t%Villages`(`VillageID`),
+    CONSTRAINT `SpawnsToPlotsFK` FOREIGN KEY (`PlotID`) REFERENCES `%db%`.`%t%Plots`(`PlotID`)
+  ) ENGINE=MyISAM;
+'

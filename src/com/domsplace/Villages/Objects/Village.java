@@ -1,487 +1,246 @@
 package com.domsplace.Villages.Objects;
 
-import com.domsplace.Villages.Bases.ObjectBase;
-import com.domsplace.Villages.Events.VillagePlayerAddedEvent;
-import com.domsplace.Villages.Events.VillagePlayerRemovedEvent;
-import com.domsplace.Villages.Hooks.TagAPIHook;
-import com.domsplace.Villages.Utils.VillageSQLUtils;
-import com.domsplace.Villages.Utils.VillageScoreboardUtils;
-import com.domsplace.Villages.Utils.VillageUtils;
+import com.domsplace.Villages.Bases.Base;
+import com.domsplace.Villages.Bases.DataManager;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.List;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class Village extends ObjectBase {
-    private ArrayList<OfflinePlayer> residents;
-    private OfflinePlayer mayor;
+public class Village {
+    private static final List<Village> VILLAGES = new ArrayList<Village>();
+    
+    public static void registerVillage(Village village) {
+        VILLAGES.add(village);
+    }
+    
+    public static void  deRegisterVillage(Village village) {
+        VILLAGES.remove(village);
+        village.getBank().updateGUI();
+    }
+    
+    public static List<Village> getVillages() {
+        return new ArrayList<Village>(VILLAGES);
+    }
+
+    public static List<String> getVillageNames() {
+        List<String> rv = new ArrayList<String>();
+        for(Village v : VILLAGES) {
+            if(v == null) continue;
+            rv.add(v.getName());
+        }
+        return rv;
+    }
+    
+    public static Village getPlayersVillage(Resident player) {
+        if(player == null) return null;
+        for(Village v : VILLAGES) {
+            if(v.getMayor() == null) continue;
+            if(v.isMayor(player) || v.isResident(player)) return v;
+        }
+        return null;
+    }
+    
+    public static boolean doesRegionOverlapVillage(Region region) {
+        return getOverlappingVillage(region) != null;
+    }
+    
+    public static Village getOverlappingVillage(Region region) {
+        for(Village v : VILLAGES) {
+            if(!v.isRegionOverlappingVillage(region)) continue;
+            return v;
+        }
+        
+        return null;
+    }
+
+    public static Village getVillage(String name) {
+        for(Village v : VILLAGES) {
+            if(v.getName().equalsIgnoreCase(name)) return v;
+        }
+        return null;
+    }
+    
+    public static void deleteVillage(Village village) {
+        DataManager.VILLAGE_MANAGER.deleteVillage(village);
+    }
+
+    public static void deRegisterVillages(List<Village> villages) {
+        for(Village v : villages) {
+            Village.deRegisterVillage(v);
+        }
+    }
+    
+    //Instance
     private String name;
-    private String description;
-    private long createDate;
-    private Chunk townSquare;
-    private int size;
-    private double money;
-    public ItemBank itemBank;
+    private String description = "Welcome!";
+    private long createdDate;
     
-    public ArrayList<Player> sentWelcome;
+    private Resident mayor;
+    private Bank bank;
+    private Region spawn;
     
-    private HashMap<Chunk, OfflinePlayer> playerPlots;
-    private HashMap<Chunk, Double> plotPrices;
+    private List<Region> regions;
+    private List<Plot> plots;
+    private List<Resident> residents;
+    private List<TaxData> taxData;
     
-    public int idSQL;
-    
-    public Village(String name) {
-        this.name = name;
-        init();
+    public Village() {
+        this.bank = new Bank(this);
+        this.plots = new ArrayList<Plot>();
+        this.regions = new ArrayList<Region>();
+        this.residents = new ArrayList<Resident>();
+        this.taxData = new ArrayList<TaxData>();
+        this.createdDate = Base.getNow();
     }
     
-    private void init() {
-        this.setResidents(new ArrayList<OfflinePlayer>());
-        
-        sentWelcome = new ArrayList<Player>();
-        
-        this.setMayor(null);
-        this.setTownSpawn(Bukkit.getWorlds().get(0).getSpawnLocation().getChunk());
-        this.setCreatedDate(0);
-        this.setTownSize(0);
-        this.setDescription("");
-        
-        this.itemBank = new ItemBank(this.getName());
-        
-        idSQL = -1;
-        
-        VillageScoreboardUtils.SetupScoreboard();
-        
-        playerPlots = new HashMap<Chunk, OfflinePlayer>();
-        plotPrices = new HashMap<Chunk, Double>();
-    }
+    public String getName() {return this.name;}
+    public String getDescription() {return this.description;}
+    public Resident getMayor() {return this.mayor;}
+    public Region getSpawn() {return this.spawn;}
+    public Bank getBank() {return this.bank;}
+    public long getCreatedDate() {return this.createdDate;}
     
-    public String getName() {
-        return this.name;
-    }
+    public List<Region> getRegions() {return new ArrayList<Region>(this.regions);}
+    public List<Plot> getPlots() {return new ArrayList<Plot>(this.plots);}
+    public List<Resident> getResidents() {return new ArrayList<Resident>(this.residents);}
+    public List<TaxData> getTaxData() {return new ArrayList<TaxData>(this.taxData);}
     
-    public Village setName(String name) {
-        this.name = name;
-        this.itemBank.setName(this.getName());
-        return this;
-    }
+    public void setName(String name) {this.name = name; this.bank.updateGUI();}
+    public void setDescription(String description) {this.description = description;}
+    public void setMayor(Resident mayor) {this.mayor = mayor; this.addResident(mayor);}
+    public void setSpawn(Region region) {this.addRegion(region); this.spawn = region;}
+    public void setCreatedDate(long date) {this.createdDate = date;}
     
-    public Village setDescription(String description) {
-        this.description = description;
-        return this;
-    }
+    public void addRegion(Region region) {if(this.regions.contains(region)) {return;} this.regions.add(region);}
+    public void addPlot(Plot plot) {this.plots.add(plot);}
+    public void addResident(Resident resident) {if(this.residents.contains(resident)){return;} this.residents.add(resident);}
+    public void addTaxData(TaxData data) {this.taxData.add(data);}
     
-    public int getSQLID() {
-        return this.idSQL;
-    }
+    public void removeResident(Resident resident) {this.residents.remove(resident);}
+
+    public boolean isMayor(Resident player) {if(player == null) return false; return this.mayor.equals(player); }
+    public boolean isResident(Resident player) {if(player == null) return false; return this.residents.contains(player) || this.isMayor(player);}
     
-    public Village setSQLID(int id) {
-        this.idSQL = id;
-        return this;
-    }
-    
-    public String getDescription() {
-        return this.description;
-    }
-    
-    public OfflinePlayer getMayor() {
-        return this.mayor;
-    }
-    
-    public Village setMayor(OfflinePlayer mayor) {
-        this.mayor = mayor;
-        if(mayor != null && !this.getResidents().contains(mayor)) {
-            this.residents.add(mayor);
+    public List<Plot> getAvailablePlots() {
+        List<Plot> list = new ArrayList<Plot>();
+        for(Plot p : this.plots) {
+            if(p.isOwned()) continue;
+            list.add(p);
         }
-        return this;
+        return list;
     }
     
-    public Village setResidents(ArrayList<OfflinePlayer> residents) {
-        this.residents = residents;
-        return this;
-    }
-    
-    public ArrayList<OfflinePlayer> getResidents() {
-        return this.residents;
-    }
-    
-    public Village addResident(OfflinePlayer resident) {
-        VillagePlayerAddedEvent event = new VillagePlayerAddedEvent(resident, this);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        if(event.isCancelled()) {
-            return this;
+    public Region getOverlappingRegion(Region region) {
+        for(Region r : this.regions) {
+            if(!r.compare(region)) continue;
+            return r;
         }
-        
-        this.getResidents().add(resident);
-        
-        if(getConfigManager().useTagAPI && resident.isOnline()) {
-            TagAPIHook.instance.refreshTags(resident.getPlayer());
-        }
-        
-        VillageScoreboardUtils.SetupScoreboard();
-        return this;
+        return null;
     }
     
-    public Village removeResident(OfflinePlayer resident) {
-        VillagePlayerRemovedEvent event = new VillagePlayerRemovedEvent(resident, this);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        if(event.isCancelled()) {
-            return this;
+    public boolean isRegionOverlappingVillage(Region region) {
+        return this.getOverlappingRegion(region) != null;
+    }
+
+    public List<String> getResidentsAsString() {
+        List<String> res = new ArrayList<String>();
+        for(Resident r : this.residents) {
+            res.add(r.getName());
+        }
+        return res;
+    }
+
+    public List<String> getRegionsAsString() {
+        List<String> regions = new ArrayList<String>();
+        for(Region r : this.regions) {
+            regions.add(r.toString());
+        }
+        return regions;
+    }
+    
+    public List<Player> getOnlineResidents() {
+        List<Player> players = new ArrayList<Player>();
+        for(Resident r : this.residents) {
+            OfflinePlayer p = Bukkit.getOfflinePlayer(r.getName());
+            if(!p.isOnline()) continue;
+            players.add(p.getPlayer());
+        }
+        return players;
+    }
+    
+    public void broadcast(Player[] ignoredPlayers, Object... o) {
+        List<Player> players = this.getOnlineResidents();
+        for(Player p : ignoredPlayers) {
+            if(players.contains(p)) players.remove(p);
         }
         
-        this.getResidents().remove(resident);
-        VillageScoreboardUtils.SetupScoreboard();
-        
-        this.removePlayerChunks(resident);
-        
-        return this;
+        Base.sendAll(players, o);
+    }
+
+    public void broadcast(Object... o) {
+        this.broadcast(new Player[]{}, o);
     }
     
-    public Boolean isResident(Player player) {
-        return isResident(Bukkit.getOfflinePlayer(player.getName()));
-    }
-    
-    public Boolean isResident(OfflinePlayer resident) {
-        if(this.getResidents() == null) {
-            return false;
+    public boolean doesRegionBorder(Region r) {
+        for(Region re : this.regions) {
+            if(re.doesRegionBorder(r)) return true;
         }
-        for(OfflinePlayer p : this.getResidents()) {
-            if(p.getName().equalsIgnoreCase(resident.getName())) {
-                return true;
-            }
-        }
+        
         return false;
     }
+
+    public void addRegions(Collection<Region> claiming) {
+        this.regions.addAll(claiming);
+    }
     
-    public Boolean isResident(CommandSender resident) {
-        if(!(resident instanceof Player)) {
-            return false;
+    public void explode() {
+        //WARNING! Can be CPU intensive
+        List<Block> explode = new ArrayList<Block>();
+        for(Region r : this.regions) {
+            Block x = r.getHighBlock();
+            Block y = r.getSafeMiddle().getBlock();
+            Block z = r.getLowBlock();
+            explode.add(x);
+            explode.add(y);
+            explode.add(z);
         }
         
-        return isResident(Bukkit.getOfflinePlayer(resident.getName()));
-    }
-    
-    public boolean isMayor (OfflinePlayer mayor) {
-        if(!this.getMayor().getName().equalsIgnoreCase(mayor.getName())) {
-            return false;
+        for(Block b : explode) {
+            //Create Explosion at 6F (1.5x a regular TNT)
+            b.getWorld().createExplosion(b.getLocation(), 6f);
+            b.getRelative(0, 30, 0).getWorld().createExplosion(b.getLocation(), 6f);
+            b.getRelative(0, -30, 0).getWorld().createExplosion(b.getLocation(), 6f);
         }
-        return true;
-    }
-    
-    public boolean isMayor (Player mayor) {
-        return isMayor(Bukkit.getOfflinePlayer(mayor.getName()));
-    }
-    
-    public Chunk getTownSpawn() {
-        return this.townSquare;
-    }
-    
-    public Village setTownSpawn(Chunk spawn) {
-        this.townSquare = spawn;
-        
-        //Reserve the block//
-        if(this.getMayor() != null) {
-            this.forceClaim(this.getMayor(), this.getTownSpawn());
-        }
-        
-        return this;
-    }
-    
-    public ArrayList<Chunk> getTownChunks() {
-        int x = this.getTownSpawn().getX();
-        int z = this.getTownSpawn().getZ();
-        
-        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
-        
-        int s = this.size - 1;
-        
-        for(int cx = (x - s); cx <= (x + s); cx++) {
-            for(int cz = (z - s); cz <= (z + s); cz++) {
-                Chunk chunk = townSquare.getWorld().getChunkAt(cx, cz);
-                if(chunk == null) {
-                    continue;
-                }
-                chunks.add(chunk);
-            }
-        }
-        
-        return chunks;
-    }
-    
-    public ArrayList<Chunk> getTownBorderChunks() {
-        return this.getTownLocalBorderChunks(VillageUtils.borderRadius);
-    }
-    
-    public ArrayList<Chunk> getTownLocalBorderChunks(int amount) {
-        int x = this.getTownSpawn().getX();
-        int z = this.getTownSpawn().getZ();
-        
-        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
-        ArrayList<Chunk> town = this.getTownChunks();
-        
-        int s = this.size - 1;
-        int r = amount;
-        
-        for(int cx = (x - s - r); cx <= (x + s + r); cx++) {
-            for(int cz = (z - s - r); cz <= (z + s + r); cz++) {
-                Chunk chunk = townSquare.getWorld().getChunkAt(cx, cz);
-                if(chunk == null) {
-                    continue;
-                }
-                if(town.contains(chunk)) {
-                    continue;
-                }
-                chunks.add(chunk);
-            }
-        }
-        
-        return chunks;
-    }
-    
-    public ArrayList<Chunk> getTownArea() {
-        int x = this.getTownSpawn().getX();
-        int z = this.getTownSpawn().getZ();
-        
-        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
-        
-        int s = this.size - 1;
-        int r = VillageUtils.borderRadius;
-        
-        for(int cx = (x - s - r); cx <= (x + s + r); cx++) {
-            for(int cz = (z - s - r); cz <= (z + s + r); cz++) {
-                Chunk chunk = townSquare.getWorld().getChunkAt(cx, cz);
-                if(chunk == null) {
-                    continue;
-                }
-                chunks.add(chunk);
-            }
-        }
-        
-        return chunks;
-    }
-    
-    public boolean isChunkInTownArea(Chunk chunk) {
-        for(Chunk c : this.getTownArea()) {
-            if(c != chunk) {
-                continue;
-            }
-            return true;
-        }
-        return false;
-    }
-    
-    public long getCreatedDate() {
-        return this.createDate;
-    }
-    
-    public Village setCreatedDate(long createDate) {
-        this.createDate = createDate;
-        return this;
-    }
-    
-    public int getTownSize() {
-        return this.size;
-    }
-    
-    public Village setTownSize(int size) {
-        this.size = size;
-        return this;
-    }
-    
-    public Village setMoney(double money) {
-        this.money = money;
-        return this;
-    }
-    
-    public double getMoney() {
-        return this.money;
-    }
-    
-    public Village addMoney(double amount) {
-        return this.setMoney(this.getMoney() + amount);
     }
 
-    public boolean isChunkInTown(Chunk chunk) {
-        if(!this.getTownChunks().contains(chunk)) {
-            return false;
-        }
-        return true;
+    public int getValue() {
+        int v = this.getRegions().size();
+        v += this.residents.size();
+        if(Base.useVault) v += this.getBank().getWealth();
+        //TODO: Add ItemBank stuff here
+        return v;
     }
 
-    public Village sendMessage(String string) {
-        for(OfflinePlayer p : this.getResidents()) {
-            if(!p.isOnline()) {
-                continue;
-            }
-            
-            msgPlayer(p.getPlayer(), string);
+    public Plot getPlot(Region standing) {
+        for(Plot p : this.plots) {
+            if(p.getRegion().compare(standing)) return p;
         }
-        return this;
+        return null;
     }
     
-    public Location getSpawnBlock() {
-        int y = 256;
-        
-        Block b = this.getTownSpawn().getBlock(8, y, 8);
-        Block below;
-        Block up;
-        Block d = this.getTownSpawn().getBlock(8, 64, 8);
-        
-        boolean look = true;
-        
-        while(look) {
-            below = b.getRelative(0, -1, 0);
-            up = b.getRelative(0, 1, 0);
-            
-            if(b == null) {
-                return d.getLocation();
-            }
-            
-            if(below == null) {
-                return d.getLocation();
-            }
-            
-            if(up == null) {
-                return d.getLocation();
-            }
-            
-            if(below.getY() <= 0) {
-                return d.getLocation();
-            }
-            
-            if(b.getType().equals(Material.AIR) && up.getType().equals(Material.AIR) && !below.getType().equals(Material.AIR)) {
-                return b.getLocation();
-            }
-            
-            b = b.getRelative(0, -1, 0);
-        }
-        
-        return b.getLocation();
+    public void delete() {
+        this.bank.delete();
     }
 
-    public double getWorth() {
-        double worth = this.getTownSize() * 10;
-        if(getConfigManager().useEconomy) {
-            worth += this.getMoney();
+    public TaxData getTaxData(Tax t) {
+        for(TaxData td : this.taxData) {
+            if(td.getTax().equals(t)) return td;
         }
         
-        return worth;
-    }
-    
-    public Village save() {
-        getVillageManager().saveVillage(this);
-        return this;
-    }
-    
-    public ItemBank getItemBank() {
-        return this.itemBank;
-    }
-    
-    public Chunk getLowestChunk() {
-        Chunk lowestChunk = this.getTownSpawn();
-        
-        for(Chunk c : this.getTownArea()) {
-            if(c.getX() >= lowestChunk.getX()) {
-                continue;
-            }
-            
-            lowestChunk = c;
-        }
-        
-        return lowestChunk;
-    }
-    
-    public Chunk getHighestChunk() {
-        Chunk chunk = this.getTownSpawn();
-        
-        for(Chunk c : this.getTownArea()) {
-            if(c.getX() < chunk.getX()) {
-                continue;
-            }
-            
-            chunk = c;
-        }
-        
-        return chunk;
-    }
-    
-    public OfflinePlayer getPlayerFromChunk(Chunk c) {
-        if(!this.getPlayerChunks().containsKey(c)) return null;
-        return this.playerPlots.get(c);
-    }
-    
-    public boolean isChunkClaimed(Chunk c) {
-        return this.getPlayerChunks().containsKey(c) && this.getPlayerFromChunk(c) != null;
-    }
-    
-    public boolean isChunkOwnedByPlayer(OfflinePlayer p, Chunk c) {
-        return this.getPlayerFromChunk(c).equals(p);
-    }
-    
-    public ArrayList<Chunk> getPlayersChunks(OfflinePlayer p) {
-        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
-        
-        for(Chunk c : this.playerPlots.keySet()) {
-            if(!this.getPlayerFromChunk(c).getName().equalsIgnoreCase(p.getName())) {
-                continue;
-            }
-            chunks.add(c);
-        }
-        
-        return chunks;
-    }
-    
-    public HashMap<Chunk, OfflinePlayer> getPlayerChunks() {
-        return this.playerPlots;
-    }
-    
-    public boolean claimChunk(OfflinePlayer p, Chunk c) {
-        if(this.isChunkClaimed(c)) {
-            return false;
-        }
-        
-        this.getPlayerChunks().put(c, p);
-        return this.isChunkOwnedByPlayer(p, c);
-    }
-    
-    public Village forceClaim(OfflinePlayer p, Chunk c) {
-        this.getPlayerChunks().put(c, p);
-        return this;
-    }
-    
-    public HashMap<Chunk, Double> getChunkPrices() {
-        return this.plotPrices;
-    }
-    
-    public boolean isPriceSet(Chunk c) {
-        return this.getChunkPrices().containsKey(c);
-    }
-    
-    public double getChunkPrice(Chunk chunk) {
-        
-        double cost = 0.0d;
-        if(this.getChunkPrices().containsKey(chunk)) {
-            cost = this.getChunkPrices().get(chunk);
-        }
-        return cost;
-    }
-    
-    public Village setChunkPrice(Chunk c, double d) {
-        this.getChunkPrices().put(c, d);
-        return this;
-    }
-
-    public Village removePlayerChunks(OfflinePlayer resident) {
-        for(Chunk c : this.getPlayersChunks(Bukkit.getOfflinePlayer(resident.getName()))) {
-            this.playerPlots.remove(c);
-        }
-        return this;
+        return null;
     }
 }

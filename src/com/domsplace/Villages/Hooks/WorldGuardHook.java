@@ -1,68 +1,77 @@
 package com.domsplace.Villages.Hooks;
 
-import com.domsplace.Villages.Bases.PluginHookBase;
-import com.domsplace.Villages.Objects.Village;
-
-import com.domsplace.Villages.Utils.VillageUtils;
+import com.domsplace.Villages.Bases.Base;
+import static com.domsplace.Villages.Bases.Base.isCoordBetweenCoords;
+import com.domsplace.Villages.Bases.PluginHook;
+import com.domsplace.Villages.Objects.Region;
+import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import org.bukkit.Chunk;
-import org.bukkit.entity.Player;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import org.bukkit.block.Block;
 
-public class WorldGuardHook extends PluginHookBase {
-    public static WorldGuardHook instance;
-    
+public class WorldGuardHook extends PluginHook {
     public WorldGuardHook() {
         super("WorldGuard");
-        WorldGuardHook.instance = this;
-    }
-    
-    public WorldGuardPlugin getWorldGuard() {
-        return (WorldGuardPlugin) this.getHookedPlugin();
-    }
-
-    public boolean doesVillageOverlapRegion(Village v) {
-        if(!this.isHooked()) return false;
-        
-        com.sk89q.worldguard.bukkit.WorldGuardPlugin plugin = getWorldGuard();
-        
-        if(plugin == null) {
-            return false;
-        }
-        
-        Player mayor = v.getMayor().getPlayer();
-        
-        for(Chunk c : v.getTownArea()) {
-            if(!isChunkInRegion(c)) continue;
-            return true;
-        }
-        
-        return false;
-    }
-
-    public boolean isChunkInRegion(Chunk chunk) {
-        if(!this.isHooked()) return false;
-        
-        WorldGuardPlugin plugin = getWorldGuard();
-        
-        if(plugin == null) {
-            return false;
-        }
-        
-        for(com.sk89q.worldguard.protection.regions.ProtectedRegion r : plugin.getRegionManager(chunk.getWorld()).getRegions().values()) {
-            debug("Checking Region " + r.getId());
-            if(!VillageUtils.isCoordBetweenCoords(chunk, r)) continue;
-            return true;
-        }
-        
-        return false;
     }
     
     @Override
     public void onHook() {
-        if(!getConfigManager().useWorldGuard) return;
+        super.onHook();
+        Base.useWorldGuard = true;
     }
     
     @Override
-    public void onUnHook() {
+    public void onUnhook() {
+        super.onUnhook();
+        Base.useWorldGuard = false;
+    }
+    
+    public WorldGuardPlugin getWorldGuard() {
+        try {
+            return (WorldGuardPlugin) this.getHookedPlugin();
+        } catch(NoClassDefFoundError e) {
+            return null;
+        }
+    }
+    
+    public boolean isOverlappingRegion(Region region) {
+        return getOverlappingRegion(region) != null;
+    }
+    
+    public ProtectedRegion getOverlappingRegion(Region region) {
+        for(ProtectedRegion r : getWorldGuard().getRegionManager(region.getBukkitWorld()).getRegions().values()) {
+            debug("Checking Region " + r.getId());
+            if(!isCoordBetweenCoords(region, r)) continue;
+            return r;
+        }
+        return null;
+    }
+    
+    public static boolean isCoordBetweenCoords(Region region, ProtectedRegion r) {
+        Block b1 = region.getLowBlock();
+        Block b2 = region.getHighBlock();
+        
+        boolean s1 = isCoordBetweenCoords(b1.getX(), b1.getZ(), r.getMinimumPoint(), r.getMaximumPoint());
+        if(s1) return true;
+        boolean s2 = isCoordBetweenCoords(b2.getX(), b2.getZ(), r.getMinimumPoint(), r.getMaximumPoint());
+        if(s2) return true;
+        boolean s3 = isCoordBetweenCoords(r.getMinimumPoint(), b1, b2);
+        if(s3) return true;
+        boolean s4 = isCoordBetweenCoords(r.getMaximumPoint(), b1, b2);
+        if(s4) return true;
+        
+        return false;
+    }
+    
+    public static boolean isCoordBetweenCoords(int checkX, int checkZ, BlockVector min, BlockVector max) {
+        return isCoordBetweenCoords(checkX, checkZ, min.getBlockX(), min.getBlockZ(), max.getBlockX(), max.getBlockZ());
+    }
+    
+    public static boolean isCoordBetweenCoords(BlockVector bv, int outerX, int outerZ, int maxX, int maxZ) {
+        return isCoordBetweenCoords(bv.getBlockX(), bv.getBlockZ(), outerX, outerZ, maxX, maxZ);
+    }
+    
+    public static boolean isCoordBetweenCoords(BlockVector bv, Block b1, Block b2) {
+        return isCoordBetweenCoords(bv.getBlockX(), bv.getBlockZ(), b1.getX(), b1.getZ(), b2.getX(), b2.getZ());
     }
 }

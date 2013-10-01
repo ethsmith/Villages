@@ -1,512 +1,702 @@
 package com.domsplace.Villages.DataManagers;
 
-import com.domsplace.Villages.Bases.DataManagerBase;
+import com.domsplace.Villages.Bases.Base;
+import com.domsplace.Villages.Bases.DataManager;
+import com.domsplace.Villages.Commands.SubCommands.VillageCreate;
+import com.domsplace.Villages.Commands.SubCommands.VillageInvite;
 import com.domsplace.Villages.Enums.ManagerType;
-import com.domsplace.Villages.Events.VillageDeletedEvent;
-import com.domsplace.Villages.Hooks.TagAPIHook;
+import com.domsplace.Villages.Exceptions.InvalidItemException;
+import com.domsplace.Villages.Objects.Bank;
+import com.domsplace.Villages.Objects.Plot;
+import com.domsplace.Villages.Objects.Region;
+import com.domsplace.Villages.Objects.Resident;
+import com.domsplace.Villages.Objects.Tax;
+import com.domsplace.Villages.Objects.TaxData;
 import com.domsplace.Villages.Objects.Village;
-import com.domsplace.Villages.Utils.VillageSQLUtils;
-import com.domsplace.Villages.Utils.VillageScoreboardUtils;
-import com.domsplace.Villages.Utils.VillageUtils;
+import com.domsplace.Villages.Objects.VillageItem;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 
-public class VillageManager extends DataManagerBase {
+public class VillageManager extends DataManager {
+    private static final String EXTENSION = ".yml";
+    
+    private File directory;
+    
     public VillageManager() {
         super(ManagerType.VILLAGE);
     }
     
     @Override
     public void tryLoad() throws IOException {
-        VillageUtils.Villages = new ArrayList<Village>();
+        this.loadAllVillages();
         
-        List<String> vilNames = LoadVillageNames();
-        for(String vn : vilNames) {
-            Village v = LoadVillage(vn);
-            getVillages().add(v);
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            Resident.registerResident(Bukkit.getOfflinePlayer(p.getName()));
         }
-        VillageScoreboardUtils.SetupScoreboard();
+        
+        //Reset Village Invites
+        VillageInvite.VILLAGE_INVITES.clear();
     }
     
     @Override
     public void trySave() throws IOException {
-        for(Village v : getVillages()) {
-            getVillageManager().saveVillage(v);
+        if(Base.useSQL) {
+            saveSQLResidents();
         }
-        VillageScoreboardUtils.SetupScoreboard();
+        for(Village village : Village.getVillages()) {
+            saveVillage(village);
+        }
     }
     
-    public void saveVillage(Village village) {
-        if(getConfigManager().useSQL) {
-            saveVillageSQL(village);
+    private void saveVillage(Village village) throws IOException {
+        if(!Base.useSQL) {
+            saveVillageAsYML(village);
         } else {
-            saveVillageYML(village);
-        }
-        
-        getVillageBankManager().saveVillageBank(village);
-        
-        for(OfflinePlayer p : village.getResidents()) {
-            if(!p.isOnline()) {
-                continue;
-            }
-            
-            TagAPIHook.instance.refreshTags();
-        }
-        
-        VillageScoreboardUtils.SetupScoreboard();
-    }
-    
-    public boolean saveVillageYML(Village village) {
-        try {
-            trySaveVillageYML(village);
-            return true;
-        } catch (Exception ex) {
-            Error("Failed to save village " + village.getName(), ex);
-            return false;
+            saveVillageAsSQL(village);
         }
     }
     
-    public void trySaveVillageYML(Village village) throws IOException {
-        File dataFolder = new File(getDataFolder(), "data");
-        if(!dataFolder.exists()) {
-            dataFolder.mkdir();
-        }
-
-        dataFolder = new File(dataFolder, "villages");
-        if(!dataFolder.exists()) {
-            dataFolder.mkdir();
-        }
-
-        File villageFile = new File(dataFolder, village.getName() + ".yml");
-        if(!villageFile.exists()) {
-            villageFile.createNewFile();
-        }
-
-        YamlConfiguration configuration = villageToYML(village);
-        configuration.save(villageFile);
-    }
-    
-    public void saveVillageSQL(Village village) {
-        int result = -1;
-        //Try to get Village//
-        result = VillageSQLUtils.getVillageIDByName(village.getName());
-
-        if(result == -1) {
-            String stmt = getCreateQuery(village);
-            result = VillageSQLUtils.sqlQueryID(stmt);
-            village.idSQL = result;
+    private void loadAllVillages() throws IOException {
+        Village.deRegisterVillages(Village.getVillages());
+        if(!Base.useSQL) {
+            loadAllVillagesYML();
         } else {
-            village.idSQL = result;
-            String stmt = getUpdateQuery(village);
-            if(stmt != null) {
-                VillageSQLUtils.sqlQuery(stmt);
-            }
+            loadAllVillagesSQL();
         }
-
-        ArrayList<OfflinePlayer> residents = village.getResidents();
-
-        if(residents.size() < 1) {
-            return;
+    }
+    
+    private void loadAllVillagesYML() throws IOException {
+        this.directory = new File(getDataFolder(), "villages");
+        if(!this.directory.exists()) this.directory.mkdir();
+        File[] villages = this.directory.listFiles();
+        for(File f : villages) {
+            Village v = this.loadVillageYML(f);
+            if(v == null) {log("Failed to load " + f.getName() + " as a Village!"); continue;}
+            debug("Loaded Village " + v.getName() + "!");
+            Village.registerVillage(v);
         }
-
-        String rstmt = "INSERT INTO `VillagesResidents` ("
-                + "`VillagePlayerID`, "
-                + "`VillageID`"
-                + ") VALUES";
-
-        for(OfflinePlayer p : residents) {
-            int playerID = VillageSQLUtils.recordSQLPlayer(p);
-            String stmt = "DELETE FROM `VillagesResidents` WHERE `VillagePlayerID` = '" + playerID + "';";
-            VillageSQLUtils.sqlQuery(stmt);
-            rstmt += "('" + playerID + "', '" + village.getSQLID() + "'), ";
-        }
-        rstmt = rstmt.substring(0, rstmt.length() - 2);
-        rstmt += ";";
-        VillageSQLUtils.sqlQuery(rstmt);
+    }
+    
+    private Village loadVillageYML(File file) {
+        if(!file.getName().toLowerCase().endsWith(EXTENSION.toLowerCase())) return null;
         
-        //Save Plots
-        rstmt = "DELETE FROM `VillagePlots` WHERE `VillageID`='" + village.idSQL + "';";
-        VillageSQLUtils.sqlQuery(rstmt);
+        YamlConfiguration yml = YamlConfiguration.loadConfiguration(file);
         
-        //Add chunks, we'll run over them later to make the settings final
-        String chunkstmt = "INSERT INTO `VillagePlots` ("
-                + "`ChunkX`,"
-                + "`ChunkZ`,"
-                + "`ChunkWorld`,"
-                + "`VillageID`"
-                + ") VALUES ";
+        String name = yml.getString("name", null);
+        if(name == null || !name.matches(VillageCreate.VILLAGE_NAME_REGEX)) return null;
         
-        String oldchunkstmt = chunkstmt;
-
-        for(Chunk c :  village.getPlayerChunks().keySet()) {
-            if(village.getTownSpawn().equals(c)) {
-                continue;
-            }
-
-            chunkstmt += "('" + c.getX() + "', '" + c.getZ() + "', '" + c.getWorld().getName() + "', '" + village.idSQL + "'), ";
+        String description = yml.getString("description");
+        Resident mayor = Resident.getResident(yml.getString("mayor", null));
+        if(mayor == null) return null;
+        
+        Village v = new Village();
+        
+        v.setName(yml.getString("name"));
+        v.setDescription(yml.getString("description"));
+        v.setMayor(Resident.getResident(yml.getString("mayor")));
+        v.setCreatedDate(yml.getLong("createdDate", getNow()));
+        
+        for(String s : yml.getStringList("residents")) {
+            Resident r = Resident.getResident(s);
+            v.addResident(r);
         }
-
-        for(Chunk c :  village.getChunkPrices().keySet()) {
-            if(village.getTownSpawn().equals(c)) {
+        
+        for(String r : yml.getStringList("regions")) {
+            Region reg = Region.getRegion(r);
+            if(r == null) {
+                log(v.getName() + " has an invalid region \"" + r + "\"");
                 continue;
             }
             
-            if(village.getPlayerChunks().containsKey(c)) {
-                continue;
-            }
-
-            chunkstmt += "('" + c.getX() + "', '" + c.getZ() + "', '" + c.getWorld().getName() + "', '" + village.idSQL + "'), ";
+            v.addRegion(reg);
         }
-        if(!chunkstmt.equals(oldchunkstmt)) {
-            chunkstmt = chunkstmt.substring(0, chunkstmt.length() - 2);
-            chunkstmt += ";";
-            
-            VillageSQLUtils.sqlQuery(chunkstmt);
-
-            for(Chunk c :  village.getPlayerChunks().keySet()) {
-                if(village.getTownSpawn().equals(c)) {
-                    continue;
+        
+        Region spawn = Region.getRegion(yml.getString("spawn"));
+        v.setSpawn(spawn);
+        
+        if(yml.contains("bank.wealth")) {
+            v.getBank().setWealth(yml.getDouble("bank.wealth"));
+        }
+        
+        if(yml.contains("bank.items")) {
+            for(String k : ((MemorySection) yml.get("bank.items")).getKeys(false)) {
+                String itemdata = yml.getString("bank.items." + k);
+                try {
+                    List<VillageItem> items = VillageItem.createItems(itemdata);
+                    v.getBank().addItems(items);
+                } catch(InvalidItemException e) {log("bank.items." + k + " is an invalid item.");}
+            }
+        }
+        
+        if(yml.contains("plots")) {
+            for(String k : ((MemorySection) yml.get("plots")).getKeys(false)) {
+                Region r = Region.getRegion(yml.getString("plots." + k + ".region"));
+                Plot p = new Plot(v, r);
+                v.addPlot(p);
+                
+                if(yml.contains("plots." + k + ".owner")) {
+                    p.setOwner(Resident.getResident(yml.getString("plots." + k + ".owner")));
                 }
                 
-                VillageSQLUtils.sqlQuery(
-                    "UPDATE `VillagePlots` SET `VillagePlayerID`='" + VillageSQLUtils.getSQLPlayerID(village.getPlayerFromChunk(c)) + "'"
-                        + " WHERE `ChunkX`='" + c.getX() + "' "
-                        + "AND `ChunkZ`='" + c.getZ() + "' "
-                        + "AND `ChunkWorld`='" + c.getWorld().getName() + "'"
-                        + "AND `VillageID`='" + village.idSQL + "';"
-                );
-            }
-
-            for(Chunk c :  village.getChunkPrices().keySet()) {
-                if(village.getTownSpawn().equals(c)) {
-                    continue;
-                }
-                
-                VillageSQLUtils.sqlQuery(
-                    "UPDATE `VillagePlots` SET `ChunkCost`='" + village.getChunkPrice(c) + "'"
-                        + " WHERE `ChunkX`='" + c.getX() + "' "
-                        + "AND `ChunkZ`='" + c.getZ() + "' "
-                        + "AND `ChunkWorld`='" + c.getWorld().getName() + "'"
-                        + "AND `VillageID`='" + village.idSQL + "';"
-                );
-            }
-        }
-    }
-
-    public static void deleteVillage(Village village) {
-        VillageDeletedEvent event = new VillageDeletedEvent(village);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        if(event.isCancelled()) {
-            return;
-        }
-        
-        if(getConfigManager().useSQL) {
-            int id = VillageSQLUtils.getVillageIDByName(village.getName());
-            String stmt = "DELETE FROM `Villages` WHERE VillageID='" + id + "';";
-            VillageSQLUtils.sqlQuery(stmt);
-            
-            stmt = "DELETE FROM `VillagesResidents` WHERE VillageID='" + id + "';";
-            VillageSQLUtils.sqlQuery(stmt);
-            
-            stmt = "DELETE FROM `VillageBankItems` WHERE VillageID='" + id + "';";
-            VillageSQLUtils.sqlQuery(stmt);
-            
-            stmt = "DELETE FROM `VillagePlots` WHERE `VillageID`='" + id+ "';";
-            VillageSQLUtils.sqlQuery(stmt);
-        } else {
-            File vill = new File(getDataFolder() + "/data/villages/" + village.getName() + ".yml");
-            vill.delete();
-        }
-        
-        getVillages().remove(village);
-        broadcast(gK("villageclosed", village));
-        DataManagerBase.UPKEEP_MANAGER.deleteUpkeep(village);
-        village = null;
-        VillageScoreboardUtils.SetupScoreboard();
-    }
-    
-    public static Village LoadVillageYML(String name) {
-        Village village = null;
-        
-        try {
-            File villageFile = new File(getPlugin().getDataFolder() + "/data/villages/" + name + ".yml");
-            
-            YamlConfiguration vil = YamlConfiguration.loadConfiguration(villageFile);
-            
-            village = new Village(vil.getString("name"));
-            village.setDescription(vil.getString("description"));
-            village.setMayor(Bukkit.getOfflinePlayer(vil.getString("mayor")));
-            
-            ArrayList<OfflinePlayer> residents = new ArrayList<OfflinePlayer>();
-            for(String s : vil.getStringList("residents")) {
-                residents.add(Bukkit.getOfflinePlayer(s));
-            }
-            village.setResidents(residents);
-            village.setCreatedDate(vil.getLong("createDate"));
-            village.setMoney(vil.getDouble("money"));
-            village.setTownSize(vil.getInt("size"));
-            
-            //Load In Plots
-            if(vil.contains("plots")) {
-                //Iterate over the plots
-                for(String s : ((MemorySection) vil.get("plots")).getKeys(false)) {
-                    Chunk c = Bukkit.getWorld(vil.getString("plots." + s + ".world")).getChunkAt(Integer.parseInt(vil.getString("plots." + s + ".x")), Integer.parseInt(vil.getString("plots." + s + ".z")));
-                    if(c == null) {
-                        continue;
-                    }
-                    
-                    if(vil.contains("plots." + s + ".player")) {
-                        OfflinePlayer p = Bukkit.getOfflinePlayer(vil.getString("plots." + s + ".player"));
-                        village.forceClaim(p, c);
-                    }
-                    
-                    if(vil.contains("plots." + s + ".price")) {
-                        double d = vil.getDouble("plots." + s + ".price");
-                        village.setChunkPrice(c, d);
-                    }
+                if(yml.contains("plots." + k + ".price")) {
+                    p.setPrice(yml.getDouble("plots." + k + ".price"));
                 }
             }
-            
-            Chunk chunk = Bukkit.getWorld(vil.getString("townsquare.world")).getChunkAt(vil.getInt("townsquare.x"), vil.getInt("townsquare.z"));
-            village.setTownSpawn(chunk);
-            getVillageBankManager().loadVillageBankYML(village);
-        } catch (Exception ex) {
-            Error("Failed to load village!", ex);
-            return null;
         }
         
-        return village;
+        if(yml.contains("taxdata")) {
+            for(String k : ((MemorySection) yml.get("taxdata")).getKeys(false)) {
+                Tax t = Tax.getTaxByName(yml.getString("taxdata." + k + ".name"));
+                long time = yml.getLong("taxdata." + k + ".lastchecked");
+                TaxData td = new TaxData(v, t, time);
+                v.addTaxData(td);
+            }
+        }
+        
+        return v;
     }
     
-    public static List<String> LoadVillageNames() {
-        List<String> towns = new ArrayList<String>();
-        if(getConfigManager().useSQL) {
-            String stmt = "SELECT `VillageName` FROM `Villages` ORDER BY `VillageName` DESC;";
-            List<Map<String, String>> results = VillageSQLUtils.sqlFetch(stmt);
-            if(results == null) {
-                return new ArrayList<String>();
-            }
-            for(Map<String, String> s : results) {
-                towns.add(s.get("VillageName"));
-            }
-            return towns;
+    public void loadAllVillagesSQL() {
+        List<Map<String, String>> results = DataManager.SQL_MANAGER.fetch("SELECT * FROM `%db%`.`%t%Villages`;");
+        for(Map<String, String> result : results) {
+            this.loadVillageSQL(result);
         }
-        
-        File villages = new File(getPlugin().getDataFolder() + "/data");
-        if(!villages.exists()) {
-            villages.mkdir();
-        }
-        villages = new File(getPlugin().getDataFolder() + "/data/villages/");
-        if(!villages.exists()) {
-            villages.mkdir();
-        }
-        
-        ArrayList<String> names = new ArrayList<String>(Arrays.asList(villages.list()));
-        for(String s : names) {
-            towns.add(s.replaceAll(".yml", ""));
-        }
-        return towns;
     }
     
-    public static Village LoadVillage(String name) {
-        if(getConfigManager().useSQL) {
-            return LoadVillageSQL(name);
+    public void loadVillageSQL(Map<String, String> data) {
+        Village v = new Village();
+        v.setName(DataManager.SQL_MANAGER.sqlUnescape(data.get("VillageName")));
+        v.setDescription(DataManager.SQL_MANAGER.sqlUnescape(data.get("VillageDescription")));
+        
+        Resident mayor = this.getResidentFromID(getInt(data.get("PlayerID")));
+        v.setMayor(mayor);
+        
+        v.getBank().setWealth(getDouble(data.get("VillageBank")));
+        v.setCreatedDate(DataManager.SQL_MANAGER.sqlToDate(data.get("VillageCreateDate")).getTime());
+        
+        int villageID = getInt(data.get("VillageID"));
+        
+        String query = "SELECT `PlotID` FROM `%db%`.`%t%Spawns` WHERE `VillageID`='" + villageID + "';";
+        List<Map<String, String>> result = DataManager.SQL_MANAGER.fetch(query);
+        v.setSpawn(this.getRegionFromID(getInt(result.get(0).get("PlotID"))));
+        
+        for(Object region : this.getRegionsFromVillage(v, villageID)) {
+            if(region instanceof Region) {
+                v.addRegion((Region) region);
+            } else if(region instanceof Plot) {
+                Plot p = (Plot) region;
+                v.addRegion(p.getRegion());
+                v.addPlot(p);
+            }
         }
         
-        return LoadVillageYML(name);
+        //Load in Residents
+        query = "SELECT `PlayerName` FROM `%db%`.`%t%Players` "
+                + "INNER JOIN `%db%`.`%t%Residents` ON ("
+                + "`%db%`.`%t%Players`.`PlayerID` = `%db%`.`%t%Residents`.`PlayerID`"
+                + ") AND (`%db%`.`%t%Residents`.`VillageID` = '" + villageID + "');";
+        result = DataManager.SQL_MANAGER.fetch(query);
+        for(Map<String, String> res : result) {
+            Resident re = Resident.getResident(res.get("PlayerName"));
+            v.addResident(re);
+        }
+        
+        query = "SELECT `ItemID` FROM `%db%`.`%t%BankItems` WHERE `VillageID`='" + villageID + "';";
+        result = DataManager.SQL_MANAGER.fetch(query);
+        for(Map<String, String> res : result) {
+            int itemID = getInt(res.get("ItemID"));
+            try {
+                VillageItem item = this.getItemFromID(itemID);
+                v.getBank().addItem(item);
+            } catch(Exception e){}
+        }
+        
+        Village.registerVillage(v);
     }
     
-    public static Village LoadVillageSQL(String name) {
-        String stmt = "SELECT * FROM `Villages` WHERE `VillageName` LIKE '" + name + "' LIMIT 1;";
-        List<Map<String, String>> results = VillageSQLUtils.sqlFetch(stmt);
-        if(results == null) {
-            return null;
-        }
-
-        if(results.size() == 0) {
-            return null;
-        }
-        Map<String, String> vil = results.get(0);
-        if(vil == null) {
-            return null;
-        }
-
-        Village village = null;
-
-        try {
-            village = new Village(vil.get("VillageName"));
-            village.setDescription(vil.get("VillageDescription"));
-            village.setCreatedDate(VillageSQLUtils.getSQLDate(vil.get("VillageCreateDate")).getTime());
-            int x = Integer.parseInt(vil.get("VillageChunkX"));
-            int z = Integer.parseInt(vil.get("VillageChunkZ"));
-            Chunk chunk = Bukkit.getWorld(vil.get("VillageWorld")).getChunkAt(x, z);
-            village.setTownSpawn(chunk);
-            ArrayList<OfflinePlayer> players = getResidentsFromVillageSQL(Integer.parseInt(vil.get("VillageID")));
-            if(players != null) {
-                village.setResidents(players);
-            }
-
-            int id = Integer.parseInt(vil.get("VillageMayorID"));
-            village.setMayor(VillageSQLUtils.getSQLPlayerByID(id));
-            village.setMoney(Double.parseDouble(vil.get("VillageBank")));
-            getVillageBankManager().loadVillageBankSQL(village);
-            
-            //Fixed Village size not being saved using SQL
-            village.setTownSize(Integer.parseInt(vil.get("VillageSize")));
-            
-            //Load in Village Plots
-            stmt = "SELECT * FROM `VillagePlots` WHERE `VillageID`='" + village.idSQL + "';";
-            results = VillageSQLUtils.sqlFetch(stmt);
-            if(results != null) {
-                if(results.size() > 0) {
-                    for(Map<String, String> cData : results) {
-                        int chunkX = Integer.parseInt(cData.get("ChunkX"));
-                        int chunkZ = Integer.parseInt(cData.get("ChunkZ"));
-                        World chunkWorld = Bukkit.getWorld(cData.get("ChunkWorld"));
-                        Chunk c = chunkWorld.getChunkAt(chunkX, chunkZ);
-
-                        if(cData.containsKey("VillagePlayerID") && cData.get("VillagePlayerID") != null && !cData.get("VillagePlayerID").equalsIgnoreCase("null")) {
-                            //Player is set for this chunk, let's set the owner
-                            OfflinePlayer p = VillageSQLUtils.getSQLPlayerByID(Integer.parseInt(cData.get("VillagePlayerID")));
-                            if(p != null) {
-                                village.forceClaim(p, c);
-                            }
-                        }
-
-                        if(cData.containsKey("ChunkCost") && cData.get("ChunkCost") != null && !cData.get("ChunkCost").equalsIgnoreCase("null")) {
-                            double cost = Double.parseDouble(cData.get("ChunkCost"));
-                            village.setChunkPrice(c, cost);
-                        }
-                    }
-                }
-            }
-            
-        } catch(Exception ex) {
-            Error("Failed to load village!", ex);
-            return null;
-        }
+    private void saveVillageAsYML(Village village) throws IOException {
+        //Delete the old Village
+        File villageFile = new File(this.directory, village.getName() + EXTENSION);
+        if(villageFile.exists()) villageFile.delete();
         
-        return village;
-    }
-    
-    public static ArrayList<OfflinePlayer> getResidentsFromVillageSQL(int villageID) {
-        String stmt = ""
-                + "SELECT VillagesPlayers.VillagePlayerName FROM "
-                + "`VillagesPlayers` INNER JOIN `VillagesResidents` ON VillagesResidents.VillagePlayerID = VillagesPlayers.VillagePlayerID "
-                + "WHERE VillagesResidents.VillageID='" + villageID + "';";
-        List<Map<String, String>> results = VillageSQLUtils.sqlFetch(stmt);
-        
-        if(results == null) {
-            return new ArrayList<OfflinePlayer>();
-        }
-        
-        ArrayList<OfflinePlayer> players = new ArrayList<OfflinePlayer>();
-        for(Map<String, String> iteration : results) {
-            if(!iteration.containsKey("VillagePlayerName")) {
-                continue;
-            }
-            
-            OfflinePlayer player = Bukkit.getOfflinePlayer(iteration.get("VillagePlayerName"));
-            players.add(player);
-        }
-        
-        return players;
-    }
-    
-    public YamlConfiguration villageToYML(Village village) {
+        villageFile.createNewFile();
         YamlConfiguration yml = new YamlConfiguration();
         
         yml.set("name", village.getName());
         yml.set("description", village.getDescription());
         yml.set("mayor", village.getMayor().getName());
+        yml.set("residents", village.getResidentsAsString());
+        yml.set("createdDate", village.getCreatedDate());
+        yml.set("spawn", village.getSpawn().toString());
+        yml.set("regions", village.getRegionsAsString());
         
-        List<String> names = new ArrayList<String>();
-        for(OfflinePlayer p : village.getResidents()) {
-            names.add(p.getName());
+        if(village.getBank().getWealth() > 0d) {
+            yml.set("bank.wealth", village.getBank().getWealth());
         }
         
-        for(Chunk c : village.getChunkPrices().keySet()) {
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".price", village.getChunkPrices().get(c));
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".x", c.getX());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".z", c.getZ());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".world", c.getWorld().getName());
-        }
-        
-        for(Chunk c : village.getPlayerChunks().keySet()) {
-            if(c.equals(village.getTownSpawn())) {
-                continue;
+        int pn = 0;
+        for(Plot p : village.getPlots()) {
+            if(p == null) continue;
+            yml.set("plots.plot" + pn + ".region", p.getRegion().toString());
+            if(p.getOwner() != null) {
+                yml.set("plots.plot" + pn + ".owner", p.getOwner().getName());
             }
             
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".player", village.getPlayerChunks().get(c).getName());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".x", c.getX());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".z", c.getZ());
-            yml.set("plots." + c.getX() + "," + c.getZ() + ".world", c.getWorld().getName());
+            if(p.getPrice() >= 0d) {
+                yml.set("plots.plot" + pn + ".price", p.getPrice());
+            }
+            pn++;
         }
         
-        yml.set("residents", names);
-        yml.set("createDate", village.getCreatedDate());
-        yml.set("townsquare.x", village.getTownSpawn().getX());
-        yml.set("townsquare.z", village.getTownSpawn().getZ());
-        yml.set("townsquare.world", village.getTownSpawn().getWorld().getName());
-        yml.set("bank", village.getItemBank().getItemsAsString());
-        yml.set("size", village.getTownSize());
-        yml.set("money", village.getMoney());
+        int tn = 0;
+        for(TaxData td : village.getTaxData()) {
+            String name = "taxdata" + tn;
+            
+            yml.set("taxdata." + name + ".name", td.getTax().getName());
+            yml.set("taxdata." + name + ".lastchecked", td.getLastChecked());
+            
+            tn++;
+        }
         
-        return yml;
+        Bank b = village.getBank();
+        List<VillageItem> currentBankItems = b.getItemsFromInventory();
+        
+        int viid = 0;
+        for(VillageItem vi : currentBankItems) {
+            String n = "item" + viid;
+            
+            yml.set("bank.items." + n, vi.toString());
+            
+            viid++;
+        }
+        
+        yml.save(villageFile);
     }
     
-    public String getUpdateQuery(Village village) {
-        if(village.getSQLID() == -1) return null;
+    private void saveSQLResidents() throws IOException {
+        //Make sure to update books that are registered
+        for(Village v : Village.getVillages()) {
+            for(VillageItem item : v.getBank().getItemsFromInventory()) {
+                if(item.getBookAuthor() == null) continue;
+                Resident r = Resident.getResident(item.getBookAuthor());
+            }
+        }
         
-        String stmt = "UPDATE `Villages` SET "
-                + "`VillageName` = '" + village.getName() + "', "
-                + "`VillageDescription` = '" + village.getDescription() + "', "
-                + "`VillageCreateDate` = '" + VillageSQLUtils.dateToSQL(new Date(village.getCreatedDate())) + "',"
-                + "`VillageChunkX` = '" + village.getTownSpawn().getX() + "', "
-                + "`VillageChunkZ` = '" + village.getTownSpawn().getZ() + "', "
-                + "`VillageWorld` = '" + village.getTownSpawn().getWorld().getName() + "', "
-                + "`VillageSize` = '" + village.getTownSize() + "', "
-                + "`VillageBank` = '" + village.getMoney() + "', "
-                + "`VillageMayorID` = '" + VillageSQLUtils.recordSQLPlayer(village.getMayor()) + "' "
-                + "WHERE `VillageID` = '" + village.getSQLID() + "' LIMIT 1;";
+        List<Resident> residents = Resident.getRegisteredResidents();
+        if(residents.size() < 1) return;
         
-        return stmt;
+        String query = "INSERT IGNORE INTO `%db%`.`%t%Players` (`PlayerName`) VALUES ";
+        
+        for(Resident r : residents) {
+            query += "('" + r.getName() + "'), ";
+        }
+        
+        query = query.substring(0, query.length() - 2);
+        query += ";";
+        
+        DataManager.SQL_MANAGER.query(query);
     }
     
-    public String getCreateQuery(Village village) {
-        String stmt = "INSERT INTO `Villages` ("
-                + "`VillageName`,"
-                + "`VillageDescription`,"
-                + "`VillageCreateDate`,"
-                + "`VillageChunkX`,"
-                + "`VillageChunkZ`,"
-                + "`VillageWorld`,"
-                + "`VillageSize`,"
-                + "`VillageBank`,"
-                + "`VillageMayorID`"
-                + ") VALUES ("
-                + "'" + village.getName() + "',"
-                + "'" + village.getDescription() + "',"
-                + "'" + VillageSQLUtils.dateToSQL(new Date(village.getCreatedDate())) + "',"
-                + "'" + village.getTownSpawn().getX() + "',"
-                + "'" + village.getTownSpawn().getZ() + "',"
-                + "'" + village.getTownSpawn().getWorld().getName() + "',"
-                + "'" + village.getTownSize() + "',"
-                + "'" + village.getMoney() + "',"
-                + "'" + VillageSQLUtils.recordSQLPlayer(village.getMayor()) + "'"
-                + ");";
+    private void saveVillageAsSQL(Village village) throws IOException {
+        //Save Village
+        String query = "INSERT IGNORE INTO `%db%`.`%t%Villages` ("
+                + "`VillageName`, `VillageDescription`, `VillageCreateDate`, "
+                + "`VillageBank`, `PlayerID`) VALUES ("
+                + "'" + DataManager.SQL_MANAGER.sqlEscape(village.getName()) + "', "
+                + "'" + DataManager.SQL_MANAGER.sqlEscape(village.getDescription()) + "', "
+                + "'" + DataManager.SQL_MANAGER.dateToSQL(new Date(village.getCreatedDate())) + "', "
+                + "'" + Double.toString(village.getBank().getWealth()) + "', "
+                + "'" + this.getResidentID(village.getMayor()) + "');"
+        ;
         
-        return stmt;
+        DataManager.SQL_MANAGER.query(query);
+        
+        //Update Village (Incase village already existed)
+        query = "UPDATE `%db%`.`%t%Villages` SET " +
+                "`VillageName`='" + DataManager.SQL_MANAGER.sqlEscape(village.getName()) + "', "
+                + "`VillageDescription`='" + DataManager.SQL_MANAGER.sqlEscape(village.getDescription()) + "', "
+                + "`VillageCreateDate`='" + DataManager.SQL_MANAGER.dateToSQL(new Date(village.getCreatedDate())) + "', "
+                + "`VillageBank`='" + Double.toString(village.getBank().getWealth()) + "', "
+                + "`PlayerID`='" + this.getResidentID(village.getMayor()) + "' "
+                + "WHERE `VillageName`='" + DataManager.SQL_MANAGER.sqlEscape(village.getName()) + "';";
+        DataManager.SQL_MANAGER.query(query);
+        
+        int villageID = this.getVillageID(village.getName());
+        
+        if(villageID == -1) throw new IOException("Village failed to store into database");
+        
+        //Clear Village Bank, and respective associated Village Bank Data
+        query = "SELECT `ItemID` FROM `%db%`.`%t%BankItems` WHERE `VillageID`='"+villageID+"';";
+        List<Map<String, String>> result = DataManager.SQL_MANAGER.fetch(query);
+        for(Map<String, String> item : result) {
+            int id = getInt(item.get("ItemID"));
+            
+            query = "DELETE FROM `%db%`.`%t%ItemBooks` WHERE `ItemID`='" + id + "';";
+            DataManager.SQL_MANAGER.query(query);
+            
+            query = "DELETE FROM `%db%`.`%t%ItemLores` WHERE `ItemID`='" + id + "';";
+            DataManager.SQL_MANAGER.query(query);
+            
+            query = "DELETE FROM `%db%`.`%t%ItemNames` WHERE `ItemID`='" + id + "';";
+            DataManager.SQL_MANAGER.query(query);
+            
+            query = "DELETE FROM `%db%`.`%t%ItemEnchantments` WHERE `ItemID`='" + id + "';";
+            DataManager.SQL_MANAGER.query(query);
+            
+            query = "DELETE FROM `%db%`.`%t%Items` WHERE `ItemID`='" + id + "';";
+            DataManager.SQL_MANAGER.query(query);
+        }
+        
+        query = "DELETE FROM `%db%`.`%t%BankItems` WHERE `VillageID`='" + villageID + "';";
+        DataManager.SQL_MANAGER.query(query);
+        
+        //Clear Old Residents
+        query = "DELETE FROM `%db%`.`%t%Residents` WHERE `VillageID` = '" + villageID + "';";
+        DataManager.SQL_MANAGER.query(query);
+        
+        //Save Residents
+        if(village.getResidents().size() > 0) {
+            query = "REPLACE INTO `%db%`.`%t%Residents` ("
+                    + "`PlayerID`, `VillageID`) VALUES ";
+            for(Resident r : village.getResidents()) {
+                query += "('" + this.getResidentID(r) + "', '" + villageID + "'), ";
+            }
+            
+            query = query.substring(0, query.length() - 2) + ";";
+            DataManager.SQL_MANAGER.query(query);
+        }
+        
+        //Remove Old Regions
+        query = "DELETE FROM `%db%`.`%t%Plots` WHERE `VillageID` = '" + villageID + "';";
+        DataManager.SQL_MANAGER.query(query);
+        
+        //Store Regions
+        if(village.getRegions().size() > 0) {
+            query = "INSERT INTO `%db%`.`%t%Plots` ("
+                    + "`VillageID`, `PlotX`, `PlotZ` ,`PlotWorld`) VALUES ";
+            for(Region r : village.getRegions()) {
+                query += "('" + villageID + "', '" + r.getX() + "', "
+                        + "'" + r.getZ() +"', '" + r.getWorld() + "'"
+                        + "), ";
+            }
+            
+            query = query.substring(0, query.length() - 2);
+            DataManager.SQL_MANAGER.query(query);
+        }
+        
+        //Update Plot Data
+        for(Plot p : village.getPlots()) {
+            query = "UPDATE `%db%`.`%t%Plots` SET ";
+            boolean changed = false;
+            
+            if(p.getPrice() >= 0) {
+                query += "`PlotPrice`='" + p.getPrice() + "', ";
+                changed = true;
+            }
+            
+            if(p.getOwner() != null) {
+                query += "`PlayerID`='" + this.getResidentID(p.getOwner()) + "', ";
+                changed = true;
+            }
+            
+            query = query.substring(0, query.length() - 2);
+            
+            query += " WHERE "
+                    + "`PlotX`='" + p.getRegion().getX() + "' AND "
+                    + "`PlotZ`='" + p.getRegion().getZ() + "' AND "
+                    + "`PlotWorld`='" + DataManager.SQL_MANAGER.sqlEscape(p.getRegion().getWorld()) + "' AND "
+                    + "`VillageID`='" + villageID + "' "
+                    + "LIMIT 1;";
+            
+            if(!changed) continue;
+            DataManager.SQL_MANAGER.query(query);
+        }
+        
+        //Store Bank
+        for(VillageItem item : village.getBank().getItemsFromInventory()) {
+            query = "INSERT INTO `%db%`.`%t%Items` (`ID`";
+            if(item.getData() >= 0) {
+                query += ", `Data`";
+            }
+            query += ") VALUES ('" + item.getID() + "'";
+            if(item.getData() >= 0) {
+                query += ", '" + item.getData() + "'";
+            }
+            
+            query += ");";
+            
+            long id = DataManager.SQL_MANAGER.queryReturnID(query);
+            
+            //Add Enchantments (if any)
+            if(item.getEnchantments() != null && item.getEnchantments().size() > 0) {
+                query = "INSERT INTO `%db%`.`%t%ItemEnchantments` (`ItemID`, `EnchantmentID`, `EnchantmentLevel`) VALUES";
+                for(Enchantment e : item.getEnchantments().keySet()) {
+                    query += "('" + id + "', '" + e.getId() + "', '" + item.getEnchantments().get(e) + "'), ";
+                }
+                
+                query = query.substring(0, query.length() - 2) + ";";
+                DataManager.SQL_MANAGER.query(query);
+            }
+            
+            //Store Item Names (If one exists)
+            if(item.getName() != null && !item.getName().equals("")) {
+                query = "INSERT INTO `%db%`.`%t%ItemNames` (`ItemID`, `ItemName`) "
+                        + "VALUES ('" + id + "', '" + DataManager.SQL_MANAGER.sqlEscape(item.getName()) + "');";
+                DataManager.SQL_MANAGER.query(query);
+            }
+            
+            //Store Item Lores (if needed)
+            if(item.getLores() != null && item.getLores().size() > 0) {
+                query = "INSERT INTO `%db%`.`%t%ItemLores` (`ItemID`, `ItemLore`) VALUES ";
+                for(String lore : item.getLores()) {
+                    query += "('" + id + "', '" + DataManager.SQL_MANAGER.sqlEscape(lore) + "'), ";
+                }
+                
+                query = query.substring(0, query.length() - 2) + ";";
+                DataManager.SQL_MANAGER.query(query);
+            }
+            
+            //Store Pages (If Any)
+            if(item.getBookPages() != null && item.getBookPages().size() > 0) {
+                //Get Author
+                Resident author = village.getMayor();
+                if(item.getBookAuthor() != null && !item.getBookAuthor().equals("")) {
+                    author = Resident.getResident(item.getBookAuthor());
+                }
+                
+                //TODO: Fix book title (planned)
+                int authorID = this.getResidentID(author);
+                query = "INSERT INTO `%db%`.`%t%ItemBooks` ("
+                        + "`ItemID`, `PlayerID`, `ItemBookPage`, `ItemBookData`) VALUES ";
+                int i = 0;
+                for(String page : item.getBookPages()) {
+                    query += "('"+id+"', '" + authorID + "', '" + i + "', '" + DataManager.SQL_MANAGER.sqlEscape(page) + "'), ";
+                    i++;
+                }
+                
+                query = query.substring(0, query.length() - 2) + ";";
+                DataManager.SQL_MANAGER.query(query);
+            }
+            
+            //Finally, Set Item to this Village
+            query = "INSERT INTO `%db%`.`%t%BankItems` (`ItemID`, `VillageID`) VALUES('" + id + "', '" + villageID + "');";
+            DataManager.SQL_MANAGER.query(query);
+        }
+        
+        //Last Step, Set the spawn
+        query = "REPLACE INTO `%db%`.`%t%Spawns` (`VillageID`, `PlotID`) VALUES ('" + villageID + "', '" + this.getPlotID(village.getSpawn()) + "');";
+        DataManager.SQL_MANAGER.query(query);
+    }
+    
+    //Use to delete the Village after it's name has been changed.
+    public void changeVillageName(Village village, String newName) {
+        if(Base.useSQL) {
+            String query = "UPDATE `%db%`.`%t%Villages` SET "
+                    + "`VillageName`='" + DataManager.SQL_MANAGER.sqlEscape(newName) + "' "
+                    + "WHERE `VillageName`='" + DataManager.SQL_MANAGER.sqlEscape(village.getName()) + "' "
+                    + "LIMIT 1;";
+            DataManager.SQL_MANAGER.query(query);
+            return;
+        }
+        File f = new File(this.directory, village.getName() + EXTENSION);
+        if(f.exists()) f.delete();
+    }
+    
+    public void deleteVillage(Village v) {
+        Village.deRegisterVillage(v);
+        v.delete();
+        if(!Base.useSQL) {
+            File f = new File(this.directory, v.getName() + EXTENSION);
+            if(f.exists()) f.delete();
+        } else {
+            //Clear Village Bank, and respective associated Village Bank Data
+            int villageID = this.getVillageID(v.getName());
+            
+            String query = "SELECT `ItemID` FROM `%db%`.`%t%BankItems` WHERE `VillageID`='"+villageID+"';";
+            List<Map<String, String>> result = DataManager.SQL_MANAGER.fetch(query);
+            for(Map<String, String> item : result) {
+                int id = getInt(item.get("ItemID"));
+
+                query = "DELETE FROM `%db%`.`%t%ItemBooks` WHERE `ItemID`='" + id + "';";
+                DataManager.SQL_MANAGER.query(query);
+
+                query = "DELETE FROM `%db%`.`%t%ItemLores` WHERE `ItemID`='" + id + "';";
+                DataManager.SQL_MANAGER.query(query);
+
+                query = "DELETE FROM `%db%`.`%t%ItemNames` WHERE `ItemID`='" + id + "';";
+                DataManager.SQL_MANAGER.query(query);
+
+                query = "DELETE FROM `%db%`.`%t%ItemEnchantments` WHERE `ItemID`='" + id + "';";
+                DataManager.SQL_MANAGER.query(query);
+
+                query = "DELETE FROM `%db%`.`%t%Items` WHERE `ItemID`='" + id + "';";
+                DataManager.SQL_MANAGER.query(query);
+            }
+
+            query = "DELETE FROM `%db%`.`%t%BankItems` WHERE `VillageID`='" + villageID + "';";
+            DataManager.SQL_MANAGER.query(query);
+            
+            query = "DELETE FROM `%db%`.`%t%Residents` WHERE `VillageID` = '" + villageID + "';";
+            DataManager.SQL_MANAGER.query(query);
+            
+            query = "DELETE FROM `%db%`.`%t%Spawns` WHERE `VillageID` = '" + villageID + "';";
+            DataManager.SQL_MANAGER.query(query);
+            
+            query = "DELETE FROM `%db%`.`%t%Plots` WHERE `VillageID` = '" + villageID + "';";
+            DataManager.SQL_MANAGER.query(query);
+            
+            query = "DELETE FROM `%db%`.`%t%Villages` WHERE `VillageID` = '" + villageID + "';";
+            DataManager.SQL_MANAGER.query(query);
+        }
+        v = null;
+    }
+
+    public int getResidentID(Resident r) {
+        String query = "SELECT `PlayerID` FROM `%db%`.`%t%Players` WHERE `PlayerName`='" + r.getName() + "' LIMIT 1;";
+        try {
+            return getInt(DataManager.SQL_MANAGER.fetch(query).get(0).get("PlayerID"));
+        } catch(Exception e) {
+            return -1;
+        }
+    }
+    
+    public int getPlotID(Region r) {
+        String query = "SELECT `PlotID` from `%db%`.`%t%Plots` WHERE "
+                + "`PlotX`='" + r.getX() + "' AND "
+                + "`PlotZ`='" + r.getZ() + "' AND "
+                + "`PlotWorld`='" + r.getWorld() + "';";
+        try {
+            return getInt(DataManager.SQL_MANAGER.fetch(query).get(0).get("PlotID"));
+        } catch(Exception e) {
+            return -1;
+        }
+    }
+
+    public int getVillageID(String name) {
+        String query = "SELECT `VillageID` FROM `%db%`.`%t%Villages` WHERE `VillageName`='" + name + "' LIMIT 1;";
+        try {
+            return getInt(DataManager.SQL_MANAGER.fetch(query).get(0).get("VillageID"));
+        } catch(Exception e) {
+            return -1;
+        }
+    }
+    
+    public Resident getResidentFromID(int id) {
+        String query = "SELECT `PlayerName` FROM `%db%`.`%t%Players` WHERE `PlayerID`='" + id + "' LIMIT 1;";
+        Resident r = Resident.getResident(DataManager.SQL_MANAGER.fetch(query).get(0).get("PlayerName"));
+        return r;
+    }
+    
+    public Region getRegionFromID(int id) {
+        String query = "SELECT * FROM `%db%`.`%t%Plots` WHERE `PlotID`='" + id + "' LIMIT 1;";
+        List<Map<String, String>> result = DataManager.SQL_MANAGER.fetch(query);
+        Map<String, String> res = result.get(0);
+        Region r = Region.getRegion(getInt(res.get("PlotX")), getInt(res.get("PlotZ")), res.get("PlotWorld"));
+        return r;
+    }
+    
+    public List<Object> getRegionsFromVillage(Village village, int id) {
+        String query = "SELECT * FROM `%db%`.`%t%Plots` WHERE `VillageID`='" + id + "';";
+        List<Map<String, String>> result = DataManager.SQL_MANAGER.fetch(query);
+        
+        List<Object> regions = new ArrayList<Object>();
+        for(Map<String, String> res : result) {
+            Region r = Region.getRegion(getInt(res.get("PlotX")), getInt(res.get("PlotZ")), res.get("PlotWorld"));
+            
+            boolean isPlot = false;
+            
+            if(res.containsKey("PlayerID") || res.containsKey("PlotPrice")) {
+                String playerID = res.get("PlayerID");
+                String plotPrice = res.get("PlotPrice");
+                
+                boolean plot = (playerID != null && !playerID.equalsIgnoreCase("null")) && (plotPrice != null && !plotPrice.equalsIgnoreCase("null"));
+                if(plot) {
+                    isPlot = true;
+                    Plot p = new Plot(village, r);
+                    
+                    if(playerID != null && !playerID.equalsIgnoreCase("null") && isInt(playerID)) {
+                        Resident resident = this.getResidentFromID(getInt(playerID));
+                        p.setOwner(resident);
+                    }
+                    
+                    if(plotPrice != null && !plotPrice.equalsIgnoreCase("null") && isDouble(plotPrice)) {
+                        double price = getDouble(plotPrice);
+                        p.setPrice(price);
+                    }
+                    
+                    regions.add(p);
+                }
+            }
+            
+            if(!isPlot) {
+                regions.add(r);
+            }
+        }
+        
+        return regions;
+    }
+    
+    public VillageItem getItemFromID(int id) {
+        String query = "SELECT `ID`, `Data` FROM `%db%`.`%t%Items` WHERE `ItemID`='" + id + "' LIMIT 1;";
+        Map<String, String> result = DataManager.SQL_MANAGER.fetch(query).get(0);
+        
+        VillageItem item = new VillageItem(getInt(result.get("ID")), getByte(result.get("Data")));
+        
+        //Get Additional data
+        query = "SELECT `ItemName` FROM `%db%`.`%t%ItemNames` WHERE `ItemID`='" + id + "';";
+        List<Map<String, String>> names = DataManager.SQL_MANAGER.fetch(query);
+        if(names != null && names.size() > 0) {
+            try {
+                String name = names.get(0).get("ItemName");
+                if(!name.equalsIgnoreCase("null")) {
+                    item.setName(name);
+                }
+            } catch(Exception e) {}
+        }
+        
+        query = "SELECT `ItemLore` FROM `%db%`.`%t%ItemLores` WHERE `ItemID`='" + id + "';";
+        List<Map<String, String>> lores = DataManager.SQL_MANAGER.fetch(query);
+        for(Map<String, String> lore : lores) {
+            try {
+                String l = DataManager.SQL_MANAGER.sqlUnescape(lore.get("ItemLore"));
+                if(l.equalsIgnoreCase("null")) continue;
+                item.addLore(l);
+            } catch(Exception e) {}
+        }
+        
+        query = "SELECT `EnchantmentID`, `EnchantmentLevel` FROM `%db%`.`%t%ItemEnchantments` WHERE `ItemID`='" + id + "';";
+        List<Map<String, String>> enchants = DataManager.SQL_MANAGER.fetch(query);
+        for(Map<String, String> enchant : enchants) {
+            try {
+                int eid = getInt(enchant.get("EnchantmentID"));
+                int lvl = getInt(enchant.get("EnchantmentLevel"));
+                item.addEnchantment(Enchantment.getById(eid), lvl);
+            } catch(Exception e) {}
+        }
+        
+        query = "SELECT `ItemBookData`, `ItemBookPage`, `ItemBookTitle`, `PlayerID` FROM `%db%`.`%t%ItemBooks` WHERE `ItemID`='" + id + "';";
+        List<Map<String, String>> books = DataManager.SQL_MANAGER.fetch(query);
+        for(Map<String, String> book : books) {
+            try {
+                String l = DataManager.SQL_MANAGER.sqlUnescape(book.get("ItemBookData"));
+                int page = getInt(book.get("ItemBookPage"));
+                //String title = DataManager.SQL_MANAGER.sqlUnescape(book.get("ItemBookTitle"));
+                Resident author = this.getResidentFromID(getInt(book.get("PlayerID")));
+                item.setAuthor(author.getName());
+                item.addPage(l);
+            } catch(Exception e) {}
+        }
+        
+        
+        return item;
     }
 }
