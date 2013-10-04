@@ -28,6 +28,7 @@ public class TagAPIHook extends PluginHook {
 
     public void refreshTags() {
         for(Player p : Bukkit.getOnlinePlayers()) {
+            if(!inVillageWorld(p)) return;
             refreshTags(p);
         }
     }

@@ -32,6 +32,8 @@ public class UpdateThread extends VillageThread {
         
         if(!isDouble(version)) {log("Failed to check for updates! Will keep trying..."); return;}
         
+        if(getDouble(version) <= getDouble(DataManager.PLUGIN_MANAGER.getVersion())) return;
+        
         log("New version available! Version: " + version);
         broadcast("Villages.admin", new String[]{
             ChatImportant + "The new Version of " + getPlugin().getName() + " is available to download!", 

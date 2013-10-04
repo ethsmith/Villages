@@ -11,7 +11,7 @@ import org.bukkit.command.CommandSender;
 
 public class VillageAdminSetDescription extends SubCommand {
     public VillageAdminSetDescription() {
-        super("village", "admin", "set", "mayor");
+        super("village", "admin", "set", "description");
         this.setPermission("admin.setdescription");
         this.addOption(SubCommand.VILLAGES_OPTION);
     }

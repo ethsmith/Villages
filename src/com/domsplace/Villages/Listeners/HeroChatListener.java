@@ -12,10 +12,12 @@ public class HeroChatListener extends VillageListener {
     public void handleVillageHeroChat(ChannelChatEvent e) {
         if(!inVillageWorld(e.getSender().getPlayer())) return;
         
-        String village = WildernessPrefix;
+        String village = Wilderness;
         
         Village vil = Village.getPlayersVillage(Resident.getResident(e.getSender().getPlayer()));
-        if(vil != null) village = vil.getName();
+        if(vil != null) {
+            village = vil.getName();
+        }
         
         if(village.equals("")) return;
         

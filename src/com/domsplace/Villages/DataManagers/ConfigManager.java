@@ -62,9 +62,10 @@ public class ConfigManager extends DataManager {
         df("colors.default", "&7");
         df("colors.important", "&9");
         df("colors.error", "&c");
+        df("colors.prefix.chat", true);
         df("colors.prefix.messages", "&9[&7Villages&9]");
         df("colors.prefix.village", "&9[&7%v%&9]");
-        df("colors.prefix.wilderness", "&9[&7Wilderness&9]");
+        df("colors.prefix.wilderness", "Wilderness");
         df("colors.players.friend", "&a");
         df("colors.players.foe", "&4");
         
