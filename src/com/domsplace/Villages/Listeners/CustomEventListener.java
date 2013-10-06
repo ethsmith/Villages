@@ -16,9 +16,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 
 public class CustomEventListener extends VillageListener {
     @EventHandler(ignoreCancelled=true)
@@ -104,7 +104,7 @@ public class CustomEventListener extends VillageListener {
         if(e.getPlayer() == null) return;
         if(e.getMessage().equalsIgnoreCase(" ")) return;
         
-        if(!e.getMessage().startsWith("/")) return;
+        if(!e.getMessage().replaceAll(" ", "").startsWith("/")) return;
         
         String[] parts = e.getMessage().split(" ");
         if(parts.length < 1) return;
@@ -115,6 +115,28 @@ public class CustomEventListener extends VillageListener {
         
         PreCommandEvent event = new PreCommandEvent(e.getPlayer(), command, args);
         event.fireEvent();
-        if(event.isCancelled()) e.setCancelled(true);
+        if(event.isCancelled()) e.setCancelled(event.isCancelled());
+    }
+    
+    @EventHandler(ignoreCancelled=true)
+    public void handlePreServerCommandEvent(ServerCommandEvent e) {
+        if(e.getSender() == null) return;
+        if(e.getCommand().equalsIgnoreCase(" ")) return;
+        
+        //All Server stuffs are commans ;)
+        //if(!e.getCommand().replaceAll(" ", "").startsWith("/")) return;
+        
+        String[] parts = e.getCommand().split(" ");
+        if(parts.length < 1) return;
+        
+        String command = parts[0];
+        List<String> args = new ArrayList<String>();
+        if(parts.length > 1) {for(int i = 1; i < parts.length; i++) {args.add(parts[i]);}}
+        
+        PreCommandEvent event = new PreCommandEvent(e.getSender(), command, args);
+        event.fireEvent();
+        if(event.isCancelled()) {
+            e.setCommand("");
+        }
     }
 }

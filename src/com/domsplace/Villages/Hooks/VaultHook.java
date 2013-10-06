@@ -46,12 +46,13 @@ public class VaultHook extends PluginHook {
         super.onHook();
         this.setupEconomy();
         Base.useVault = this.economy != null;
-        
         if(Base.useVault) {
             if(getConfig().getBoolean("features.banks.money", true)) {
                 bankDeposit = new VillageBankDeposit();
                 bankWithdraw = new VillageBankWithdraw();
             }
+        } else if(this.isHooked()) {
+            log("Hooked into Vault, but can't find any Economy!");
         }
     }
     

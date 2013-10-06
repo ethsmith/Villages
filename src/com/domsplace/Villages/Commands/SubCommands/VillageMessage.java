@@ -34,6 +34,12 @@ public class VillageMessage extends SubCommand {
             return true;
         }
         
+        //Check if Muted (SELBans)
+        if(isMuted(getPlayer(sender))) {
+            sk(sender, "muted");
+            return true;
+        }
+        
         String message = getVillagePrefix(v) + sender.getName() + ": " + ChatColor.WHITE;
         for(int i = 0; i < args.length; i++) {
             message += args[i];

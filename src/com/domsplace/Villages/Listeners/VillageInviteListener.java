@@ -16,7 +16,8 @@ public class VillageInviteListener extends VillageListener {
         if(!e.getCommand().equalsIgnoreCase("accept")) return;
         
         if(!hasPermission(e.getPlayer(), "Villages.accept")) return;
-        Resident r = Resident.getResident(e.getPlayer());
+        if(!isPlayer(e.getPlayer()));
+        Resident r = Resident.getResident(getPlayer(e.getPlayer()));
         if(r == null) return;
         
         Map<Resident, Village> invites = VillageInvite.VILLAGE_INVITES;
@@ -49,7 +50,8 @@ public class VillageInviteListener extends VillageListener {
         if(!e.getCommand().equalsIgnoreCase("deny")) return;
         
         if(!hasPermission(e.getPlayer(), "Villages.deny")) return;
-        Resident r = Resident.getResident(e.getPlayer());
+        if(!isPlayer(e.getPlayer())) return;
+        Resident r = Resident.getResident(getPlayer(e.getPlayer()));
         if(r == null) return;
         
         Map<Resident, Village> invites = VillageInvite.VILLAGE_INVITES;

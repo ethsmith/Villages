@@ -14,6 +14,7 @@ public class PluginHook extends Base{
     public static final WorldGuardHook WORLD_GUARD_HOOK = new WorldGuardHook();
     public static final HeroChatHook HERO_CHAT_HOOK = new HeroChatHook();
     public static final TagAPIHook TAG_API_HOOK = new TagAPIHook();
+    public static final SELBansHook SEL_BANS_HOOK = new SELBansHook();
     
     //Static
     private static void hookPlugin(PluginHook hook) {

@@ -84,6 +84,7 @@ public class LanguageManager extends DataManager {
         cDV("mayorkickonly", "%e%Only the mayor can kick players.");
         cDV("mustbenumber", "%e%Amount must be a number.");
         cDV("mustbeone", "%e%Amount must be more than zero.");
+        cDV("muted", "%e%You can't do this, you're muted.");
         cDV("neednamedelete", "%e%Enter a Village name to delete.");
         cDV("needvillagename", "%e%Please provide a Village name.");
         cDV("newdescription", "%i%The new Village description is: %d%%x%");

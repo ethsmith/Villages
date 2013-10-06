@@ -58,7 +58,7 @@ public class WildernessGriefListener extends VillageListener {
     @EventHandler(ignoreCancelled=true)
     public void fireVillageGriefEventTNT(EntityExplodeEvent e) {
         if(e.isCancelled()) return;
-        if(getConfig().getBoolean("protection.grief.village.tnt", true)) return;
+        if(getConfig().getBoolean("protection.grief.wilderness.tnt", true)) return;
         if(e.getEntity() == null) return;
         if(e.getEntity().getType() == null) return;
         if(!e.getEntity().getType().equals(EntityType.PRIMED_TNT) && !e.getEntity().getType().equals(EntityType.MINECART_TNT)) return;

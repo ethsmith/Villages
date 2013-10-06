@@ -133,6 +133,12 @@ public class ConfigManager extends DataManager {
         df("features.expand.method", "CHUNK");
         df("features.guiscreen", true);
         
+        List<String> defaultCommands = new ArrayList<String>();
+        defaultCommands.add("v");
+        defaultCommands.add("town");
+        defaultCommands.add("city");
+        df("features.aliases.village", defaultCommands);
+        
         //Costs
         df("costs.createvillage", 1000);
         df("costs.expandvillage", 100);

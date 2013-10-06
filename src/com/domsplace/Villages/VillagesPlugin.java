@@ -95,6 +95,8 @@ public class VillagesPlugin extends PluginBase {
         new VillageScoreboardListener();
         new ServerUnloadListener();
         new VillageCommandListener();
+        new VillagesChatListener();
+        new CustomCommandListener();
         
         this.enabled = true;
         Base.debug("Enabled Villages!");

@@ -1,5 +1,6 @@
 package com.domsplace.Villages.Bases;
 
+import com.domsplace.BansUtils;
 import com.domsplace.Villages.Enums.ExpandMethod;
 import com.domsplace.Villages.GUI.VillagesGUIManager;
 import com.domsplace.Villages.Objects.Resident;
@@ -69,7 +70,7 @@ public class Base extends RawBase {
     
     public static String getVillagePrefix(Village v) {
         String p = VillagePrefix;
-        if(v == null) p = WildernessPrefix;
+        if(v != null) p = VillagePrefix.replaceAll("%v%", v.getName());
         
         if(!p.contains("§")) p = colorise(p);
         if(p.replaceAll(" ", "").equalsIgnoreCase("")) return "";
@@ -402,7 +403,13 @@ public class Base extends RawBase {
     //Player Utils
     public static boolean hasPermission(CommandSender sender, String permission) {
         if(permission.equals("Villages.none")) return true;
-        return sender.hasPermission(permission);
+        if(!isPlayer(sender)) return true;
+        return getPlayer(sender).hasPermission(permission);
+    }
+    
+    public static boolean isMuted(OfflinePlayer player) {
+        if(!PluginHook.SEL_BANS_HOOK.isHooked()) return false;
+        return !BansUtils.CanPlayerTalk(player);
     }
     
     //Language Utils
