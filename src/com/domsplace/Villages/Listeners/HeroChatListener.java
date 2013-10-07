@@ -19,8 +19,6 @@ public class HeroChatListener extends VillageListener {
             village = vil.getName();
         }
         
-        if(village.equals("")) return;
-        
         e.setFormat(e.getFormat().replace("{village}", village));
     }
 }

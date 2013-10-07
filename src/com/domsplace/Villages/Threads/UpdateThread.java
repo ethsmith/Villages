@@ -14,6 +14,7 @@ public class UpdateThread extends VillageThread {
     
     @Override
     public void run() {
+        if(!getConfig().getBoolean("features.updates", true)) return;
         String version = "x.xx";
         debug("Checking for updates..");
         try {

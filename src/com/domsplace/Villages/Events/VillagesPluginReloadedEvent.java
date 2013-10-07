@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package com.domsplace.VillagesGUI;
+package com.domsplace.Villages.Events;
 
-import com.domsplace.VillagesGUI.Utilities.NotificationUtilities;
+import com.domsplace.Villages.Bases.EventBase;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 /**
  * @author      Dominic
- * @since       04/10/2013
+ * @since       06/10/2013
  */
-public class VillagesGUI {
-    public static void main(String[] args) {
-        NotificationUtilities.msgBox("Failed to Load Villages GUI", "The Villages GUI is not yet ready."
-                + "\nPlease wait for this to be finished.");
+public class VillagesPluginReloadedEvent extends EventBase {
+    private YamlConfiguration yml;
+    
+    public VillagesPluginReloadedEvent(YamlConfiguration yml) {
+        this.yml = yml;
+    }
+    
+    public YamlConfiguration getConfiguration() {
+        return this.yml;
     }
 }

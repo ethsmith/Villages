@@ -5,6 +5,7 @@ import com.domsplace.Villages.Bases.DataManager;
 import com.domsplace.Villages.Bases.PluginHook;
 import com.domsplace.Villages.Enums.ExpandMethod;
 import com.domsplace.Villages.Enums.ManagerType;
+import com.domsplace.Villages.Events.VillagesPluginReloadedEvent;
 import com.domsplace.Villages.Threads.VillageScoreboardThread;
 import java.io.File;
 import java.io.IOException;
@@ -174,6 +175,10 @@ public class ConfigManager extends DataManager {
         cmds = new ArrayList<String>();
         cmds.add("say Please Change this command in the config.yml file.");
         df("commands.village.playerremoved", cmds);
+        
+        //Fire Event
+        VillagesPluginReloadedEvent event = new VillagesPluginReloadedEvent(config);
+        event.fireEvent();
         
         //Load Worlds
         List<World> worlds = new ArrayList<World>();
