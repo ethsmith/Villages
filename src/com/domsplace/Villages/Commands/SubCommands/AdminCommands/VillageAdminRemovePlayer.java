@@ -13,7 +13,6 @@ public class VillageAdminRemovePlayer extends SubCommand {
     public VillageAdminRemovePlayer() {
         super("village", "admin", "remove", "player");
         this.setPermission("admin.removeplayer");
-        this.addOption(SubCommand.PLAYERS_OPTION);
     }
     
     @Override

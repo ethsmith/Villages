@@ -12,7 +12,6 @@ public class VillageAdminAddPlayer extends SubCommand {
     public VillageAdminAddPlayer() {
         super("village", "admin", "add", "player");
         this.setPermission("admin.addplayer");
-        this.addOption(SubCommand.VILLAGES_OPTION);
     }
     
     @Override

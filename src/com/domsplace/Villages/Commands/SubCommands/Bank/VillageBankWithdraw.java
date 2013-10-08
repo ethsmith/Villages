@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 public class VillageBankWithdraw extends SubCommand {
     public VillageBankWithdraw() {
         super("village", "bank", "withdraw");
-        this.addOption("amount");
         this.setPermission("bank.withdraw");
     }
     

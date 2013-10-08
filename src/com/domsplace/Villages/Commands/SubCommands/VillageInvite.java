@@ -14,7 +14,6 @@ public class VillageInvite extends SubCommand {
     
     public VillageInvite() {
         super("village", "invite");
-        this.addOption(SubCommand.PLAYERS_OPTION);
         this.setPermission("invite");
     }
     

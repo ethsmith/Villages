@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 public class VillageMessage extends SubCommand {
     public VillageMessage() {
         super("village", "msg");
-        this.addOption("message");
         this.setPermission("message");
     }
     

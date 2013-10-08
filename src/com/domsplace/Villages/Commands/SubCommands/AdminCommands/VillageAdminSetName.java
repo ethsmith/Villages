@@ -12,7 +12,6 @@ public class VillageAdminSetName extends SubCommand {
     public VillageAdminSetName() {
         super("village", "admin", "set", "name");
         this.setPermission("admin.setname");
-        this.addOption(SubCommand.VILLAGES_OPTION);
     }
     
     @Override

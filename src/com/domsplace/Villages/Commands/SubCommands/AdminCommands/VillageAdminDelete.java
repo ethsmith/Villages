@@ -12,7 +12,6 @@ public class VillageAdminDelete extends SubCommand {
     public VillageAdminDelete() {
         super("village", "admin", "delete");
         this.setPermission("admin.delete");
-        this.addOption(SubCommand.VILLAGES_OPTION);
     }
     
     @Override

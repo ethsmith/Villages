@@ -13,7 +13,6 @@ public class VillageMayorSetName extends SubCommand {
     public VillageMayorSetName() {
         super("village", "mayor", "set", "name");
         this.setPermission("mayor.setname");
-        this.addOption(SubCommand.VILLAGES_OPTION);
     }
     
     @Override

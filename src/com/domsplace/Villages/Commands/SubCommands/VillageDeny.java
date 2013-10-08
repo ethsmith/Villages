@@ -12,7 +12,6 @@ import org.bukkit.command.CommandSender;
 public class VillageDeny extends SubCommand {
     public VillageDeny() {
         super("village", "deny");
-        this.addOption(SubCommand.PLAYERS_OPTION);
         this.setPermission("deny");
     }
     

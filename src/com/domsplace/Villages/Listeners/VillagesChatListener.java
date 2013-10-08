@@ -44,6 +44,6 @@ public class VillagesChatListener extends VillageListener {
         if(!inVillageWorld(e.getPlayer())) return;
         Village village = Village.getPlayersVillage(Resident.getResident(e.getPlayer()));
         if(village != null) return;
-        e.setFormat(Base.getVillagePrefix(village) + e.getFormat());
+        e.setFormat(Base.getVillagePrefix(null) + e.getFormat());
     }
 }

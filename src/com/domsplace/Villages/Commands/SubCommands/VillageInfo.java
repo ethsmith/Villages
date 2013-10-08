@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 public class VillageInfo extends SubCommand {
     public VillageInfo() {
         super("village", "info");
-        this.addOption(SubCommand.VILLAGES_OPTION);
     }
     
     @Override

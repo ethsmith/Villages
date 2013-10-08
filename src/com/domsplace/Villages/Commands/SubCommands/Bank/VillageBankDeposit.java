@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 public class VillageBankDeposit extends SubCommand {
     public VillageBankDeposit() {
         super("village", "bank", "deposit");
-        this.addOption("amount");
         this.setPermission("bank.deposit");
     }
     

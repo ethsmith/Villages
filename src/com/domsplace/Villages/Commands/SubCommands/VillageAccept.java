@@ -13,7 +13,6 @@ import org.bukkit.command.CommandSender;
 public class VillageAccept extends SubCommand {
     public VillageAccept() {
         super("village", "accept");
-        this.addOption(SubCommand.PLAYERS_OPTION);
         this.setPermission("accept");
     }
     

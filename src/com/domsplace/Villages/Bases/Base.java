@@ -70,7 +70,11 @@ public class Base extends RawBase {
     
     public static String getVillagePrefix(Village v) {
         String p = VillagePrefix;
-        if(v != null) p = VillagePrefix.replaceAll("%v%", v.getName());
+        if(v != null) {
+            p = VillagePrefix.replaceAll("%v%", v.getName());
+        } else {
+            p = VillagePrefix.replaceAll("%v%", "Wilderness");
+        }
         
         if(!p.contains("§")) p = colorise(p);
         if(p.replaceAll(" ", "").equalsIgnoreCase("")) return "";
@@ -404,7 +408,30 @@ public class Base extends RawBase {
     public static boolean hasPermission(CommandSender sender, String permission) {
         if(permission.equals("Villages.none")) return true;
         if(!isPlayer(sender)) return true;
+        //TODO: Add Vault Permissions Checking
         return getPlayer(sender).hasPermission(permission);
+    }
+    
+    public boolean canSee(CommandSender p, OfflinePlayer target) {
+        if(!isPlayer(p)) return true;
+        if(!target.isOnline()) return true;
+        return getPlayer(p).canSee(target.getPlayer());
+    }
+    
+    public boolean isVisible(OfflinePlayer t) {
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            if(!canSee(p, t)) return false;
+        }
+        return true;
+    }
+    
+    public List<OfflinePlayer> getPlayersList() {
+        List<OfflinePlayer> rv = new ArrayList<OfflinePlayer>();
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            if(!isVisible(p)) continue;
+            rv.add(Bukkit.getOfflinePlayer(p.getName()));
+        }
+        return rv;
     }
     
     public static boolean isMuted(OfflinePlayer player) {

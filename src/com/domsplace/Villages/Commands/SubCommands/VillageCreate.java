@@ -18,7 +18,6 @@ public class VillageCreate extends SubCommand {
     
     public VillageCreate() {
         super("village", "create");
-        this.addOption(SubCommand.VILLAGES_OPTION);
         this.setPermission("create");
     }
     

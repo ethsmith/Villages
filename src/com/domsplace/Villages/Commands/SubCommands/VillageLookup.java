@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 public class VillageLookup extends SubCommand {
     public VillageLookup() {
         super("village", "lookup");
-        this.addOption(SubCommand.PLAYERS_OPTION);
         this.setPermission("lookup");
     }
     

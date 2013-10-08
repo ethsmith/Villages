@@ -15,7 +15,6 @@ public class VillageMayorSetDescription extends SubCommand {
     public VillageMayorSetDescription() {
         super("village", "mayor", "set", "description");
         this.setPermission("mayor.setdescription");
-        this.addOption(SubCommand.PLAYERS_OPTION);
     }
     
     @Override

@@ -1,5 +1,6 @@
 package com.domsplace.Villages.Bases;
 
+import com.domsplace.Villages.Objects.SubCommandOption;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.Command;
@@ -14,7 +15,7 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
     private static PluginCommand registerCommand(BukkitCommand command) {
         PluginCommand cmd = getPlugin().getCommand(command.getCommand());
         cmd.setExecutor(command);
-        cmd.setPermission(colorise(Base.getPermissionMessage()));
+        cmd.setPermissionMessage(colorise(Base.getPermissionMessage()));
         cmd.setTabCompleter(command);
         COMMANDS.add(command);
         return cmd;
@@ -34,13 +35,26 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
     private String command;
     private PluginCommand cmd;
     private List<SubCommand> subCommands;
+    private List<SubCommandOption> subOptions;
     
     public BukkitCommand(String command) {
         this.command = command;
         this.cmd = BukkitCommand.registerCommand(this);
         this.subCommands = new ArrayList<SubCommand>();
+        this.subOptions = new ArrayList<SubCommandOption>();
         registerCommand(this);
     }
+    
+    public String getCommand() { return this.command; }
+    public PluginCommand getCmd() {return this.cmd;}
+    public List<SubCommand> getSubCommands() {return this.subCommands;}
+    public List<SubCommandOption> getSubCommandOptions() {return new ArrayList<SubCommandOption>(this.subOptions);}
+    
+    public void addSubCommandOption(SubCommandOption o) {this.subOptions.add(o);}
+    public void removeSubCommandOption(SubCommandOption o) {this.subOptions.remove(o);}
+    
+    public void addSubCommand(SubCommand cmd) {this.subCommands.add(cmd);}
+    public void removeSubCommand(SubCommand aThis) {this.subCommands.remove(aThis);}
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -78,89 +92,15 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
         return badTab(sender, cmd, label, args);
     }
     
-    public String getCommand() { return this.command; }
-    public PluginCommand getCmd() {return this.cmd;}
-    public List<SubCommand> getSubCommands() {return this.subCommands;}
-    
     public boolean badCommand(CommandSender sender, Command cmd, String label, String[] args) {return false;}
     public boolean commandSuccess(CommandSender sender, Command cmd, String label, String[] args) {return true;}
     public boolean commandFailed(CommandSender sender, Command cmd, String label, String[] args) {
-        List<String> options = new ArrayList<String>();
-        String lbl = "";
-        if(args.length < 2) {
-            for(SubCommand sc : this.subCommands) {
-                if(!hasPermission(sender, sc.getPermission())) continue;
-                options.add(sc.getCommand());
-            }
-            if(args.length > 0) lbl = args[args.length - 1];
-        } else {
-            lbl = args[args.length - 1];
-            String[] c = new String[args.length - 1];
-            for(int i = 0; i < c.length; i++) {
-                c[i] = args[i];
-            }
-            
-            SubCommand sc = this.getSubCommand(c, sender);
-            if(sc != null) options.addAll(sc.getOptions());
-        }
-        
-        List<String> matches = new ArrayList<String>();
-        for(String s : options) {
-            if(!s.toLowerCase().startsWith(lbl.toLowerCase())) continue;
-            matches.add(s);
-        }
-        
-        if(matches.size() < 1) matches = options;
-        
-        String base = "";
-        if(isPlayer(base)) base += "/";
-        base += label + " ";
-        int max = args.length - 1;
-        if(max < 0) max = 0;
-        for(int i = 0; i < max; i++) {
-            base += args[i] + " ";
-        }
-        
-        List<String> messages = new ArrayList<String>();
-        messages.add(ChatImportant + "Command Help:");
-        for(String s : matches) {
-            messages.add(ChatDefault + "\t" + base + s);
-        }
-        
-        sendMessage(sender, messages);
-        return true;
+        //TODO: Add Command Help
+        return false;
     }
     public boolean cmd(CommandSender sender, Command cmd, String label, String[] args) {return false;}
     
-    public List<String> tab(CommandSender sender, Command cmd, String label, String[] args) {
-        List<String> options = new ArrayList<String>();
-        String lbl = "";
-        if(args.length < 2) {
-            for(SubCommand sc : this.subCommands) {
-                if(!hasPermission(sender, sc.getPermission())) continue;
-                options.add(sc.getCommand());
-            }
-            if(args.length > 0) lbl = args[args.length - 1];
-        } else {
-            lbl = args[args.length - 1];
-            String[] c = new String[args.length - 1];
-            for(int i = 0; i < c.length; i++) {
-                c[i] = args[i];
-            }
-            
-            SubCommand sc = this.getSubCommand(c, sender);
-            if(sc != null) options.addAll(sc.getOptions());
-        }
-        
-        List<String> matches = new ArrayList<String>();
-        for(String s : options) {
-            if(!s.toLowerCase().startsWith(lbl.toLowerCase())) continue;
-            matches.add(s);
-        }
-        
-        if(matches.size() < 1) return options;
-        return matches;
-    }
+    public List<String> tab(CommandSender sender, Command cmd, String label, String[] args) {return this.getArgumentGuesses(args);}
     public List<String> tabFailed(CommandSender sender, Command cmd, String label, String[] args) {return null;}
     public List<String> badTab(CommandSender sender, Command cmd, String label, String[] args) {return null;}
     public List<String> tabSuccess(CommandSender sender, Command cmd, String label, String[] args, List<String> successValue) {return successValue;}
@@ -170,8 +110,6 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
         sender.sendMessage(cmd.getPermissionMessage());
         return true;
     }
-    
-    public void addSubCommand(SubCommand cmd) {this.subCommands.add(cmd);}
     
     public SubCommand getSubCommand(String[] args, CommandSender sender) {
         if(args.length < 1) return null;
@@ -206,8 +144,40 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
         
         return this.onCommand(sender, cmd, lbl, args);
     }
-
-    public void removeSubCommand(SubCommand aThis) {
-        this.subCommands.remove(aThis);
+    
+    public List<String> getArgumentGuesses(String[] args) {
+        List<String> options = new ArrayList<String>();
+        if(args.length == 0) {
+            for(SubCommandOption sco : this.subOptions) {
+                options.addAll(sco.getOptionsFormatted());
+            }
+        } else if(args.length == 1) {
+            for(SubCommandOption sco : this.subOptions) {
+                for(String s : sco.getOptionsFormatted()) {
+                    if(!s.toLowerCase().startsWith(args[0].toLowerCase())) continue;
+                    options.add(s);
+                }
+            }
+        } else if(args.length > 1) {
+            SubCommandOption s = null;
+            
+            List<String> matches = new ArrayList<String>();
+            
+            for(SubCommandOption sco : this.subOptions) {
+                matches.addAll(sco.tryFetch(args, 0));
+            }
+            
+            if(args[args.length - 1].replaceAll(" ", "").equalsIgnoreCase("")) return matches;
+            
+            List<String> closeMatch = new ArrayList<String>();
+            
+            for(String match : matches) {
+                if(match.toLowerCase().startsWith(args[args.length-1].toLowerCase())) closeMatch.add(match);
+            }
+            
+            if(s == null) return options;
+            options.addAll(closeMatch);
+        }
+        return options;
     }
 }
