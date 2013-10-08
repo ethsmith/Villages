@@ -1,8 +1,8 @@
 package com.domsplace.Villages.Commands;
 
 import com.domsplace.Villages.Bases.BukkitCommand;
+import com.domsplace.Villages.Bases.SubCommandOption;
 import com.domsplace.Villages.Objects.Resident;
-import com.domsplace.Villages.Objects.SubCommandOption;
 import com.domsplace.Villages.Objects.Village;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -53,6 +53,11 @@ public class VillageCommand extends BukkitCommand {
                 ),
                 new SubCommandOption("name", "newname")
             )
+        ));
+        this.addSubCommandOption(new SubCommandOption("bank", 
+            new SubCommandOption("deposit", "amount"),
+            new SubCommandOption("withdraw", "amount"),
+            new SubCommandOption("open")
         ));
     }
     

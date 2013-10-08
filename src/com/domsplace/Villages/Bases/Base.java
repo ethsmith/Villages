@@ -194,7 +194,7 @@ public class Base extends RawBase {
 
     public static void sendMessage(OfflinePlayer sender, Object... msg) {
         if(!sender.isOnline()) return;
-        sendMessage(sender.getPlayer());
+        sendMessage(sender.getPlayer(), msg);
     }
 
     public static void sendMessage(Entity sender, Object... msg) {

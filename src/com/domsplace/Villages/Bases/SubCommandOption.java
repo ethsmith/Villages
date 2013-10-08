@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.domsplace.Villages.Objects;
+package com.domsplace.Villages.Bases;
 
-import com.domsplace.Villages.Bases.Base;
+import com.domsplace.Villages.Objects.Village;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -131,6 +131,7 @@ public class SubCommandOption extends Base {
         
         if(targetLevel > lvl) {
             for(SubCommandOption sco : this.subOptions) {
+                if(!sco.getOption().toLowerCase().startsWith(args[lvl-1].toLowerCase())) continue;
                 opts.addAll(sco.tryFetch(args, lvl));
             }
         } else {

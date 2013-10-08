@@ -1,6 +1,5 @@
 package com.domsplace.Villages.Commands.SubCommands.Bank;
 
-import com.domsplace.Villages.Bases.Base;
 import static com.domsplace.Villages.Bases.Base.getPlayer;
 import static com.domsplace.Villages.Bases.Base.sk;
 import com.domsplace.Villages.Bases.BukkitCommand;

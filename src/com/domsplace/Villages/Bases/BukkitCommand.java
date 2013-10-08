@@ -1,6 +1,5 @@
 package com.domsplace.Villages.Bases;
 
-import com.domsplace.Villages.Objects.SubCommandOption;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.command.Command;
@@ -116,7 +115,6 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
         SubCommand bestMatch = null;
         
         for(SubCommand sc : this.subCommands) {
-            if(!hasPermission(sender, sc.getPermission())) continue;
             int m = sc.getMatches(args);
             if(m == 0) continue;
             if(bestMatch != null && m <= bestMatch.getMatches(args)) continue;
@@ -158,13 +156,12 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
                     options.add(s);
                 }
             }
-        } else if(args.length > 1) {
-            SubCommandOption s = null;
-            
+        } else if(args.length > 1) {            
             List<String> matches = new ArrayList<String>();
             
             for(SubCommandOption sco : this.subOptions) {
-                matches.addAll(sco.tryFetch(args, 0));
+                if(!sco.getOption().toLowerCase().startsWith(args[0].toLowerCase())) continue;
+                matches.addAll(sco.tryFetch(args, 1));
             }
             
             if(args[args.length - 1].replaceAll(" ", "").equalsIgnoreCase("")) return matches;
@@ -175,7 +172,6 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
                 if(match.toLowerCase().startsWith(args[args.length-1].toLowerCase())) closeMatch.add(match);
             }
             
-            if(s == null) return options;
             options.addAll(closeMatch);
         }
         return options;
