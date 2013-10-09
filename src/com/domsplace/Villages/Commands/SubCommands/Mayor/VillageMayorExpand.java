@@ -6,6 +6,7 @@ import com.domsplace.Villages.Bases.DataManager;
 import com.domsplace.Villages.Bases.PluginHook;
 import com.domsplace.Villages.Bases.SubCommand;
 import com.domsplace.Villages.Enums.ExpandMethod;
+import com.domsplace.Villages.Events.VillageExpandEvent;
 import com.domsplace.Villages.Objects.Region;
 import com.domsplace.Villages.Objects.Resident;
 import com.domsplace.Villages.Objects.Village;
@@ -97,6 +98,11 @@ public class VillageMayorExpand extends SubCommand {
             sk(sender, "notenoughmoney", PluginHook.VAULT_HOOK.getEconomy().format(cost));
             return true;
         }
+        
+        //Fire Event
+        VillageExpandEvent event = new VillageExpandEvent(v, claiming);
+        event.fireEvent();
+        if(event.isCancelled()) return true;
         
         //Charge Village
         v.getBank().addWealth(-cost);

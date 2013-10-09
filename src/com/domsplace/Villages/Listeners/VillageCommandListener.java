@@ -6,6 +6,7 @@ import com.domsplace.Villages.Events.ResidentAddedEvent;
 import com.domsplace.Villages.Events.ResidentRemovedEvent;
 import com.domsplace.Villages.Events.VillageCreatedEvent;
 import com.domsplace.Villages.Events.VillageDeletedEvent;
+import com.domsplace.Villages.Events.VillageExpandEvent;
 import com.domsplace.Villages.Objects.Resident;
 import com.domsplace.Villages.Objects.Village;
 import java.util.ArrayList;
@@ -55,5 +56,10 @@ public class VillageCommandListener extends VillageListener {
     @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
     public void handleVillagePlayerRemovedCommands(ResidentRemovedEvent e) {
         execute(getCommands("village.playerremoved", null, e.getVillage()));
+    }
+    
+    @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
+    public void handleVillageExpandedCommands(VillageExpandEvent e) {
+        execute(getCommands("village.expand", null, e.getVillage()));
     }
 }

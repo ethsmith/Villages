@@ -176,6 +176,10 @@ public class ConfigManager extends DataManager {
         cmds.add("say Please Change this command in the config.yml file.");
         df("commands.village.playerremoved", cmds);
         
+        cmds = new ArrayList<String>();
+        cmds.add("say Please Change this command in the config.yml file.");
+        df("commands.village.expand", cmds);
+        
         //Fire Event
         VillagesPluginReloadedEvent event = new VillagesPluginReloadedEvent(config);
         event.fireEvent();
