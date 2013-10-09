@@ -51,7 +51,7 @@ public class VillagePlotCheck extends SubCommand {
         }
         
         if(plot.getOwner() == null || plot.getOwner().equals(v.getMayor())) {
-            if(Base.useVault) {
+            if(Base.useEconomy) {
                 sk(sender, "chunkavailable", PluginHook.VAULT_HOOK.getEconomy().format(plot.getPrice()));
             } else {
                 sk(sender, "chunkavailable", "Free!");

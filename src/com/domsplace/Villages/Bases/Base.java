@@ -56,7 +56,7 @@ public class Base extends RawBase {
     public static boolean useSQL = false;
     public static boolean useWorldGuard = false;
     public static boolean useTagAPI = false;
-    public static boolean useVault = false;
+    public static boolean useEconomy = false;
     public static boolean useHeroChat = false;
     public static boolean useScoreboards = false;
 
@@ -406,9 +406,15 @@ public class Base extends RawBase {
     
     //Player Utils
     public static boolean hasPermission(CommandSender sender, String permission) {
+        debug("Checking if " + sender.getName() + " has " + permission);
         if(permission.equals("Villages.none")) return true;
         if(!isPlayer(sender)) return true;
-        //TODO: Add Vault Permissions Checking
+        
+        //PermissionsEx Permission Checking
+        if(PluginHook.PEX_HOOK.isHooked()) {
+            return PluginHook.PEX_HOOK.hasPermission(getPlayer(sender), permission);
+        }
+        
         return getPlayer(sender).hasPermission(permission);
     }
     
@@ -458,24 +464,24 @@ public class Base extends RawBase {
     
     //Economy Utils
     public static boolean hasBalance(String player, double amt) {
-        if(!useVault || PluginHook.VAULT_HOOK.getEconomy() == null) return true;
+        if(!useEconomy || PluginHook.VAULT_HOOK.getEconomy() == null) return true;
         if(getBalance(player) >= amt) return true;
         return false;
     }
     
     public static boolean hasBalance(Village village, double amt) {
-        if(!useVault || PluginHook.VAULT_HOOK.getEconomy() == null) return true;
+        if(!useEconomy || PluginHook.VAULT_HOOK.getEconomy() == null) return true;
         if(getBalance(village) >= amt) return true;
         return false;
     }
     
     public static double getBalance(String player) {
-        if(!useVault || PluginHook.VAULT_HOOK.getEconomy() == null) return -1.0d;
+        if(!useEconomy || PluginHook.VAULT_HOOK.getEconomy() == null) return -1.0d;
         return PluginHook.VAULT_HOOK.getEconomy().getBalance(player);
     }
     
     public static double getBalance(Village village) {
-        if(!useVault || PluginHook.VAULT_HOOK.getEconomy() == null) return -1.0d;
+        if(!useEconomy || PluginHook.VAULT_HOOK.getEconomy() == null) return -1.0d;
         return village.getBank().getWealth();
     }
     

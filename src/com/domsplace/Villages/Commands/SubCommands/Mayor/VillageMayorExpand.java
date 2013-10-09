@@ -93,7 +93,7 @@ public class VillageMayorExpand extends SubCommand {
         double cost = getCost("expandvillage") * claiming.size();
         
         //First, make sure they have the money to expand
-        if(Base.useVault && getConfig().getBoolean("features.banks.money", true)  && !hasBalance(v, cost)) {
+        if(Base.useEconomy && getConfig().getBoolean("features.banks.money", true)  && !hasBalance(v, cost)) {
             sk(sender, "notenoughmoney", PluginHook.VAULT_HOOK.getEconomy().format(cost));
             return true;
         }

@@ -45,8 +45,8 @@ public class VaultHook extends PluginHook {
     public void onHook() {
         super.onHook();
         this.setupEconomy();
-        Base.useVault = this.economy != null;
-        if(Base.useVault) {
+        Base.useEconomy = this.economy != null;
+        if(Base.useEconomy) {
             if(getConfig().getBoolean("features.banks.money", true)) {
                 bankDeposit = new VillageBankDeposit();
                 bankWithdraw = new VillageBankWithdraw();
@@ -60,7 +60,7 @@ public class VaultHook extends PluginHook {
     public void onUnhook() {
         super.onUnhook();
         economy = null;
-        Base.useVault = false;
+        Base.useEconomy = false;
         
         if(bankDeposit != null) {
             bankDeposit.deRegister();

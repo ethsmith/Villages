@@ -11,6 +11,8 @@ public class VillageCommand extends BukkitCommand {
     public VillageCommand() {
         super("village");
         
+        this.setPermission("village");
+        
         //TOOD: Finish Sub Commands and Fix TAB options
         
         this.addSubCommandOption(new SubCommandOption("info", SubCommandOption.VILLAGES_OPTION));

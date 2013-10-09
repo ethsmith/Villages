@@ -28,7 +28,7 @@ public class TaxData {
     public void run() {
         this.lastChecked = Base.getNow();
         village.broadcast(tax.getMessage());
-        if(Base.useVault && Base.getConfig().getBoolean("features.banks.money", true)) {
+        if(Base.useEconomy && Base.getConfig().getBoolean("features.banks.money", true)) {
             double vmoney = Base.getBalance(village);
             double cost = this.tax.getRelativeCost(village);
             

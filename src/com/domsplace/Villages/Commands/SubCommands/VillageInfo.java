@@ -44,7 +44,7 @@ public class VillageInfo extends SubCommand {
         
         if(getConfig().getBoolean("features.plots", false)) messages.add("\tAvailable Plots: " + (v.getAvailablePlots().size()));
         
-        if(Base.useVault) messages.add("\tWealth: " + ChatColor.ITALIC + getMoney(v.getBank().getWealth()));
+        if(Base.useEconomy) messages.add("\tWealth: " + ChatColor.ITALIC + getMoney(v.getBank().getWealth()));
         
         sendMessage(sender, messages);
         return true;

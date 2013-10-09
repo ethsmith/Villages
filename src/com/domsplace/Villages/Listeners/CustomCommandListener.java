@@ -36,6 +36,7 @@ public class CustomCommandListener extends VillageListener {
         for(String command : getConfig().getStringList("features.aliases.village")) {
             if(!command.equalsIgnoreCase(e.getCommand())) continue;
             
+            log(e.getPlayer().getName() + " issues /village alias. /" + e.toFullCommand());
             BukkitCommand.getCommand("village").fakeExecute(e.getPlayer(), e.toFullCommand());
             e.setCancelled(true);
             return;

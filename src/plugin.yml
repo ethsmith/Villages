@@ -5,13 +5,12 @@ authors: [Dominic, Jordan]
 website: http://domsplace.com/
 version: '2.05'
 load: POSTWORLD
-softdepend: [WorldGuard, Vault, TagAPI, Herochat]
+softdepend: [WorldGuard, Vault, TagAPI, Herochat, PermissionsEx]
 commands:
    village:
       description: Get Information about Villages and change Village options.
       aliases: [vil, villages]
       usage: /<command>
-      permission: Villages.village
 permissions:
    Villages.*:
      description: Gives access to all Villages permissions.

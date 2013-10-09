@@ -31,7 +31,7 @@ public class VillagePlotSetPrice extends SubCommand {
         if(v == null) {sk(sender, "notinvillage");return true;}
         if(!v.isMayor(r)) {sk(sender, "onlymayorplot"); return true;}
         
-        if(!Base.useVault) {
+        if(!Base.useEconomy) {
             sk(sender, "economydisabled");
             return true;
         }

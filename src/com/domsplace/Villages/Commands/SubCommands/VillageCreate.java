@@ -103,7 +103,7 @@ public class VillageCreate extends SubCommand {
         if(event.isCancelled()) return true;
         
         //Charge Players Wallet
-        if(Base.useVault) {
+        if(Base.useEconomy) {
             PluginHook.VAULT_HOOK.getEconomy().withdrawPlayer(sender.getName(), getCost("createvillage"));
         }
         

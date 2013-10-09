@@ -63,7 +63,7 @@ public class VillagePlotClaim extends SubCommand {
         }
         
         //Charge Players Wallet
-        if(useVault) {
+        if(useEconomy) {
             PluginHook.VAULT_HOOK.getEconomy().bankWithdraw(sender.getName(), plot.getPrice());
             if(getConfig().getBoolean("features.banks.money", true)) {
                 v.getBank().addWealth(plot.getPrice());

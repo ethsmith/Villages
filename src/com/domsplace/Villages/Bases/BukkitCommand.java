@@ -35,6 +35,7 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
     private PluginCommand cmd;
     private List<SubCommand> subCommands;
     private List<SubCommandOption> subOptions;
+    private String permission = "none";
     
     public BukkitCommand(String command) {
         this.command = command;
@@ -48,6 +49,9 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
     public PluginCommand getCmd() {return this.cmd;}
     public List<SubCommand> getSubCommands() {return this.subCommands;}
     public List<SubCommandOption> getSubCommandOptions() {return new ArrayList<SubCommandOption>(this.subOptions);}
+    public String getPermission() {return "Villages." + this.permission;}
+    
+    public void setPermission(String perm) {this.permission = perm;}
     
     public void addSubCommandOption(SubCommandOption o) {this.subOptions.add(o);}
     public void removeSubCommandOption(SubCommandOption o) {this.subOptions.remove(o);}
@@ -58,7 +62,8 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(cmd.getName().equalsIgnoreCase(this.command)) {
-            if(!hasPermission(sender, cmd.getPermission())) return noPermission(sender, cmd, label, args);
+            debug("Got Command");
+            if(!hasPermission(sender, this.getPermission())) return noPermission(sender, cmd, label, args);
             if(!inVillageWorld(sender)) {
                 sk(sender, "notinthisworld");
                 return true;
