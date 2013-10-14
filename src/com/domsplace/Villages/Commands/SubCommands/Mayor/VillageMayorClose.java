@@ -28,7 +28,7 @@ public class VillageMayorClose extends SubCommand {
         bk("villageclosed", v);
         
         //Fire Event
-        VillageDeletedEvent event = new VillageDeletedEvent(v, DeleteCause.MAYOR_CLOSE);
+        VillageDeletedEvent event = new VillageDeletedEvent(v, DeleteCause.MAYOR_CLOSE, r);
         event.fireEvent();
         if(event.isCancelled()) return true;
         

@@ -3,7 +3,7 @@ description: Create player villages, make regions and start wars.
 main: com.domsplace.Villages.VillagesPlugin
 authors: [Dominic, Jordan]
 website: http://domsplace.com/
-version: '2.06'
+version: '2.07'
 load: POSTWORLD
 softdepend: [WorldGuard, Vault, TagAPI, Herochat, PermissionsEx]
 commands:
@@ -26,6 +26,7 @@ permissions:
        Villages.leave: true
        Villages.villagetop: true
        Villages.lookup: true
+       Villages.map: true
        Villages.admin.*: true
        Villages.mayor.*: true
        Villages.bank.*: true
@@ -53,6 +54,8 @@ permissions:
      description: Allows a player to check the top Villages.
    Villages.lookup:
      description: Allows a player to lookup what Village another player belongs to.
+   Villages.map:
+     description: Allows a player to view the Village map (Gives a free map item though).
    Villages.admin.*:
      description: Allows access to all Admin Commands
      children:

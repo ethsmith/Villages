@@ -163,7 +163,6 @@ public class LanguageManager extends DataManager {
         if(!config.contains(key)) {
             config.set(key, defaultValue);
         }
-        config.set(key, defaultValue);
     }
 
     public List<String> getKey(String key, Object... o) {

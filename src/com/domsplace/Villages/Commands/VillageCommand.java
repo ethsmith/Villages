@@ -27,6 +27,7 @@ public class VillageCommand extends BukkitCommand {
         this.addSubCommandOption(new SubCommandOption("message", "message"));
         this.addSubCommandOption(new SubCommandOption("spawn"));
         this.addSubCommandOption(new SubCommandOption("top"));
+        this.addSubCommandOption(new SubCommandOption("map"));
         this.addSubCommandOption(new SubCommandOption("admin",
             new SubCommandOption("add", 
                 new SubCommandOption("player", 

@@ -4,6 +4,7 @@ import com.domsplace.Villages.Bases.BukkitCommand;
 import com.domsplace.Villages.Bases.SubCommand;
 import com.domsplace.Villages.Enums.DeleteCause;
 import com.domsplace.Villages.Events.VillageDeletedEvent;
+import com.domsplace.Villages.Objects.Resident;
 import com.domsplace.Villages.Objects.Village;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -27,8 +28,13 @@ public class VillageAdminDelete extends SubCommand {
             return true;
         }
         
+        Resident r = null;
+        if(!isPlayer(sender)) {
+            r = Resident.getResident(getPlayer(sender));
+        }
+        
         //Fire Event
-        VillageDeletedEvent event = new VillageDeletedEvent(v, DeleteCause.ADMIN_DELETE);
+        VillageDeletedEvent event = new VillageDeletedEvent(v, DeleteCause.ADMIN_DELETE, r);
         event.fireEvent();
         if(event.isCancelled()) return true;
         

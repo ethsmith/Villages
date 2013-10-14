@@ -18,6 +18,7 @@ package com.domsplace.Villages.Events;
 
 import com.domsplace.Villages.Bases.CancellableEvent;
 import com.domsplace.Villages.Objects.Region;
+import com.domsplace.Villages.Objects.Resident;
 import com.domsplace.Villages.Objects.Village;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +30,15 @@ import java.util.List;
 public class VillageExpandEvent extends CancellableEvent {
     private Village village;
     private List<Region> expandingRegions;
+    private Resident expander;
     
-    public VillageExpandEvent(Village village, List<Region> expandingRegions) {
+    public VillageExpandEvent(Village village, List<Region> expandingRegions, Resident expander) {
         this.village = village;
         this.expandingRegions = new ArrayList<Region>(expandingRegions);
+        this.expander = expander;
     }
     
     public Village getVillage() {return this.village;}
     public List<Region> getRegions() {return new ArrayList<Region>(expandingRegions);}
+    public Resident getExpander() {return this.expander;}
 }

@@ -45,21 +45,21 @@ public class VillageCommandListener extends VillageListener {
     
     @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
     public void handleVillageDeletedCommands(VillageDeletedEvent e) {
-        execute(getCommands("village.deleted", null, e.getVillage()));
+        execute(getCommands("village.deleted", e.getCloser(), e.getVillage()));
     }
     
     @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
     public void handleVillagePlayerAddedCommands(ResidentAddedEvent e) {
-        execute(getCommands("village.playeradded", null, e.getVillage()));
+        execute(getCommands("village.playeradded", e.getResident(), e.getVillage()));
     }
     
     @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
     public void handleVillagePlayerRemovedCommands(ResidentRemovedEvent e) {
-        execute(getCommands("village.playerremoved", null, e.getVillage()));
+        execute(getCommands("village.playerremoved", e.getResident(), e.getVillage()));
     }
     
     @EventHandler(ignoreCancelled=true, priority=EventPriority.HIGHEST)
     public void handleVillageExpandedCommands(VillageExpandEvent e) {
-        execute(getCommands("village.expand", null, e.getVillage()));
+        execute(getCommands("village.expand", e.getExpander(), e.getVillage()));
     }
 }

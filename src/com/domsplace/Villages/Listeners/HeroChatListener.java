@@ -13,12 +13,11 @@ public class HeroChatListener extends VillageListener {
         if(!inVillageWorld(e.getSender().getPlayer())) return;
         
         String village = Wilderness;
-        
         Village vil = Village.getPlayersVillage(Resident.getResident(e.getSender().getPlayer()));
         if(vil != null) {
             village = vil.getName();
         }
         
-        e.setFormat(e.getFormat().replace("{village}", village));
+        e.setFormat(e.getFormat().replaceAll("\\{village\\}", village));
     }
 }

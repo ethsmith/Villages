@@ -11,6 +11,7 @@ import com.domsplace.Villages.Commands.SubCommands.Mayor.*;
 import com.domsplace.Villages.Commands.SubCommands.Plot.*;
 import com.domsplace.Villages.Commands.SubCommands.Tax.VillageTaxCheck;
 import com.domsplace.Villages.Listeners.*;
+import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Threads.*;
 import org.bukkit.Bukkit;
 
@@ -42,6 +43,7 @@ public class VillagesPlugin extends PluginBase {
         new VillageLeave();
         new VillageTop();
         new VillageLookup();
+        new VillageMapSubCommand();
         
         new VillageAdmin();
         new VillageAdminSave();
@@ -114,6 +116,7 @@ public class VillagesPlugin extends PluginBase {
         
         VillageThread.stopAllThreads();
         DataManager.saveAll();
+        Village.deRegisterVillages(Village.getVillages());
     }
     
     public boolean enabled() {

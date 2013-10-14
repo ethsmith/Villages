@@ -123,6 +123,10 @@ public class VillageManager extends DataManager {
         Region spawn = Region.getRegion(yml.getString("spawn"));
         v.setSpawn(spawn);
         
+        if(spawn.getBukkitWorld() == null) {
+            log("Village \"" + v.getName() + "\" is in a non loaded world! Village map may contains errors!");
+        }
+        
         if(yml.contains("bank.wealth")) {
             v.getBank().setWealth(yml.getDouble("bank.wealth"));
         }
@@ -649,7 +653,7 @@ public class VillageManager extends DataManager {
         String query = "SELECT `ID`, `Data` FROM `%db%`.`%t%Items` WHERE `ItemID`='" + id + "' LIMIT 1;";
         Map<String, String> result = DataManager.SQL_MANAGER.fetch(query).get(0);
         
-        VillageItem item = new VillageItem(getInt(result.get("ID")), getByte(result.get("Data")));
+        VillageItem item = new VillageItem(getInt(result.get("ID")), getShort(result.get("Data")));
         
         //Get Additional data
         query = "SELECT `ItemName` FROM `%db%`.`%t%ItemNames` WHERE `ItemID`='" + id + "';";

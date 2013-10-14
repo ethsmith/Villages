@@ -100,7 +100,7 @@ public class VillageMayorExpand extends SubCommand {
         }
         
         //Fire Event
-        VillageExpandEvent event = new VillageExpandEvent(v, claiming);
+        VillageExpandEvent event = new VillageExpandEvent(v, claiming, r);
         event.fireEvent();
         if(event.isCancelled()) return true;
         

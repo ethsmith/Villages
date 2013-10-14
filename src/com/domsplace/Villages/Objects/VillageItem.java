@@ -11,10 +11,11 @@ import java.util.regex.Pattern;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.MaterialData;
 
 public class VillageItem {
     
@@ -52,7 +53,6 @@ public class VillageItem {
             
             for(String s : parts) {
                 Matcher m = Pattern.compile(ITEM_META_ATTRIBUTE_SEPERATOR_REGEX).matcher(s);
-                Base.debug("GOT: " + s);
                 m.find();
                 
                 String key = m.group(2).toLowerCase();
@@ -76,7 +76,7 @@ public class VillageItem {
             
             int count = 1;
             int id = 0;
-            byte idata = -1;
+            short idata = -1;
             String author = null;
             String name = null;
             
@@ -89,7 +89,7 @@ public class VillageItem {
             }
             
             if(data.containsKey("data")) {
-                idata = Base.getByte(data.get("data"));
+                idata = Base.getShort(data.get("data"));
             }
             
             if(data.containsKey("author")) {
@@ -114,7 +114,7 @@ public class VillageItem {
             
             return items;
         } catch(Exception e) {
-                e.printStackTrace();
+            e.printStackTrace();
             throw new InvalidItemException(line);
         }
     }
@@ -226,16 +226,32 @@ public class VillageItem {
         return i;
     }
     
+    public static boolean isInventoryFull(Inventory i) {
+        List<ItemStack> contents = new ArrayList<ItemStack>();
+        for(ItemStack is : i.getContents()) {
+            if(is == null) continue;
+            if(is.getType() == null) continue;
+            if(is.getType().equals(Material.AIR)) continue;
+            contents.add(is);
+        }
+        
+        if(contents.size() >= i.getContents().length) {
+            return true;
+        }
+        
+        return false;
+    }
+    
     //Instance
     private int id;
-    private byte data = -1;
+    private short data = -1;
     private Map<Enchantment, Integer> enchants;
     private List<String> bookPages;
     private String author;
     private String name;
     private List<String> lores;
     
-    public VillageItem(int id, byte data, Map<Enchantment, Integer> enchants, List<String> pages, String name, List<String> lores) {
+    public VillageItem(int id, short data, Map<Enchantment, Integer> enchants, List<String> pages, String name, List<String> lores) {
         this.id = id;
         this.data = data;
         this.enchants = enchants;
@@ -244,48 +260,52 @@ public class VillageItem {
         this.lores = lores;
     }
     
-    public VillageItem(int id, byte data, Map<Enchantment, Integer> enchants, List<String> pages, String name) {
+    public VillageItem(int id, short data, Map<Enchantment, Integer> enchants, List<String> pages, String name) {
         this(id, data, enchants, pages, name, null);
     }
     
-    public VillageItem(int id, byte data, Map<Enchantment, Integer> enchants, List<String> pages, List<String> lores) {
+    public VillageItem(int id, short data, Map<Enchantment, Integer> enchants, List<String> pages, List<String> lores) {
         this(id, data, enchants, pages, null, lores);
     }
     
-    public VillageItem(int id, byte data, Map<Enchantment, Integer> enchants, String name, List<String> lores) {
+    public VillageItem(int id, short data, Map<Enchantment, Integer> enchants, String name, List<String> lores) {
         this(id, data, enchants, null, name, lores);
     }
     
-    public VillageItem(int id, byte data, Map<Enchantment, Integer> enchants, String name) {
+    public VillageItem(int id, short data, Map<Enchantment, Integer> enchants, String name) {
         this(id, data, enchants, null, name, null);
     }
     
-    public VillageItem(int id, byte data, Map<Enchantment, Integer> enchants, List<String> lores) {
+    public VillageItem(int id, short data, Map<Enchantment, Integer> enchants, List<String> lores) {
         this(id, data, enchants, null, null, lores);
     }
     
-    public VillageItem(int id, byte data, List<String> pages, String name, List<String> lores) {
+    public VillageItem(int id, short data, List<String> pages, String name, List<String> lores) {
         this(id, data, null, pages, name, lores);
     }
     
-    public VillageItem(int id, byte data, String name, List<String> lores) {
+    public VillageItem(int id, short data, String name, List<String> lores) {
         this(id, data, null, null, name, lores);
     }
     
-    public VillageItem(int id, byte data, String name) {
+    public VillageItem(int id, short data, String name) {
         this(id, data, name, null);
     }
     
-    public VillageItem(int id, byte data, List<String> lores) {
+    public VillageItem(int id, short data, List<String> lores) {
         this(id, data, null, null, null, lores);
     }
     
-    public VillageItem(int id, byte data) {
+    public VillageItem(Material m, short data) {
+        this(m.getId(), data);
+    }
+    
+    public VillageItem(int id, short data) {
         this(id, data, null, null, null, null);
     }
     
     public VillageItem(int id) {
-        this(id, new Byte("-1"));
+        this(id, new Short("-1"));
     }
     
     public VillageItem(Material m) {
@@ -295,7 +315,7 @@ public class VillageItem {
     public VillageItem(ItemStack is) {
         this(
             is.getType().getId(),
-            is.getData().getData()
+            is.getDurability()
         );
         
         if(is.getItemMeta() != null) {
@@ -321,7 +341,7 @@ public class VillageItem {
     }
     
     public int getID() {return this.id;}
-    public byte getData() {return this.data;}
+    public short getData() {return this.data;}
     public Map<Enchantment, Integer> getEnchantments() {return this.enchants;}
     public List<String> getBookPages() {return this.bookPages;}
     public String getBookAuthor() {return this.author;}
@@ -332,7 +352,7 @@ public class VillageItem {
     }
     
     public void setID(int id) {this.id = id;}
-    public void setData(byte data) {this.data = data;}
+    public void setData(short data) {this.data = data;}
     public void setLores(List<String> lores) {this.lores = lores;}
     public void setPages(List<String> pages) {this.bookPages = pages;}
     public void setAuthor(String author) {this.author = author;}
@@ -342,7 +362,6 @@ public class VillageItem {
     public void setPage(int page, String l) {this.bookPages.set(page, l);}
     
     public Material getMaterial() {return Material.getMaterial(this.id);}
-    public MaterialData getMaterialData() {return getMaterial().getNewData(this.data);}
     public ItemMeta getItemMeta(ItemStack is) {
         ItemMeta im = is.getItemMeta();
         if(this.name != null && !this.name.equals("")) {
@@ -368,14 +387,12 @@ public class VillageItem {
     }
     public ItemStack getItemStack() {return getItemStack(64);}
     public ItemStack getItemStack(int amt) {
-        ItemStack is = new ItemStack(this.id);
-        is.setAmount(amt);
-        is.setData(this.getMaterialData());
+        ItemStack is = new ItemStack(this.id, amt, this.data);
         is.setItemMeta(this.getItemMeta(is));
         return is;
     }
     public Block setBlock(Block b) {
-        b.setTypeIdAndData(id, data, true);
+        b.setTypeIdAndData(id, (byte)data, true);
         return b;
     }
     
@@ -432,7 +449,7 @@ public class VillageItem {
         String msg = "{id:\"" + this.id + "\"}";
         
         if(this.data >= 0) {
-            msg += ",{data:\"" + this.data + "\"}";
+            msg += ",{data:\"" + Short.toString(this.data) + "\"}";
         }
         
         if(this.lores != null) {
@@ -503,5 +520,18 @@ public class VillageItem {
         }
         
         return s;
+    }
+    
+    public void giveToPlayer(Player player) {
+        //TODO: Smarter logic, checking for non full stack sizes etc.
+        Inventory in = player.getInventory();
+        if(VillageItem.isInventoryFull(in)) {
+            //Inventory is Full, drop the item instead
+            ItemStack is = this.getItemStack(1);
+            player.getWorld().dropItemNaturally(player.getLocation(), is);
+            return;
+        }
+        //Inventory not full, just give to player
+        player.getInventory().addItem(this.getItemStack(1));
     }
 }

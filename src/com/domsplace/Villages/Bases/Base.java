@@ -320,6 +320,19 @@ public class Base extends RawBase {
         }
     }
     
+    public static boolean isShort(Object o) {
+        try {
+            Short.parseShort(o.toString());
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+    
+    public static short getShort(Object o) {
+        return Short.parseShort(o.toString());
+    }
+    
     public static boolean isByte(Object o) {
         try {
             Byte.parseByte(o.toString());

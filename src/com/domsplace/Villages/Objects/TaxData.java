@@ -34,7 +34,7 @@ public class TaxData {
             
             if(vmoney < cost) {
                 //Cant Afford Money
-                VillageDeletedEvent event = new VillageDeletedEvent(village, DeleteCause.UPKEEP_FAILED);
+                VillageDeletedEvent event = new VillageDeletedEvent(village, DeleteCause.UPKEEP_FAILED, null);
                 event.fireEvent();
                 
                 if(!event.isCancelled()) {
@@ -51,7 +51,7 @@ public class TaxData {
         if(Base.getConfig().getBoolean("features.banks.item", true)) {
             Bank bank = village.getBank();
             if(!bank.containsItems(this.tax.getRelativeItemsCost(village))) {
-                VillageDeletedEvent event = new VillageDeletedEvent(village, DeleteCause.UPKEEP_FAILED);
+                VillageDeletedEvent event = new VillageDeletedEvent(village, DeleteCause.UPKEEP_FAILED, null);
                 event.fireEvent();
                 if(event.isCancelled()) return;
                 

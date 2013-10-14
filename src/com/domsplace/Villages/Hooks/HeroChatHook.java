@@ -8,7 +8,7 @@ public class HeroChatHook extends PluginHook {
     HeroChatListener listener;
     
     public HeroChatHook() {
-        super("HeroChat");
+        super("Herochat");
     }
     
     @Override

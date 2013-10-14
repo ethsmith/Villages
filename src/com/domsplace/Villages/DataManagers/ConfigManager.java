@@ -6,6 +6,7 @@ import com.domsplace.Villages.Bases.PluginHook;
 import com.domsplace.Villages.Enums.ExpandMethod;
 import com.domsplace.Villages.Enums.ManagerType;
 import com.domsplace.Villages.Events.VillagesPluginReloadedEvent;
+import com.domsplace.Villages.Objects.VillageMapRenderer;
 import com.domsplace.Villages.Threads.VillageScoreboardThread;
 import java.io.File;
 import java.io.IOException;
@@ -133,6 +134,7 @@ public class ConfigManager extends DataManager {
         df("features.updates", true);
         df("features.expand.method", "CHUNK");
         df("features.guiscreen", true);
+        df("features.largemaps", true);
         
         List<String> defaultCommands = new ArrayList<String>();
         defaultCommands.add("v");
@@ -237,6 +239,14 @@ public class ConfigManager extends DataManager {
             Base.ExpandingMethod = ExpandMethod.CLASSIC;
         } else {
             Base.ExpandingMethod = ExpandMethod.PER_CHUNK;
+        }
+        
+        if(config.getBoolean("features.largemaps", true)) {
+            VillageMapRenderer.REGION_DIVIDE = 2;
+            VillageMapRenderer.PLAYER_MULTIPLY = 1;
+        } else {
+            VillageMapRenderer.REGION_DIVIDE = 1;
+            VillageMapRenderer.PLAYER_MULTIPLY = 2;
         }
         
         //Setup Hooking Options

@@ -20,6 +20,12 @@ public class Village {
     public static void  deRegisterVillage(Village village) {
         VILLAGES.remove(village);
         village.getBank().updateGUI();
+        try {
+            if(village.getVillageMap() != null) {
+                village.getVillageMap().unload();
+            }
+        } catch(IllegalArgumentException e) {}
+        village.map = null;
     }
     
     public static List<Village> getVillages() {
@@ -82,6 +88,7 @@ public class Village {
     private Resident mayor;
     private Bank bank;
     private Region spawn;
+    private VillageMap map;
     
     private List<Region> regions;
     private List<Plot> plots;
@@ -170,6 +177,12 @@ public class Village {
             players.add(p.getPlayer());
         }
         return players;
+    }
+    
+    public VillageMap getVillageMap() throws IllegalArgumentException {
+        if(this.map != null) return this.map;
+        this.map = new VillageMap(this);
+        return this.map;
     }
     
     public void broadcast(Player[] ignoredPlayers, Object... o) {
