@@ -72,4 +72,11 @@ public class VaultHook extends PluginHook {
             bankWithdraw = null;
         }
     }
+    
+    public String formatEconomy(double amt) {
+        if(!Base.useEconomy) return "\\\\\\\\\\\\$" + amt;
+        String formatted = this.getEconomy().format(amt);
+        formatted = formatted.replaceAll("\\$", "\\\\\\$");  
+        return formatted;
+    }
 }

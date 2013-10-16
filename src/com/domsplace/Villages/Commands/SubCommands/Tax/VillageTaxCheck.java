@@ -46,7 +46,7 @@ public class VillageTaxCheck extends SubCommand {
             messages.addAll(gk("taxinfo", t));
             
             if(Base.useEconomy && Base.getConfig().getBoolean("features.banks.money", true)) {
-                messages.add("\tDue Money: " + PluginHook.VAULT_HOOK.getEconomy().format(t.getRelativeCost(v)));
+                messages.add("\tDue Money: " + PluginHook.VAULT_HOOK.formatEconomy(t.getRelativeCost(v)));
             }
             
             if(Base.getConfig().getBoolean("features.banks.item", true)) {

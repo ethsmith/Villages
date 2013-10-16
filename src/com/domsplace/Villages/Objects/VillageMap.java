@@ -26,6 +26,11 @@ import org.bukkit.map.MapView;
  * @since       13/10/2013
  */
 public class VillageMap {
+    public static void invoke() {
+        Base.debug("Map Invoked (DEBUG ONLY)");
+    }
+    
+    //Instance
     private Village village;
     private MapView map;
     private VillageMapRenderer renderer;

@@ -12,6 +12,7 @@ import com.domsplace.Villages.Commands.SubCommands.Plot.*;
 import com.domsplace.Villages.Commands.SubCommands.Tax.VillageTaxCheck;
 import com.domsplace.Villages.Listeners.*;
 import com.domsplace.Villages.Objects.Village;
+import com.domsplace.Villages.Objects.VillageMap;
 import com.domsplace.Villages.Threads.*;
 import org.bukkit.Bukkit;
 
@@ -54,6 +55,7 @@ public class VillagesPlugin extends PluginBase {
         new VillageAdminSetName();
         new VillageAdminSetMayor();
         new VillageAdminSetDescription();
+        //new VillageAdminGUI();
         
         new VillageBankDeposit();
         new VillageBankOpen();
@@ -100,6 +102,9 @@ public class VillagesPlugin extends PluginBase {
         new VillagesChatListener();
         new CustomCommandListener();
         
+        //Invoke the Map Class
+        VillageMap.invoke();
+        
         this.enabled = true;
         Base.debug("Enabled Villages!");
         if(Base.getConfig().getBoolean("features.guiscreen", true)) {
@@ -112,6 +117,12 @@ public class VillagesPlugin extends PluginBase {
         if(!enabled) {
             Base.debug("Failed to Enable Villages!");
             return;
+        }
+        
+        //Close the GUI
+        if(Base.guiManager != null) {
+            Base.guiManager.close();
+            Base.guiManager = null;
         }
         
         VillageThread.stopAllThreads();

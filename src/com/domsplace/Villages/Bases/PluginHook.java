@@ -16,6 +16,7 @@ public class PluginHook extends Base{
     public static final TagAPIHook TAG_API_HOOK = new TagAPIHook();
     public static final SELBansHook SEL_BANS_HOOK = new SELBansHook();
     public static final PEXHook PEX_HOOK = new PEXHook();
+    public static final EssentialsChatHook ESSENTIALS_CHAT_HOOK = new EssentialsChatHook();
     
     //Static
     private static void hookPlugin(PluginHook hook) {

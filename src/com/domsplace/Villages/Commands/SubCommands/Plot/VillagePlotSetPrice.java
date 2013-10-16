@@ -67,7 +67,7 @@ public class VillagePlotSetPrice extends SubCommand {
         }
         
         plot.setPrice(amt);
-        sk(sender, "setplotprice", PluginHook.VAULT_HOOK.getEconomy().format(amt));
+        sk(sender, "setplotprice", PluginHook.VAULT_HOOK.formatEconomy(amt));
         return true;
     }
 }

@@ -61,7 +61,7 @@ public class VillagePlotSetOwner extends SubCommand {
             v.addPlot(plot);
         }
         
-        plot.setOwner(r);
+        plot.setOwner(target);
         sk(sender, "setplotowner", target);
         sk(target, "chunkclaimed", plot);
         DataManager.saveAll();

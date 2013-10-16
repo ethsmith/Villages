@@ -6,8 +6,10 @@ import com.domsplace.Villages.Bases.PluginHook;
 import com.domsplace.Villages.Enums.ExpandMethod;
 import com.domsplace.Villages.Enums.ManagerType;
 import com.domsplace.Villages.Events.VillagesPluginReloadedEvent;
+import com.domsplace.Villages.GUI.VillagesGUIManager;
 import com.domsplace.Villages.Objects.VillageMapRenderer;
 import com.domsplace.Villages.Threads.VillageScoreboardThread;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -119,6 +121,7 @@ public class ConfigManager extends DataManager {
         df("plugins.tagapi", true);
         df("plugins.herochat", true);
         df("plugins.vault", true);
+        df("plugins.essentials.chat", true);
         //df("plugins.dynmap", true); (REMOVED TEMPORARILY)
         
         //Features
@@ -254,6 +257,7 @@ public class ConfigManager extends DataManager {
         PluginHook.WORLD_GUARD_HOOK.shouldHook(config.getBoolean("plugins.worldguard", true));
         PluginHook.HERO_CHAT_HOOK.shouldHook(config.getBoolean("plugins.herochat", true));
         PluginHook.TAG_API_HOOK.shouldHook(config.getBoolean("plugins.tagapi", true));
+        PluginHook.ESSENTIALS_CHAT_HOOK.shouldHook(config.getBoolean("plugins.essentials.chat", true));
         
         Base.useScoreboards = 
                 Base.getConfig().getBoolean("features.lists.topvillages", true) || 
@@ -266,6 +270,17 @@ public class ConfigManager extends DataManager {
         }
         
         this.scoreboardThread = new VillageScoreboardThread();
+        
+        if(Base.guiManager == null && config.getBoolean("features.guiscreen", true)) {
+            if(GraphicsEnvironment.isHeadless()) {
+                //log("Failed to Load Villages GUI, no compatible graphics are available.");
+            } else {
+                //Base.guiManager = new VillagesGUIManager();
+            }
+        } else if(Base.guiManager != null && !config.getBoolean("features.guiscreen", true)) {
+            Base.guiManager.close();
+            Base.guiManager = null;
+        }
         
         this.trySave();
     }

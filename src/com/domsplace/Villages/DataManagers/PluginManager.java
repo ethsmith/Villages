@@ -24,4 +24,8 @@ public class PluginManager extends DataManager {
     public String getVersion() {
         return plugin.getString("version");
     }
+
+    public String getAuthor() {
+        return plugin.getString("author", "Dominic");
+    }
 }

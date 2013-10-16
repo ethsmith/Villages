@@ -82,7 +82,7 @@ public class Village {
     
     //Instance
     private String name;
-    private String description = "Welcome!";
+    private String description = "";
     private long createdDate;
     
     private Resident mayor;
@@ -162,11 +162,11 @@ public class Village {
     }
 
     public List<String> getRegionsAsString() {
-        List<String> regions = new ArrayList<String>();
+        List<String> reg = new ArrayList<String>();
         for(Region r : this.regions) {
-            regions.add(r.toString());
+            reg.add(r.toString());
         }
-        return regions;
+        return reg;
     }
     
     public List<Player> getOnlineResidents() {
@@ -255,5 +255,16 @@ public class Village {
         }
         
         return null;
+    }
+
+    public boolean doesResidentOwnPlot(Region r, Resident resident) {
+        if(resident == null) return false;
+        if(!this.isResident(resident)) return false;
+        if(this.mayor.equals(resident)) return false;
+        Plot p = this.getPlot(r);
+        if(p == null) return false;
+        if(p.getOwner() == null) return false;
+        if(!p.getOwner().equals(resident)) return false;
+        return true;
     }
 }

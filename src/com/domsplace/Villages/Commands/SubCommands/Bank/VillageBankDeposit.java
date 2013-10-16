@@ -52,7 +52,7 @@ public class VillageBankDeposit extends SubCommand {
         }
         
         PluginHook.VAULT_HOOK.getEconomy().withdrawPlayer(sender.getName(), amt);
-        v.broadcast(gk("depositedmoney", r, amt));
+        v.broadcast(gk("depositedmoney", r, PluginHook.VAULT_HOOK.formatEconomy(amt)));
         v.getBank().addWealth(amt);
         return true;
     }

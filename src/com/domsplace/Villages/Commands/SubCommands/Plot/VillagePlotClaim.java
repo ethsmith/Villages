@@ -58,7 +58,7 @@ public class VillagePlotClaim extends SubCommand {
         
         //Make sure they have enough
         if(!hasBalance(sender.getName(), plot.getPrice())) {
-            sk(sender, "notenoughmoney", PluginHook.VAULT_HOOK.getEconomy().format(plot.getPrice()));
+            sk(sender, "notenoughmoney", PluginHook.VAULT_HOOK.formatEconomy(plot.getPrice()));
             return true;
         }
         

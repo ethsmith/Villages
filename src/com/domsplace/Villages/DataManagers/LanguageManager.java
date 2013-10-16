@@ -43,7 +43,7 @@ public class LanguageManager extends DataManager {
         cDV("cantfindvillage", "%e%Couldn't find Village.");
         cDV("cantkickmayor", "%e%You cannot kick the mayor of the Village.");
         cDV("chunkavailable", "%d%This chunk is available!\nPrce: %i%%x%");
-        cDV("chunkclaimed", "%d%The %i%Mayor %d%has claimed %i%%x%%d% for you.");
+        cDV("chunkclaimed", "%d%The %i%Mayor %d%has claimed %i%%r%%d% for you.");
         cDV("chunkclaimedbyplayer", "%e%This plot is claimed by another player.");
         cDV("chunknotowned", "%e%You don't own this plot.");
         cDV("claimedchunk", "%d%Claimed %r%!");
@@ -53,7 +53,7 @@ public class LanguageManager extends DataManager {
         cDV("createvillageoverlap", "%e%You can't create a Village here, it overlaps another Village.");
         cDV("createvillageregionoverlap", "%e%Can't create village here, it overlaps a region.");
         cDV("deniedinvite", "%i%Denied the Village invite.");
-        cDV("depositedmoney", "%i%%p% %d%deposited %i%%n% %d%into the Village Bank.");
+        cDV("depositedmoney", "%i%%p% %d%deposited %i%%x% %d%into the Village Bank.");
         cDV("economydisabled", "%e%The server has Economy disabled.");
         cDV("enteramount", "%e%Please enter an amount to deposit into the bank.");
         cDV("enteramt", "%e%Please enter a number.");

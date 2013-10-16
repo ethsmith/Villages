@@ -57,7 +57,6 @@ public class Base extends RawBase {
     public static boolean useWorldGuard = false;
     public static boolean useTagAPI = false;
     public static boolean useEconomy = false;
-    public static boolean useHeroChat = false;
     public static boolean useScoreboards = false;
 
     //String Utils
@@ -503,7 +502,7 @@ public class Base extends RawBase {
     }
     
     public static String getMoney(double money) {
-        return PluginHook.VAULT_HOOK.getEconomy().format(money);
+        return PluginHook.VAULT_HOOK.formatEconomy(money);
     }
     
     //Time Utils

@@ -66,8 +66,8 @@ public class VillageCreate extends SubCommand {
         }
         
         //Make sure they have enough
-        if(!hasBalance(sender.getName(), getCost("createvillage"))) {
-            sk(sender, "notenoughmoney", PluginHook.VAULT_HOOK.getEconomy().format(getCost("createvillage")));
+        if(Base.useEconomy && !hasBalance(sender.getName(), getCost("createvillage"))) {
+            sk(sender, "notenoughmoney", PluginHook.VAULT_HOOK.formatEconomy(getCost("createvillage")));
             return true;
         }
         

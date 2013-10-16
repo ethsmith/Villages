@@ -95,7 +95,7 @@ public class VillageMayorExpand extends SubCommand {
         
         //First, make sure they have the money to expand
         if(Base.useEconomy && getConfig().getBoolean("features.banks.money", true)  && !hasBalance(v, cost)) {
-            sk(sender, "notenoughmoney", PluginHook.VAULT_HOOK.getEconomy().format(cost));
+            sk(sender, "villagebankneedmore", PluginHook.VAULT_HOOK.formatEconomy(cost));
             return true;
         }
         
@@ -105,7 +105,10 @@ public class VillageMayorExpand extends SubCommand {
         if(event.isCancelled()) return true;
         
         //Charge Village
-        v.getBank().addWealth(-cost);
+        if(Base.useEconomy && getConfig().getBoolean("features.banks.money", true)) {
+            v.getBank().addWealth(-cost);
+        }
+        
         v.addRegions(claiming);
         sk(sender, "villageexpanded", claiming.size());
         DataManager.saveAll();

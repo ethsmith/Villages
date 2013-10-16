@@ -36,9 +36,14 @@ import org.bukkit.map.MinecraftFont;
 public class VillageMapRenderer extends MapRenderer {
     private static final String MAP_TEXT_COLOR = "\u00A748;";
     private static final Scale USED_SCALE = Scale.NORMAL;
-    private static final byte REGION_COLOR = MapPalette.LIGHT_GREEN;
+    
+    private static final byte REGION_COLOR = MapPalette.DARK_GREEN;
+    private static final byte PLOT_COLOR = MapPalette.BROWN;
+    private static final byte FOE_VILLAGE_COLOR = MapPalette.RED;
+    
     private static final int MAP_SIZE = 128;
     private static final int HALF_MAP_SIZE = 64;
+    
     public static int REGION_DIVIDE = 1;
     public static int PLAYER_MULTIPLY = 2;
     
@@ -88,25 +93,38 @@ public class VillageMapRenderer extends MapRenderer {
         
         //Draw Regions
         for(Region r : this.map.getVillage().getRegions()) {
-            drawRegion(r, spawn, mc);
+            drawRegion(r, spawn, mc, player, null);
         }
-        //Draws Spawn, but shouldn't be needed drawRegion(this.map.getVillage().getSpawn(), spawn, mc);
+        
+        //Render Enemy Villages
+        for(Village v : Village.getVillages()) {
+            if(v == null) continue;
+            if(v.equals(this.map.getVillage())) continue;
+            for(Region r : v.getRegions()) {
+                drawRegion(r, spawn, mc, player, v);
+            }
+        }
         
         mc.setCursors(cursors);
         mc.drawText(2, 2, MinecraftFont.Font, MAP_TEXT_COLOR + "Map for\n" + this.map.getVillage().getName() + ".");
     }
     
-    private void drawRegion(Region r, Location l, MapCanvas mc) {
+    private void drawRegion(Region r, Location l, MapCanvas mc, Player p, Village v) {
         int endX = translateX(l, r.getX()) / REGION_DIVIDE;
         int endZ = translateZ(l, r.getZ()) / REGION_DIVIDE;
         int startX = translateX(l, r.getMaxX()) / REGION_DIVIDE;
         int startZ = translateZ(l, r.getMaxZ()) / REGION_DIVIDE;
         
-        //Base.log("Drawing Region: " + r.toString() + " from " + startX + "," + startZ + " TO " + endX + "," + endZ);
+        byte color = REGION_COLOR;
+        if(v == null || v.isResident(Resident.getResident(p))) {
+            if(this.map.getVillage().doesResidentOwnPlot(r, Resident.getResident(p))) color = PLOT_COLOR;
+        } else {
+            color = FOE_VILLAGE_COLOR;
+        }
         
         for(int x = startX; x <= endX; x++) {
             for(int z = startZ; z <= endZ; z++) {
-                mc.setPixel(HALF_MAP_SIZE + x, HALF_MAP_SIZE + z, REGION_COLOR);
+                mc.setPixel(HALF_MAP_SIZE + x, HALF_MAP_SIZE + z, color);
             }
         }
     }
