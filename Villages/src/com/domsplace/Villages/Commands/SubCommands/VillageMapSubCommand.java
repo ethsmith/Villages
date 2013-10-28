@@ -18,6 +18,7 @@ package com.domsplace.Villages.Commands.SubCommands;
 
 import com.domsplace.Villages.Bases.BukkitCommand;
 import com.domsplace.Villages.Bases.SubCommand;
+import com.domsplace.Villages.Exceptions.InvalidItemException;
 import com.domsplace.Villages.Objects.Resident;
 import com.domsplace.Villages.Objects.Village;
 import com.domsplace.Villages.Objects.VillageItem;
@@ -62,7 +63,12 @@ public class VillageMapSubCommand extends SubCommand {
         }
         
         VillageItem mapItem = map.getMapAsItem();
-        mapItem.giveToPlayer(player);
+        try {
+            mapItem.giveToPlayer(player);
+        } catch(InvalidItemException e) {
+            sendMessage(sender, ChatError + "An error occured...");
+            return true;
+        }
         
         sendMessage(sender, "Giving Village Map.");
         return true;

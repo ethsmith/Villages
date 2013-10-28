@@ -37,7 +37,7 @@ residents: '
 item: '
   CREATE TABLE IF NOT EXISTS `%db%`.`%t%Items` (
     `ItemID` int(11) NOT NULL AUTO_INCREMENT,
-    `ID` int(5) NOT NULL,
+    `ID` varchar(200) NOT NULL,
     `Data` int(5) NOT NULL,
     CONSTRAINT `ItemPrimarKey` PRIMARY KEY (`ItemID`)
   ) ENGINE=MyISAM;

@@ -173,6 +173,10 @@ public class SQLManager extends DataManager {
             if(!query(query)) throw new IOException ("Failed to create " + s + " table.");
         }
         
+        //Pre 2.09: Change Items Table ID from Int to String
+        String alter = "ALTER TABLE `%db%`.`%t%Items` CHANGE `ID` `ID` VARCHAR(200) NOT NULL ;";
+        this.query(alter);
+        
         Base.useSQL = true;
     }
 
@@ -184,12 +188,10 @@ public class SQLManager extends DataManager {
     
     public Date sqlToDate(String sqlDate) {
         SimpleDateFormat fat = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss");
-        Date returnDate = new Date();
         try {
-            returnDate = fat.parse(sqlDate);
+            return fat.parse(sqlDate);
         } catch (ParseException ex) {
             return new Date();
         }
-        return returnDate;
     }
 }

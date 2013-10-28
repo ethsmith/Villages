@@ -102,6 +102,24 @@ public class Base extends RawBase {
         return msg;
     }
     
+    public static String decolorise(Object o) {
+        String msg = o.toString();
+        
+        String[] andCodes = {"&0", "&1", "&2", "&3", "&4", "&5", "&6", "&7", 
+            "&8", "&9", "&a", "&b", "&c", "&d", "&e", "&f", "&l", "&o", "&n", 
+            "&m", "&k", "&r"};
+        
+        String[] altCodes = {"§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", 
+            "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f", "§l", "§o", "§n", 
+            "§m", "§k", "§r"};
+        
+        for(int x = 0; x < andCodes.length; x++) {
+            msg = msg.replaceAll(altCodes[x], andCodes[x]);
+        }
+        
+        return msg;
+    }
+    
     public static String getPermissionMessage() {
         return Base.permissionMessage;
     }

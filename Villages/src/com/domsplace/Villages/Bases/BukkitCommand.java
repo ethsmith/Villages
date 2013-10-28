@@ -68,16 +68,21 @@ public class BukkitCommand extends Base implements CommandExecutor, TabCompleter
                 sk(sender, "notinthisworld");
                 return true;
             }
-            
-            SubCommand sc = getSubCommand(args, sender);
-            boolean result;
-            if(sc != null) {
-                result = sc.transExecute(this, sender, cmd, label, args);
-            } else {
-                result = this.cmd(sender, cmd, label, args);
+            try {
+                SubCommand sc = getSubCommand(args, sender);
+                boolean result;
+                if(sc != null) {
+                    result = sc.transExecute(this, sender, cmd, label, args);
+                } else {
+                    result = this.cmd(sender, cmd, label, args);
+                }
+                if(!result) return commandFailed(sender, cmd, label, args); 
+                return commandSuccess(sender, cmd, label, args);
+            } catch(Exception e) {
+                Base.error("Command error! Show Villages Dev Team!", e);
+                sendMessage(sender, ChatError + "A command error occured, please contact a server Admin!");
+                return this.commandFailed(sender, cmd, label, args);
             }
-            if(!result) return commandFailed(sender, cmd, label, args); 
-            return commandSuccess(sender, cmd, label, args);
         }
         
         return badCommand(sender, cmd, label, args);

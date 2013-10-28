@@ -431,7 +431,7 @@ public class VillageManager extends DataManager {
             if(item.getData() >= 0) {
                 query += ", `Data`";
             }
-            query += ") VALUES ('" + item.getID() + "'";
+            query += ") VALUES ('" + item.getMaterialName()+ "'";
             if(item.getData() >= 0) {
                 query += ", '" + item.getData() + "'";
             }
@@ -653,7 +653,7 @@ public class VillageManager extends DataManager {
         String query = "SELECT `ID`, `Data` FROM `%db%`.`%t%Items` WHERE `ItemID`='" + id + "' LIMIT 1;";
         Map<String, String> result = DataManager.SQL_MANAGER.fetch(query).get(0);
         
-        VillageItem item = new VillageItem(getInt(result.get("ID")), getShort(result.get("Data")));
+        VillageItem item = new VillageItem(result.get("ID"), getShort(result.get("Data")));
         
         //Get Additional data
         query = "SELECT `ItemName` FROM `%db%`.`%t%ItemNames` WHERE `ItemID`='" + id + "';";
@@ -698,8 +698,7 @@ public class VillageManager extends DataManager {
                 item.setAuthor(author.getName());
                 item.addPage(l);
             } catch(Exception e) {}
-        }
-        
+        }        
         
         return item;
     }
