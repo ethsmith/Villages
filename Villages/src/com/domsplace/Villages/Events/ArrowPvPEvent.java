@@ -4,7 +4,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 
 public class ArrowPvPEvent extends PvPEvent {
-    private Arrow arrow;
+    private final Arrow arrow;
     
     public ArrowPvPEvent(Player attacker, Player attacked, Arrow arrow, double damage) {
         super(attacker, attacked, damage);
