@@ -1,0 +1,155 @@
+name: Villages
+description: Create player villages, make regions and start wars.
+main: com.domsplace.Villages.VillagesPlugin
+author: Dominic
+authors: [Dominic, Jordan]
+website: http://domsplace.com/
+version: '2.08'
+load: POSTWORLD
+softdepend: [WorldGuard, Vault, TagAPI, Herochat, PermissionsEx, EssentialsChat]
+commands:
+   village:
+      description: Get Information about Villages and change Village options.
+      aliases: [vil, villages]
+      usage: /<command>
+permissions:
+   Villages.*:
+     description: Gives access to all Villages permissions.
+     children:
+       Villages.village: true
+       Villages.list: true
+       Villages.create: true
+       Villages.message: true
+       Villages.invite: true
+       Villages.accept: true
+       Villages.deny: true
+       Villages.spawn: true
+       Villages.leave: true
+       Villages.villagetop: true
+       Villages.lookup: true
+       Villages.map: true
+       Villages.admin.*: true
+       Villages.mayor.*: true
+       Villages.bank.*: true
+       Villages.plot.*: true
+       Villages.tax.*: true
+   Villages.village:
+     description: Allows access to the Villages command.
+   Villages.list:
+     description: Allows access to view the Villages list.
+   Villages.create:
+     description: Allows access to create a Village.
+   Villages.message:
+     description: Allows a player to send a message to their Village.
+   Villages.invite:
+     description: Allows a player to send an invite for a Player to join their Village.
+   Villages.accept:
+     description: Allows a player to accept an invite to a Village.
+   Villages.deny:
+     description: Allows a player to deny an invite to a Village.
+   Villages.spawn:
+     description: Allows a player to go to the Village spawn.
+   Villages.leave:
+     description: Allows a player to leave their Village.
+   Villages.villagetop:
+     description: Allows a player to check the top Villages.
+   Villages.lookup:
+     description: Allows a player to lookup what Village another player belongs to.
+   Villages.map:
+     description: Allows a player to view the Village map (Gives a free map item though).
+   Villages.admin.*:
+     description: Allows access to all Admin Commands
+     children:
+       Villages.admin.save: true
+       Villages.admin.reload: true
+       Villages.admin.command: true
+       Villages.admin.delete: true
+       Villages.admin.addplayer: true
+       Villages.admin.removeplayer: true
+       Villages.admin.setmayor: true
+       Villages.admin.setname: true
+       Villages.admin.setdescription: true
+   Villages.admin.save:
+     description: Allows access to save all Data.
+   Villages.admin.reload:
+     description: Allows access to reload the Data.
+   Villages.admin.command:
+     description: Allows access to the Village Admin command.
+   Villages.admin.delete:
+     description: Allows access to Delete a Village.
+   Villages.admin.addplayer:
+     description: Allows access to forcibly add a Player to a Village.
+   Villages.admin.removeplayer:
+     description: Allows access to forcibly remove a Player from their Village.
+   Villages.admin.setmayor:
+     description: Allows access to set the Mayor of a Village.
+   Villages.admin.setname:
+     description: Allows access to set the Name of a Village.
+   Villages.admin.setdescription:
+     description: Allows access to set the Description of a Village.
+   Villages.mayor.*:
+     description: Allows access to all Mayor Commands
+     children:
+       Villages.mayor.command: true
+       Villages.mayor.close: true
+       Villages.mayor.kick: true
+       Villages.mayor.setdescription: true
+       Villages.mayor.setmayor: true
+       Villages.mayor.setname: true
+       Villages.mayor.expand: true
+       Villages.mayor.explode: true
+   Villages.mayor.command:
+     description: Allows access to the Village Mayor command.
+   Villages.mayor.close:
+     description: Allows access for Mayors to close their Village.
+   Villages.mayor.kick:
+     description: Allows access for Mayors to kick players from their Village.
+   Villages.mayor.setdescription:
+     description: Allows access for Mayors to set the description of their Village.
+   Villages.mayor.setmayor:
+     description: Allows access for Mayors to a new Mayor for their Village.
+   Villages.mayor.setname:
+     description: Allows access for Mayors to set a new name for their Village.
+   Villages.mayor.setspawn:
+     description: Allows access for Mayors to set the spawn of their Village.
+   Villages.mayor.expand:
+     description: Allows access for Mayors to expand the area of their Village.
+   Villages.mayor.explode:
+     description: Allows access for Mayors to explode their entire Village.
+   Villages.bank.*:
+     description: Allows access to all Bank Commands
+     children:
+       Villages.bank.deposit: true
+       Villages.bank.withdraw: true
+       Villages.bank.open: true
+   Villages.bank.deposit:
+     description: Allows access to deposit money into Village bank.
+   Villages.bank.withdraw:
+     description: Allows access to withdrawl money from the Village bank.
+   Villages.bank.open:
+     description: Allows access to open the Village item bank.
+   Villages.plot.*:
+     description: Allows access to all Plot Commands
+     children:
+       Villages.plot.claim: true
+       Villages.plot.check: true
+       Villages.plot.set.*: true
+   Villages.plot.claim:
+     description: Allows access for players to Claim plots.
+   Villages.plot.check:
+     description: Allows access for players to check the Claim status of plots.
+   Villages.plot.set.*:
+     description: Allows access to all Plot Set Commands
+     children:
+       Villages.plot.set.price: true
+       Villages.plot.set.owner: true
+   Villages.plot.set.price:
+     description: Allows access for Mayors to set the price of a plot.
+   Villages.plot.set.owner:
+     description: Allows access for Mayors to set the owner of a plot.
+   Villages.tax.*:
+     description: Allows access to all Tax Commands.
+     children:
+       Villages.tax.check: true
+   Villages.tax.check:
+     description: Allows access for players to Check taxes.
